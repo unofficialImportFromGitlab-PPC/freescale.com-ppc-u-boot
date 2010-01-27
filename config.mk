@@ -53,7 +53,11 @@ endif
 
 # clean the slate ...
 PLATFORM_RELFLAGS =
+ifdef CONFIG_CW
+PLATFORM_CPPFLAGS = -DCONFIG_CW
+else
 PLATFORM_CPPFLAGS =
+endif
 PLATFORM_LDFLAGS =
 
 #########################################################################
@@ -210,6 +214,10 @@ else
 CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes
 endif
 
+ifdef CONFIG_CW
+CFLAGS += -ggdb
+endif
+
 CFLAGS += $(call cc-option,-fno-stack-protector)
 # Some toolchains enable security related warning flags by default,
 # but they don't make much sense in the u-boot world, so disable them.
@@ -225,6 +233,10 @@ ifeq ($(ARCH),m68k)
 ifeq ($(findstring 3.4,$(shell $(CC) --version)),3.4)
 AFLAGS_DEBUG := -Wa,-gstabs,-S
 endif
+endif
+
+ifdef CONFIG_CW
+AFLAGS_DEBUG := -Wa,-gdwarf2
 endif
 
 AFLAGS := $(AFLAGS_DEBUG) -D__ASSEMBLY__ $(CPPFLAGS)
