@@ -664,7 +664,11 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	serial_initialize();
 #endif
 
+#ifdef CONFIG_CW
+	printf("Now running in RAM - U-Boot at: %08lx\n", dest_addr);
+#else
 	debug("Now running in RAM - U-Boot at: %08lx\n", dest_addr);
+#endif
 
 	WATCHDOG_RESET();
 

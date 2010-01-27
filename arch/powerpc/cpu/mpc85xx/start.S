@@ -212,7 +212,18 @@ l2_disabled:
 	mtspr	IVOR13,r1	/* 13: Data TLB error */
 	li	r1,0x0e00
 	mtspr	IVOR14,r1	/* 14: Instruction TLB error */
+#if !defined(CONFIG_CW)
 	li	r1,0x0f00
+#else
+       /* CW hack for debugging.
+	* Set the debug handler to a valid flash memory
+	*/
+       li      r1,0
+       oris r1,r1,0xffff
+       mtspr   IVPR, r1
+       li      r1,0
+       ori     r1, r1, 0xf000
+#endif
 	mtspr	IVOR15,r1	/* 15: Debug */
 
 	/* Clear and set up some registers. */
@@ -1374,7 +1385,13 @@ relocate_code:
 	blr				/* NEVER RETURNS! */
 	.globl	in_ram
 in_ram:
-
+#if defined(CONFIG_CW)
+	/* CW debug hack. */
+	li      r0,0
+	mtspr IVPR,r0
+	li      r0,0x0f00
+	mtspr IVOR15,r0
+#endif
 	/*
 	 * Relocation Function, r12 point to got2+0x8000
 	 *
