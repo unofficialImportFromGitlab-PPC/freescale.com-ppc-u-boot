@@ -105,14 +105,17 @@ int platform_diu_init(unsigned int *xres, unsigned int *yres)
 		*xres = 1024;
 		*yres = 768;
 		/* Enable the DFP port, disable the DVI and the backlight */
-		temp &= ~(PX_BRDCFG1_DVIEN | PX_BRDCFG1_BACKLIGHT);
-		temp |= PX_BRDCFG1_DFPEN;
+		temp &= ~PX_BRDCFG1_DVIEN;
+		/* LVDS also needs backlight enabled, otherwise the display will be blank */
+		temp |= (PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT);
+		printf("DIU link to 1-LVDS\n");
 	} else {	/* DVI */
 		*xres = 1280;
 		*yres = 1024;
 		/* Enable the DVI port, disable the DFP and the backlight */
 		temp &= ~(PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT);
 		temp |= PX_BRDCFG1_DVIEN;
+		printf("DIU link to 0-DVI\n");
 	}
 
 	out_8(&pixis->brdcfg1, temp);

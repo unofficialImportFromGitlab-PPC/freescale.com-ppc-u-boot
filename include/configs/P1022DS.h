@@ -202,7 +202,9 @@
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
 
 /* Video */
-#undef CONFIG_FSL_DIU_FB
+#ifdef CONFIG_DIU
+#define CONFIG_FSL_DIU_FB
+#endif
 
 #ifdef CONFIG_FSL_DIU_FB
 #define CONFIG_SYS_DIU_ADDR	(CONFIG_SYS_CCSRBAR + 0x10000)
