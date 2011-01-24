@@ -53,6 +53,8 @@
 		ESPI_CSMODE_CSBEF(0) | ESPI_CSMODE_CSAFT(0) | \
 		ESPI_CSMODE_CSCG(1))
 
+#define ESPI_MAX_DATA_TRANSFER_LEN 0xFFF0
+
 struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int mode)
 {
@@ -72,6 +74,7 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 
 	slave->bus = bus;
 	slave->cs = cs;
+	slave->max_transfer_length = ESPI_MAX_DATA_TRANSFER_LEN;
 
 	/* Enable eSPI interface */
 	espi->mode = ESPI_MODE_RXTHR(3) | ESPI_MODE_TXTHR(4) | ESPI_MODE_EN;
@@ -151,6 +154,9 @@ int espi_xfer(struct spi_slave *slave)
 	int numBlks = len / 4 + (len % 4 ? 1 : 0);
 	unsigned char *ch;
 	int num_bytes = len % 4;
+
+	if (t->data_len > ESPI_MAX_DATA_TRANSFER_LEN)
+		return -1;
 
 	debug("spi_xfer: slave %u:%u dout %08X(%08x) din %08X(%08x) len %u\n",
 	      slave->bus, slave->cs, *(uint *) dout, dout, *(uint *) din, din, len);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Freescale Semiconductor, Inc.
+ * Copyright 2009-2011 Freescale Semiconductor, Inc.
  *
  * Author: Mingkai Hu (Mingkai.hu@freescale.com)
  * Based on stmicro.c by Wolfgang Denk (wd@denx.de),
@@ -185,6 +185,47 @@ static int spansion_read_fast(struct spi_flash *flash,
 	return spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
 }
 
+static int spansion_read_fast_chunks(struct spi_flash *flash,
+			     u32 offset, size_t data_len, void *buf)
+{
+	struct spansion_spi_flash *spsn = to_spansion_spi_flash(flash);
+	unsigned long page_addr;
+	unsigned long page_size;
+	unsigned int max_tran_len = flash->spi->max_transfer_length;
+	u8 cmd[5];
+	size_t len;
+	int ret=0;
+
+	page_size = spsn->params->page_size;
+	int num_chunks = data_len / max_tran_len + (data_len % max_tran_len ? 1 : 0);
+
+	while(num_chunks --) {
+
+		len = min(data_len , max_tran_len);
+		page_addr = offset / page_size;
+
+		cmd[0] = CMD_READ_ARRAY_FAST;
+		cmd[1] = page_addr >> 8;
+		cmd[2] = page_addr;
+		cmd[3] = offset % page_size;
+		cmd[4] = 0x00;
+
+		debug
+			("READ: 0x%x => cmd = { 0x%02x 0x%02x%02x%02x%02x } len = 0x%x\n",
+			 offset, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], len);
+
+		ret = spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
+		if (ret < 0)
+			return ret;
+
+		offset += max_tran_len;
+		buf += max_tran_len;
+		data_len -= max_tran_len;
+	}
+
+	return ret;
+}
+
 static int spansion_write(struct spi_flash *flash,
 			 u32 offset, size_t len, const void *buf)
 {
@@ -347,7 +388,10 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 
 	spsn->flash.write = spansion_write;
 	spsn->flash.erase = spansion_erase;
-	spsn->flash.read = spansion_read_fast;
+	if (spi->max_transfer_length)
+		spsn->flash.read = spansion_read_fast_chunks;
+	else
+		spsn->flash.read = spansion_read_fast;
 	spsn->flash.size = params->page_size * params->pages_per_sector
 	    * params->nr_sectors;
 

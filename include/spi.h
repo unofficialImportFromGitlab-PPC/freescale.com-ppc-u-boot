@@ -77,12 +77,14 @@ struct espi_transfer {
  *
  *   bus:	ID of the bus that the slave is attached to.
  *   cs:	ID of the chip select connected to the slave.
+ *   max_txn_length: maximum data transfer length supported by the slave.
  *   transfer:	Represent an eSPI transaction.
  */
 struct spi_slave {
 	unsigned int	bus;
 	unsigned int	cs;
 
+	unsigned int	max_transfer_length;
 	struct espi_transfer *transfer;
 };
 
