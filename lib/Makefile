@@ -60,6 +60,8 @@ COBJS-y += string.o
 COBJS-y += time.o
 COBJS-$(CONFIG_BOOTP_PXE) += uuid.o
 COBJS-y += vsprintf.o
+COBJS-$(CONFIG_RBTREE)	+= rbtree.o
+COBJS-$(CONFIG_RSA) += crypto_integer.o rsa.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
