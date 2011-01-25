@@ -56,6 +56,8 @@ COBJS-y += div64.o
 COBJS-y += string.o
 COBJS-y += time.o
 COBJS-y += vsprintf.o
+COBJS-$(CONFIG_RBTREE)	+= rbtree.o
+COBJS-$(CONFIG_RSA) += crypto_integer.o rsa.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
