@@ -32,8 +32,10 @@ PLATFORM_LDFLAGS  += -n --gc-sections
 ifdef CONFIG_SYS_LDSCRIPT
 # need to strip off double quotes
 LDSCRIPT := $(subst ",,$(CONFIG_SYS_LDSCRIPT))
-else ifdef CONFIG_NAND_SPL
-LDSCRIPT := $(SRCTREE)/$(CONFIG_BOARDDIR)/u-boot-nand.lds
+else ifdef CONFIG_NAND_U_BOOT
+ifneq ($(wildcard $(SRCTREE)/$(CPUDIR)/u-boot-nand.lds),)
+LDSCRIPT := $(SRCTREE)/$(CPUDIR)/u-boot-nand.lds
+endif
 else
 ifneq ($(wildcard $(SRCTREE)/arch/powerpc/cpu/$(CPU)/u-boot.lds),)
 LDSCRIPT := $(SRCTREE)/arch/powerpc/cpu/$(CPU)/u-boot.lds
