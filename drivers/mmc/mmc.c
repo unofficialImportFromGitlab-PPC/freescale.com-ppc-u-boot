@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Freescale Semiconductor, Inc
+ * Copyright 2008,2011 Freescale Semiconductor, Inc
  * Andy Fleming
  *
  * Based vaguely on the Linux code
@@ -1082,9 +1082,17 @@ int mmc_startup(struct mmc *mmc)
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS)
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc->tran_speed = 40000000;
+#else
 			mmc->tran_speed = 50000000;
+#endif
 		else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc->tran_speed = 20000000;
+#else
 			mmc->tran_speed = 25000000;
+#endif
 	} else {
 		width = ((mmc->host_caps & MMC_MODE_MASK_WIDTH_BITS) >>
 			 MMC_MODE_WIDTH_BITS_SHIFT);
@@ -1121,10 +1129,23 @@ int mmc_startup(struct mmc *mmc)
 
 		if (mmc->card_caps & MMC_MODE_HS) {
 			if (mmc->card_caps & MMC_MODE_HS_52MHz)
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+				mmc->tran_speed = 40000000;
+#else
 				mmc->tran_speed = 52000000;
+#endif
 			else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+				mmc->tran_speed = 20000000;
+#else
 				mmc->tran_speed = 26000000;
-		}
+#endif
+		} else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc->tran_speed = 15000000;
+#else
+			mmc->tran_speed = 20000000;
+#endif
 	}
 
 	mmc_set_clock(mmc, mmc->tran_speed);
