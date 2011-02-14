@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Freescale Semiconductor, Inc
+ * Copyright 2008,2011 Freescale Semiconductor, Inc
  * Andy Fleming
  *
  * Based vaguely on the Linux code
@@ -1097,9 +1097,17 @@ int mmc_startup(struct mmc *mmc)
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS)
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc_set_clock(mmc, 40000000);
+#else
 			mmc_set_clock(mmc, 50000000);
+#endif
 		else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc_set_clock(mmc, 20000000);
+#else
 			mmc_set_clock(mmc, 25000000);
+#endif
 	} else {
 		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
 			/* Set the card to use 4 bit*/
@@ -1134,11 +1142,23 @@ int mmc_startup(struct mmc *mmc)
 
 		if (mmc->card_caps & MMC_MODE_HS) {
 			if (mmc->card_caps & MMC_MODE_HS_52MHz)
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+				mmc_set_clock(mmc, 40000000);
+#else
 				mmc_set_clock(mmc, 52000000);
+#endif
 			else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+				mmc_set_clock(mmc, 20000000);
+#else
 				mmc_set_clock(mmc, 26000000);
+#endif
 		} else
+#ifdef CONFIG_SYS_FSL_ESDHC_P1010_BROKEN_SDCLK
+			mmc_set_clock(mmc, 15000000);
+#else
 			mmc_set_clock(mmc, 20000000);
+#endif
 	}
 
 	/* fill in device description */
