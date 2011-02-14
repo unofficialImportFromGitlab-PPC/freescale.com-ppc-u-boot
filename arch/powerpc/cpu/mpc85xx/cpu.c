@@ -299,7 +299,8 @@ void mpc85xx_reginfo(void)
 
 /* Common ddr init for non-corenet fsl 85xx platforms */
 #ifndef CONFIG_FSL_CORENET
-#if defined(CONFIG_SYS_RAMBOOT) && !defined(CONFIG_SYS_INIT_L2_ADDR)
+#if (defined(CONFIG_SYS_RAMBOOT) && !defined(CONFIG_SYS_INIT_L2_ADDR)) || \
+    (defined(CONFIG_HAS_TPL) && !defined(CONFIG_IN_TPL))
 phys_size_t initdram(int board_type)
 {
 #if defined(CONFIG_SPD_EEPROM) || defined(CONFIG_DDR_SPD)

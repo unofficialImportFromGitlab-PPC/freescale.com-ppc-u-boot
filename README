@@ -2108,6 +2108,33 @@ FIT uImage format:
 		Adds the MTD partitioning infrastructure from the Linux
 		kernel. Needed for UBI support.
 
+- NAND Boot Support
+		CONFIG_NAND_U_BOOT
+
+		Builds a U-Boot image that boots from NAND, prefixed by a small
+		loader stub (secondary program loader -- SPL) that loads the
+		rest of U-Boot into RAM.  This symbol will be set in all build
+		phases.
+
+		CONFIG_NAND_SPL
+
+		This is set by the build system when compiling code to go into
+		the SPL.  It is not set when building the code that the SPL
+		loads.
+
+- TPL Boot Support
+		CONFIG_HAS_TPL
+
+		Builds a U-Boot image that contains a loader stub (tertiary
+		program loader -- TPL) that boots out of some type of RAM,
+		after being loaded by an SPL or similar platform-specific
+		mechanism.  This symbol will be set in all build phases.
+
+		CONFIG_IN_TPL
+
+		This is set by the build system when compiling code to go into
+		the TPL.  It is not set when building the code that the TPL
+		loads, or when building the SPL.
 
 Modem Support:
 --------------

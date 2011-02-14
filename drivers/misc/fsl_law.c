@@ -258,7 +258,7 @@ void init_laws(void)
 			gd->used_laws |= (1 << i);
 	}
 
-#if defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL)
+#if defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL) &&!defined(CONFIG_IN_TPL)
 	/*
 	 * in NAND boot we've already parsed the law_table and setup those LAWs
 	 * so don't do it again.

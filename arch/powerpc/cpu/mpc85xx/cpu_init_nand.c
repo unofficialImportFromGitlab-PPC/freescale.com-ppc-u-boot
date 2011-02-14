@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Freescale Semiconductor, Inc.
+ * Copyright 2009-2011 Freescale Semiconductor, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -50,7 +50,8 @@ void cpu_init_f(void)
 #endif
 #endif
 
-#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L2_ADDR)
+#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L2_ADDR) \
+	&& !defined(CONFIG_IN_TPL)
 	ccsr_l2cache_t *l2cache = (void *)CONFIG_SYS_MPC85xx_L2_ADDR;
 	char *l2srbar;
 	int i;
@@ -70,4 +71,19 @@ void cpu_init_f(void)
 	for (i = 0; i < CONFIG_SYS_L2_SIZE; i++)
 		l2srbar[i] = 0;
 #endif
+#ifdef CONFIG_IN_TPL
+	init_used_tlb_cams();
+#endif
 }
+
+#ifdef CONFIG_IN_TPL
+/*
+ * Because the primary cpu's info is enough for the 2nd stage,  we define the
+ * cpu number to 1 so as to keep code size for 2nd stage binary as small as
+ * possible.
+ */
+int cpu_numcores()
+{
+	return 1;
+}
+#endif /* CONFIG_IN_TPL */

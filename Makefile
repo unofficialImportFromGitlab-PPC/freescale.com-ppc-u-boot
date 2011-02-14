@@ -402,8 +402,19 @@ $(obj)u-boot.lds: $(LDSCRIPT)
 nand_spl:	$(TIMESTAMP_FILE) $(VERSION_FILE) $(obj)include/autoconf.mk
 		$(MAKE) -C nand_spl/board/$(BOARDDIR) all
 
+tpl:		$(TIMESTAMP_FILE) $(VERSION_FILE) depend
+		$(MAKE) -C tpl/board/$(BOARDDIR) all
+
+NAND_SPL_OBJS-y += $(obj)nand_spl/u-boot-spl-16k.bin
+NAND_SPL_OBJS-$(CONFIG_HAS_TPL) += $(obj)tpl/u-boot-tpl.bin
+NAND_SPL_OBJS-y += $(obj)u-boot.bin
+
+ifeq ($(CONFIG_HAS_TPL),y)
+$(obj)u-boot-nand.bin:	nand_spl tpl $(obj)u-boot.bin
+else
 $(obj)u-boot-nand.bin:	nand_spl $(obj)u-boot.bin
-		cat $(obj)nand_spl/u-boot-spl-16k.bin $(obj)u-boot.bin > $(obj)u-boot-nand.bin
+endif
+		cat $(NAND_SPL_OBJS-y) > $(obj)u-boot-nand.bin
 
 onenand_ipl:	$(TIMESTAMP_FILE) $(VERSION_FILE) $(obj)include/autoconf.mk
 		$(MAKE) -C onenand_ipl/board/$(BOARDDIR) all
@@ -1221,6 +1232,7 @@ clean:
 	@rm -f $(obj)lib/asm-offsets.s
 	@rm -f $(obj)nand_spl/{u-boot.lds,u-boot-spl,u-boot-spl.map,System.map}
 	@rm -f $(obj)onenand_ipl/onenand-{ipl,ipl.bin,ipl.map}
+	@rm -f $(obj)tpl/{u-boot-tpl,u-boot-tpl.map}
 	@rm -f $(ONENAND_BIN)
 	@rm -f $(obj)onenand_ipl/u-boot.lds
 	@rm -f $(TIMESTAMP_FILE) $(VERSION_FILE)
@@ -1245,6 +1257,7 @@ clobber:	clean
 	@rm -fr $(obj)include/generated
 	@[ ! -d $(obj)nand_spl ] || find $(obj)nand_spl -name "*" -type l -print | xargs rm -f
 	@[ ! -d $(obj)onenand_ipl ] || find $(obj)onenand_ipl -name "*" -type l -print | xargs rm -f
+	@[ ! -d $(obj)tpl ] || find $(obj)tpl -name "*" -type l -print | xargs rm -f
 
 ifeq ($(OBJTREE),$(SRCTREE))
 mrproper \

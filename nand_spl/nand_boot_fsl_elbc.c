@@ -4,7 +4,7 @@
  * (C) Copyright 2006-2008
  * Stefan Roese, DENX Software Engineering, sr@denx.de.
  *
- * Copyright (c) 2008 Freescale Semiconductor, Inc.
+ * Copyright (c) 2008-2011 Freescale Semiconductor, Inc.
  * Author: Scott Wood <scottwood@freescale.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -47,7 +47,11 @@ static void nand_wait(void)
 	}
 }
 
+#ifdef CONFIG_IN_TPL
+void nand_load(unsigned int offs, int uboot_size, uchar *dst)
+#else
 static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
+#endif
 {
 	fsl_lbc_t *regs = LBC_BASE_ADDR;
 	uchar *buf = (uchar *)CONFIG_SYS_NAND_BASE;

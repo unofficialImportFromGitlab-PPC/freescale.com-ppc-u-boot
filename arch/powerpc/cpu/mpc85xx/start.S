@@ -58,12 +58,12 @@
 	GOT_ENTRY(_GOT2_TABLE_)
 	GOT_ENTRY(_FIXUP_TABLE_)
 
-#ifndef CONFIG_NAND_SPL
+#if !defined(CONFIG_NAND_SPL) && !defined(CONFIG_IN_TPL)
 	GOT_ENTRY(_start)
 	GOT_ENTRY(_start_of_vectors)
 	GOT_ENTRY(_end_of_vectors)
 	GOT_ENTRY(transfer_to_handler)
-#endif
+#endif /* !CONFIG_NAND_SPL && !CONFIG_IN_TPL*/
 
 	GOT_ENTRY(__init_end)
 	GOT_ENTRY(_end)
@@ -435,7 +435,7 @@ _start_cont:
 
 	/* NOTREACHED - board_init_f() does not return */
 
-#ifndef CONFIG_NAND_SPL
+#if !defined(CONFIG_NAND_SPL) && !defined(CONFIG_IN_TPL)
 	. = EXC_OFF_SYS_RESET
 	.globl	_start_of_vectors
 _start_of_vectors:
@@ -877,7 +877,7 @@ in32:
 in32r:
 	lwbrx	r3,r0,r3
 	blr
-#endif  /* !CONFIG_NAND_SPL */
+#endif  /* !CONFIG_NAND_SPL && !CONFIG_IN_TPL */
 
 /*------------------------------------------------------------------------------*/
 
@@ -1067,7 +1067,7 @@ clear_bss:
 	mr	r4,r10		/* Destination Address		*/
 	bl	board_init_r
 
-#ifndef CONFIG_NAND_SPL
+#if !defined(CONFIG_NAND_SPL) && !defined(CONFIG_IN_TPL)
 	/*
 	 * Copy exception vector code to low memory
 	 *
@@ -1207,4 +1207,4 @@ setup_ivors:
 
 #include "fixed_ivor.S"
 	blr
-#endif /* !CONFIG_NAND_SPL */
+#endif /* !CONFIG_NAND_SPL && !CONFIG_IN_TPL */

@@ -30,6 +30,9 @@
 #include "uec.h"
 #include "uec_phy.h"
 #include "miiphy.h"
+#ifdef CONFIG_P1021MDS
+#define BCSR11_ENET_MICRST     0x20
+#endif
 
 /* Default UTBIPAR SMI address */
 #ifndef CONFIG_UTBIPAR_INIT_TBIPA
@@ -1226,6 +1229,12 @@ static int uec_init(struct eth_device* dev, bd_t *bd)
 	if (uec->the_first_run == 0) {
 #if defined(CONFIG_P1012) || defined(CONFIG_P1016) || \
     defined(CONFIG_P1021) || defined(CONFIG_P1025)
+#ifdef CONFIG_P1021MDS
+	/* P1021MDS board needs to reset micrel phy for each UEC */
+	clrbits_8((u8 *)(CONFIG_SYS_BCSR_BASE + 11), BCSR11_ENET_MICRST);
+	udelay(200);
+	setbits_8((u8 *)(CONFIG_SYS_BCSR_BASE + 11), BCSR11_ENET_MICRST);
+#endif
 	/* QE9 and QE12 need to be set for enabling QE MII managment signals */
 	setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_QE9);
 	setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_QE12);
