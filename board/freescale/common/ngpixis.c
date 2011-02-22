@@ -119,10 +119,26 @@ void __set_altbank(void)
 }
 void set_altbank(void) __attribute__((weak, alias("__set_altbank")));
 
+void pixis_sysclk_set(unsigned long sysclk)
+{
+	switch (sysclk) {
+	case 80: /* SYSCLK: 80MHz for P1022DS */
+		PIXIS_WRITE(vcfgen0, 0x01); /* set SYSCLK enable bit */
+
+		PIXIS_WRITE(sclk[0], 0x24); /* SYSCLK to 80MHz */
+		PIXIS_WRITE(sclk[1], 0x05);
+		PIXIS_WRITE(sclk[2], 0x01);
+
+		break;
+	default:
+		break;
+	}
+}
 
 int pixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	unsigned int i;
+	unsigned long sysclk;
 	char *p_altbank = NULL;
 	char *unknown_param = NULL;
 
@@ -134,6 +150,13 @@ int pixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "altbank") == 0) {
 			p_altbank = argv[i];
+			continue;
+		}
+
+		if (strcmp(argv[i], "sysclk") == 0) {
+			sysclk = simple_strtoul(argv[i + 1], NULL, 0);
+			i += 1;
+			pixis_sysclk_set(sysclk);
 			continue;
 		}
 
@@ -161,4 +184,5 @@ U_BOOT_CMD(
 	"Reset the board using the FPGA sequencer",
 	"- hard reset to default bank\n"
 	"pixis_reset altbank - reset to alternate bank\n"
+	"pixis_reset sysclk <SYSCLK_freq> - reset with SYSCLK frequency\n"
 	);
