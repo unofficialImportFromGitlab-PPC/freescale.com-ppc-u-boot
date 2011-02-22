@@ -156,9 +156,26 @@ static void pixis_dump_regs(void)
 }
 #endif
 
+void pixis_sysclk_set(unsigned long sysclk)
+{
+	switch (sysclk) {
+	case 80: /* SYSCLK: 80MHz for P1022DS */
+		PIXIS_WRITE(vcfgen0, 0x01); /* set SYSCLK enable bit */
+
+		PIXIS_WRITE(sclk[0], 0x24); /* SYSCLK to 80MHz */
+		PIXIS_WRITE(sclk[1], 0x05);
+		PIXIS_WRITE(sclk[2], 0x01);
+
+		break;
+	default:
+		break;
+	}
+}
+
 int pixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	unsigned int i;
+	unsigned long sysclk;
 	char *p_altbank = NULL;
 #ifdef DEBUG
 	char *p_dump = NULL;
@@ -182,6 +199,12 @@ int pixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			continue;
 		}
 #endif
+		if (strcmp(argv[i], "sysclk") == 0) {
+			sysclk = simple_strtoul(argv[i + 1], NULL, 0);
+			i += 1;
+			pixis_sysclk_set(sysclk);
+			continue;
+		}
 
 		unknown_param = argv[i];
 	}
@@ -219,4 +242,5 @@ U_BOOT_CMD(
 #ifdef DEBUG
 	"pixis_reset dump - display the PIXIS registers\n"
 #endif
+	"pixis_reset sysclk <SYSCLK_freq> - reset with SYSCLK frequency\n"
 	);
