@@ -102,12 +102,14 @@ int platform_diu_init(unsigned int *xres, unsigned int *yres)
 
 	monitor_port = getenv("monitor");
 	if (!strncmp(monitor_port, "1", 1)) { /* 1 - Single link LVDS */
-		*xres = 1024;
-		*yres = 768;
+		*xres = 800;
+		*yres = 600;
 		/* Enable the DFP port, disable the DVI and the backlight */
 		temp &= ~PX_BRDCFG1_DVIEN;
 		/* LVDS also needs backlight enabled, otherwise the display will be blank */
 		temp |= (PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT);
+		setenv("monitor", "1");
+		setenv("resolution", "800x600");
 		printf("DIU link to 1-LVDS\n");
 	} else {	/* DVI */
 		*xres = 1280;
@@ -115,6 +117,8 @@ int platform_diu_init(unsigned int *xres, unsigned int *yres)
 		/* Enable the DVI port, disable the DFP and the backlight */
 		temp &= ~(PX_BRDCFG1_DFPEN | PX_BRDCFG1_BACKLIGHT);
 		temp |= PX_BRDCFG1_DVIEN;
+		setenv("monitor", "0");
+		setenv("resolution", "1280x1024");
 		printf("DIU link to 0-DVI\n");
 	}
 

@@ -220,6 +220,7 @@
  * disable empty flash sector detection, which is I/O-intensive.
  */
 #undef CONFIG_SYS_FLASH_EMPTY_INFO
+#define CONFIG_SHARP_LQ084S3LG01_TFT_LCD
 #endif
 
 #ifndef CONFIG_DIU
@@ -510,9 +511,10 @@
 	"diuregs=md e002c000 1d\0"			 		\
 	"dium=mw e002c01c\0" 						\
 	"diuerr=md e002c014 1\0" 					\
-	"othbootargs=diufb=15M video=fslfb:1280x1024-32@60,monitor=0 tty0\0" \
+	"othbootargs=diufb=15M video=fslfb: $resolution -32@60,monitor=$monitor tty0\0" \
 	"hwconfig=esdhc;audclk:12\0"					\
-	"monitor=0-DVI\0"
+	"monitor=0\0"							\
+	"resolution=800x600\0"
 
 #define CONFIG_HDBOOT					\
 	"setenv bootargs root=/dev/$bdev rw "		\

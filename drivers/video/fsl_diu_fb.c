@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2010 Freescale Semiconductor, Inc.
+ * Copyright 2007, 2011 Freescale Semiconductor, Inc.
  * York Sun <yorksun@freescale.com>
  *
  * FSL DIU Framebuffer driver
@@ -51,6 +51,23 @@ struct fb_videomode {
 #define FB_SYNC_COMP_HIGH_ACT	8	/* composite sync high active   */
 #define FB_VMODE_NONINTERLACED  0	/* non interlaced */
 
+#ifdef CONFIG_SHARP_LQ084S3LG01_TFT_LCD
+static struct fb_videomode fsl_diu_mode_800 = {
+	.name		= "800x600-60",
+	.refresh	= 60,
+	.xres		= 800,
+	.yres		= 600,
+	.pixclock	= 25000,
+	.left_margin	= 88,
+	.right_margin	= 40,
+	.upper_margin	= 23,
+	.lower_margin	= 1,
+	.hsync_len	= 128,
+	.vsync_len	= 4,
+	.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+	.vmode		= FB_VMODE_NONINTERLACED
+};
+#else
 /* This setting is used for the ifm pdm360ng with PRIMEVIEW PM070WL3 */
 static struct fb_videomode fsl_diu_mode_800 = {
 	.refresh	= 60,
@@ -66,6 +83,7 @@ static struct fb_videomode fsl_diu_mode_800 = {
 	.sync		= 0,
 	.vmode		= FB_VMODE_NONINTERLACED
 };
+#endif
 
 /*
  * These parameters give default parameters
