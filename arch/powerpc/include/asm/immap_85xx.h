@@ -1987,6 +1987,8 @@ typedef struct ccsr_gur {
 #if defined(CONFIG_P1013) || defined(CONFIG_P1022)
 #define MPC85xx_PMUXCR_TDM_MASK		0x0001cc00
 #define MPC85xx_PMUXCR_TDM		0x00014800
+#define MPC85xx_PMUXCR_SPI_MASK		0x00600000
+#define MPC85xx_PMUXCR_SPI		0x00000000
 #endif
 	u32	pmuxcr2;	/* Alt. function signal multiplex control 2 */
 #if defined(CONFIG_P1013) || defined(CONFIG_P1022)

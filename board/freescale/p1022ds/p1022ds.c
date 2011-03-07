@@ -97,6 +97,8 @@ int checkboard(void)
 #define CONFIG_PIXIS_BRDCFG0_USB2		0x10
 /* Connect to TFM bus */
 #define CONFIG_PIXIS_BRDCFG1_TDM		0x0c
+/* Connect to SPI */
+#define CONFIG_PIXIS_BRDCFG0_SPI		0x80
 
 int misc_init_r(void)
 {
@@ -139,6 +141,10 @@ int misc_init_r(void)
 		clrsetbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_TDM_MASK,
 			MPC85xx_PMUXCR_TDM);
 		setbits_8(&pixis->brdcfg1, CONFIG_PIXIS_BRDCFG1_TDM);
+		/* TDM need some configration option by SPI */
+		clrsetbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_SPI_MASK,
+			MPC85xx_PMUXCR_SPI);
+		setbits_8(&pixis->brdcfg0, CONFIG_PIXIS_BRDCFG0_SPI);
 	}
 
 	/*
