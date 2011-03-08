@@ -2,7 +2,7 @@
 # (C) Copyright 2007
 # Stefan Roese, DENX Software Engineering, sr@denx.de.
 #
-# Copyright 2009-2010 Freescale Semiconductor, Inc.
+# Copyright 2009-2011 Freescale Semiconductor, Inc.
 #
 # See file CREDITS for list of people who contributed to this
 # project.
@@ -30,7 +30,7 @@ PAD_TO := 0xfff01000
 include $(TOPDIR)/config.mk
 
 LDSCRIPT= $(TOPDIR)/$(CPUDIR)/u-boot-nand_spl.lds
-LDFLAGS	= -Bstatic -T $(LDSCRIPT) -Ttext $(CONFIG_SYS_TEXT_BASE_SPL) $(PLATFORM_LDFLAGS)
+LDFLAGS	= -Bstatic -T $(nandobj)u-boot-nand_spl.lds -Ttext $(CONFIG_SYS_TEXT_BASE_SPL) $(PLATFORM_LDFLAGS)
 AFLAGS	+= -DCONFIG_NAND_SPL
 CFLAGS	+= -DCONFIG_NAND_SPL
 
@@ -55,10 +55,13 @@ $(nandobj)u-boot-spl-16k.bin: $(nandobj)u-boot-spl
 $(nandobj)u-boot-spl.bin:	$(nandobj)u-boot-spl
 	$(OBJCOPY) ${OBJCFLAGS} -O binary $< $@
 
-$(nandobj)u-boot-spl:	$(OBJS)
+$(nandobj)u-boot-spl:	$(OBJS) $(nandobj)u-boot-nand_spl.lds
 	cd $(LNDIR) && $(LD) $(LDFLAGS) $(__OBJS) $(PLATFORM_LIBS) \
 		-Map $(nandobj)u-boot-spl.map \
 		-o $(nandobj)u-boot-spl
+
+$(nandobj)u-boot-nand_spl.lds: $(LDSCRIPT)
+	$(CPP) $(CPPFLAGS) $(LDPPFLAGS) -ansi -D__ASSEMBLY__ -P - <$^ >$@
 
 # create symbolic links for common files
 
