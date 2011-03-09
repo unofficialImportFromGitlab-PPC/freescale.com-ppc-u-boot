@@ -22,7 +22,9 @@
 
 #include <common.h>
 #include <command.h>
+#include <hwconfig.h>
 #include <pci.h>
+#include <i2c.h>
 #include <asm/processor.h>
 #include <asm/mmu.h>
 #include <asm/cache.h>
@@ -50,6 +52,14 @@
 #define GPIO_SLIC_PORT		1
 #define GPIO_SLIC_PIN		30
 #define GPIO_SLIC_DATA		(1 << (31 - GPIO_SLIC_PIN))
+
+
+#ifdef CONFIG_P1025RDB
+#define PCA_IOPORT_I2C_ADDR		0x23
+#define PCA_IOPORT_OUTPUT_CMD		0x2
+#define PCA_IOPORT_CFG_CMD		0x6
+#define PCA_IOPORT_QE_PIN_ENABLE	0xf8
+#endif
 
 const qe_iop_conf_t qe_iop_conf_tab[] = {
 	/* GPIO */
@@ -303,6 +313,38 @@ int board_eth_init(bd_t *bis)
 	return pci_eth_init(bis);
 }
 
+#if defined(CONFIG_QE) && defined(CONFIG_P1025RDB)
+static void fdt_board_fixup_qe_pins(void *blob)
+{
+	unsigned int oldbus;
+	u8 val8;
+	int node;
+
+	if (hwconfig("qe")) {
+		/* For QE and eLBC pins multiplexing,
+		 * there is a PCA9555 device on P1025RDB.
+		 * It control the multiplex pins' functions,
+		 * and setting the PCA9555 can switch the
+		 * function between QE and eLBC.
+		 */
+		oldbus = i2c_get_bus_num();
+		i2c_set_bus_num(1);
+		val8 = PCA_IOPORT_QE_PIN_ENABLE;
+		i2c_write(PCA_IOPORT_I2C_ADDR, PCA_IOPORT_CFG_CMD,
+				1, &val8, 1);
+		i2c_write(PCA_IOPORT_I2C_ADDR, PCA_IOPORT_OUTPUT_CMD,
+				1, &val8, 1);
+		i2c_set_bus_num(oldbus);
+	} else {
+		node = fdt_path_offset(blob, "/qe");
+		if (node >= 0)
+			fdt_del_node(blob, node);
+	}
+
+	return;
+}
+#endif
+
 #ifdef CONFIG_OF_BOARD_SETUP
 void ft_board_setup(void *blob, bd_t *bd)
 {
@@ -321,6 +363,9 @@ void ft_board_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_QE
 	do_fixup_by_compat(blob, "fsl,qe", "status", "okay",
 			sizeof("okay"), 0);
+#ifdef CONFIG_P1025RDB
+	fdt_board_fixup_qe_pins(blob);
+#endif
 #endif
 	fdt_fixup_dr_usb(blob, bd);
 }

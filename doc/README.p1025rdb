@@ -1,0 +1,12 @@
+Overview
+--------
+P1025RDB is a Low End Dual core platform supporting the P1025E processor
+of QorIQ series. P1025E is an e500 based dual core SOC.
+
+
+Pin Multiplex(hwconfig setting)
+-------------------------------
+For QE and eLBC pins multiplexing in P1025RDB, add the environment 'qe'
+to support pin multiplex via hwconfig, i.e:
+'setenv hwconfig qe' to enable QE and disable Nor-Flash/CPLD. 
+'setenv hwconfig' to enable Nor-Flash/CPLD and disable Quicc Engine.

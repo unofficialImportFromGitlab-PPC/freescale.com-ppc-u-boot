@@ -594,8 +594,7 @@
 
 #ifdef CONFIG_P1025RDB
 /* QE microcode/firmware address */
-#define CONFIG_SYS_QE_FW_IN_NAND	0x1f00000
-#define CONFIG_SYS_QE_FW_ADDR		0x10000000
+#define CONFIG_SYS_QE_FW_ADDR		0xefec0000
 #define CONFIG_SYS_QE_FW_LENGTH		0x10000
 
 /*
@@ -603,7 +602,7 @@
  */
 #define CONFIG_MIIM_ADDRESS	(CONFIG_SYS_CCSRBAR + 0x82120)
 
-#define CONFIG_UEC_ETH
+#undef CONFIG_UEC_ETH
 #define CONFIG_PHY_MODE_NEED_CHANGE
 
 #define CONFIG_UEC_ETH1	/* ETH1 */
