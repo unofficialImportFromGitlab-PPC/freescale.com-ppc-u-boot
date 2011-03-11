@@ -243,6 +243,7 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_FLASH_AMD_CHECK_DQ7
 
 #define CONFIG_BOARD_EARLY_INIT_R	/* call board_early_init_r function */
+#define CONFIG_MISC_INIT_R
 #define CONFIG_HWCONFIG
 
 #define CONFIG_SYS_INIT_RAM_LOCK	1
@@ -599,6 +600,7 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_USB_STORAGE
+#define CONFIG_HAS_FSL_DR_USB
 #endif
 
 #if defined(CONFIG_MMC) || defined(CONFIG_USB_EHCI)

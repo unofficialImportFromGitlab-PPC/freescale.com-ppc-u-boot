@@ -150,7 +150,7 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 			for (j = 0; j < sizeof(phys); j++) {
 				if (hwconfig_subarg_cmp(str, "phy_type",
 						phys[j])) {
-					phy_idx = -1;
+					phy_idx = j;
 				break;
 				}
 			}
