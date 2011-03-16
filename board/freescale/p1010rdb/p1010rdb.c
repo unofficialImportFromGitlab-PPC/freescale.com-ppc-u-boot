@@ -107,6 +107,7 @@ void cpld_show(void)
 int board_early_init_f (void)
 {
 	ccsr_gpio_t *pgpio = (void *)(CONFIG_SYS_MPC85xx_GPIO_ADDR);
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
 #ifndef CONFIG_SDCARD
 	struct fsl_ifc *ifc = (void *)CONFIG_SYS_IFC_ADDR;
@@ -117,6 +118,11 @@ int board_early_init_f (void)
 
 	cpld_show();
 #endif
+	/*
+	 * Set LCLK to IFC_CS3 because it's causing unexpected behaviour for
+	 * NAND access if it's set to IFC_CLK
+	 */
+	setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_LCLK_IFC_CS3);
 	/*
 	* Reset PCIe slots via GPIO4
 	*/
