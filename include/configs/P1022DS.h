@@ -127,6 +127,7 @@
  * Localbus non-cacheable
  * 0xe000_0000	0xe80f_ffff	Promjet/free		128M non-cacheable
  * 0xe800_0000	0xefff_ffff	FLASH			128M non-cacheable
+ * 0xff80_0000	0xff8f_ffff	NAND			1M non-cacheable
  * 0xffdf_0000	0xffdf_7fff	PIXIS			32K non-cacheable TLB0
  * 0xffd0_0000	0xffd0_3fff	L1 for stack		16K Cacheable TLB0
  * 0xffe0_0000	0xffef_ffff	CCSR			1M non-cacheable
@@ -135,30 +136,25 @@
 /*
  * Local Bus Definitions
  */
-#define CONFIG_SYS_FLASH_BASE		0xe0000000 /* start of FLASH 128M */
+#define CONFIG_SYS_FLASH_BASE		0xe8000000 /* start of FLASH 128M */
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_FLASH_BASE_PHYS	0xfe0000000ull
+#define CONFIG_SYS_FLASH_BASE_PHYS	0xfe8000000ull
 #else
 #define CONFIG_SYS_FLASH_BASE_PHYS	CONFIG_SYS_FLASH_BASE
 #endif
 
 #define CONFIG_FLASH_BR_PRELIM  \
-	(BR_PHYS_ADDR((CONFIG_SYS_FLASH_BASE_PHYS + 0x8000000)) | BR_PS_16 | BR_V)
+	(BR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS) | BR_PS_16 | BR_V)
 #define CONFIG_FLASH_OR_PRELIM	(OR_AM_128MB | 0xff7)
 
 #define CONFIG_SYS_BR0_PRELIM	CONFIG_FLASH_BR_PRELIM  /* NOR Base Address */
 #define CONFIG_SYS_OR0_PRELIM	CONFIG_FLASH_OR_PRELIM  /* NOR Options */
 
-#define CONFIG_SYS_BR1_PRELIM	\
-	(BR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS) | BR_PS_16 | BR_V)
-#define CONFIG_SYS_OR1_PRELIM	CONFIG_FLASH_OR_PRELIM
-
-#define CONFIG_SYS_FLASH_BANKS_LIST	\
-	{CONFIG_SYS_FLASH_BASE_PHYS + 0x8000000, CONFIG_SYS_FLASH_BASE_PHYS}
+#define CONFIG_SYS_FLASH_BANKS_LIST	{CONFIG_SYS_FLASH_BASE_PHYS}
 #define CONFIG_SYS_FLASH_QUIET_TEST
 #define CONFIG_FLASH_SHOW_PROGRESS	45 /* count down from 45/5: 9..1 */
 
-#define CONFIG_SYS_MAX_FLASH_BANKS	2
+#define CONFIG_SYS_MAX_FLASH_BANKS	1
 #define CONFIG_SYS_MAX_FLASH_SECT	1024
 
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE	/* start of monitor */
@@ -166,6 +162,42 @@
 #define CONFIG_FLASH_CFI_DRIVER
 #define CONFIG_SYS_FLASH_CFI
 #define CONFIG_SYS_FLASH_EMPTY_INFO
+
+/* Nand Flash */
+#define CONFIG_NAND_FSL_ELBC
+#ifdef CONFIG_NAND_FSL_ELBC
+#define CONFIG_SYS_NAND_BASE		0xffa00000
+#ifdef CONFIG_PHYS_64BIT
+#define CONFIG_SYS_NAND_BASE_PHYS	0xfff800000ull
+#else
+#define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
+#endif
+
+#define CONFIG_SYS_NAND_BASE_LIST     { CONFIG_SYS_NAND_BASE, }
+#define CONFIG_SYS_MAX_NAND_DEVICE	1
+#define CONFIG_MTD_NAND_VERIFY_WRITE
+#define CONFIG_CMD_NAND			1
+#define CONFIG_SYS_NAND_BLOCK_SIZE    (128 * 1024)
+
+/* NAND flash config */
+#define CONFIG_NAND_BR_PRELIM  (BR_PHYS_ADDR(CONFIG_SYS_NAND_BASE_PHYS) \
+			       | (2<<BR_DECC_SHIFT)    /* Use HW ECC */ \
+			       | BR_PS_8	       /* Port Size = 8 bit */ \
+			       | BR_MS_FCM	       /* MSEL = FCM */ \
+			       | BR_V)		       /* valid */
+#define CONFIG_NAND_OR_PRELIM  (0xFFFC0000	      /* length 256K */ \
+			       | OR_FCM_PGS	       /* Large Page*/ \
+			       | OR_FCM_CSCT \
+			       | OR_FCM_CST \
+			       | OR_FCM_CHT \
+			       | OR_FCM_SCY_1 \
+			       | OR_FCM_TRLX \
+			       | OR_FCM_EHTR)
+
+#define CONFIG_SYS_BR1_PRELIM	CONFIG_NAND_BR_PRELIM	/* NAND Base Address */
+#define CONFIG_SYS_OR1_PRELIM	CONFIG_NAND_OR_PRELIM	/* NAND Options */
+
+#endif /* CONFIG_NAND_FSL_ELBC */
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_EARLY_INIT_R

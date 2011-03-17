@@ -84,7 +84,12 @@ struct fsl_e_tlb_entry tlb_table[] = {
 			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 			0, 9, BOOKE_PAGESZ_1G, 1),
 #endif
-#
+#ifdef CONFIG_SYS_NAND_BASE
+	/* *I*G - NAND */
+	SET_TLB_ENTRY(1, CONFIG_SYS_NAND_BASE, CONFIG_SYS_NAND_BASE_PHYS,
+			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+			0, 10, BOOKE_PAGESZ_1M, 1),
+#endif
 };
 
 int num_tlb_entries = ARRAY_SIZE(tlb_table);
