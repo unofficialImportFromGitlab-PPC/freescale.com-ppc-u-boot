@@ -210,6 +210,8 @@ int board_early_init_f(void)
 int checkboard(void)
 {
 	cpld_data_t *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u8 in;
 
 	printf("Board: %s ", CONFIG_BOARDNAME);
 
@@ -221,6 +223,23 @@ int checkboard(void)
 		in_8(&cpld_data->cpld_rev_major) & 0x0F,
 		in_8(&cpld_data->cpld_rev_minor) & 0x0F,
 		in_8(&cpld_data->pcba_rev) & 0x0F);
+
+	/* Initialize i2c early for rom_loc and flash bank information */
+	i2c_init (CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+
+	if (i2c_read(CONFIG_SYS_I2C_PCA9557_ADDR, 0, 1, &in, 1) < 0) {
+		printf("Error reading i2c boot information!\n");
+		return 0; /* Don't want to hang() on this error */
+	}
+
+	if (in & 0x1) {
+		setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_SD_DATA);
+		puts("SD/MMC : 8-bit Mode\n");
+		puts("eSPI : Disabled\n");
+	} else {
+		puts("SD/MMC : 4-bit Mode\n");
+		puts("eSPI : Enabled\n");
+	}
 
 	return 0;
 }

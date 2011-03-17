@@ -500,6 +500,7 @@
 #define CONFIG_SYS_I2C_NOPROBES		{{0, 0x29}}/* Don't probe these addrs */
 #define CONFIG_SYS_I2C_OFFSET		0x3000
 #define CONFIG_SYS_I2C2_OFFSET		0x3100
+#define CONFIG_SYS_SPD_BUS_NUM		1 /* For displaying rom_loc and flash bank */
 
 /*
  * I2C2 EEPROM
@@ -514,6 +515,7 @@
 
 #define CONFIG_RTC_PT7C4338
 #define CONFIG_SYS_I2C_RTC_ADDR		0x68
+#define CONFIG_SYS_I2C_PCA9557_ADDR	0x18
 
 /*
  * eSPI - Enhanced SPI
