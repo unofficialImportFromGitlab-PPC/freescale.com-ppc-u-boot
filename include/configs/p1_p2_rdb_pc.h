@@ -34,11 +34,17 @@
 #define CONFIG_BOARDNAME "P1020MBG"
 #define CONFIG_P1020
 #define CONFIG_VSC7385_ENET
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0xe4
+#define __SW_BOOT_SD		0x54
 #endif
 
 #if defined(CONFIG_P1020UTM)
 #define CONFIG_BOARDNAME "P1020UTM"
 #define CONFIG_P1020
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0xe0
+#define __SW_BOOT_SD		0x50
 #endif
 
 #if defined(CONFIG_P1020RDB)
@@ -47,6 +53,12 @@
 #define CONFIG_P1020
 #define CONFIG_SPI_FLASH
 #define CONFIG_VSC7385_ENET
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0x5c
+#define __SW_BOOT_SPI		0x1c
+#define __SW_BOOT_SD		0x9c
+#define __SW_BOOT_NAND		0xec
+#define __SW_BOOT_PCIE		0x6c
 #endif
 
 #if defined(CONFIG_P1021RDB)
@@ -56,6 +68,12 @@
 #define CONFIG_QE
 #define CONFIG_SPI_FLASH
 #define CONFIG_VSC7385_ENET
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0x5c
+#define __SW_BOOT_SPI		0x1c
+#define __SW_BOOT_SD		0x9c
+#define __SW_BOOT_NAND		0xec
+#define __SW_BOOT_PCIE		0x6c
 #endif
 
 #if defined(CONFIG_P1024RDB)
@@ -63,6 +81,11 @@
 #define CONFIG_NAND_FSL_ELBC
 #define CONFIG_P1024
 #define CONFIG_SPI_FLASH
+#define __SW_BOOT_MASK		0xf3
+#define __SW_BOOT_NOR		0x00
+#define __SW_BOOT_SPI		0x08
+#define __SW_BOOT_SD		0x04
+#define __SW_BOOT_NAND		0x0c
 #endif
 
 #if defined(CONFIG_P1025RDB)
@@ -71,6 +94,11 @@
 #define CONFIG_P1025
 #define CONFIG_QE
 #define CONFIG_SPI_FLASH
+#define __SW_BOOT_MASK		0xf3
+#define __SW_BOOT_NOR		0x00
+#define __SW_BOOT_SPI		0x08
+#define __SW_BOOT_SD		0x04
+#define __SW_BOOT_NAND		0x0c
 #endif
 
 #if defined(CONFIG_P2020RDB)
@@ -79,6 +107,12 @@
 #define CONFIG_P2020
 #define CONFIG_SPI_FLASH
 #define CONFIG_VSC7385_ENET
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0xc8
+#define __SW_BOOT_SPI		0x28
+#define __SW_BOOT_SD		0x68 /* or 0x18 */
+#define __SW_BOOT_NAND		0xe8
+#define __SW_BOOT_PCIE		0xa8
 #endif
 
 #ifdef CONFIG_SDCARD
@@ -810,6 +844,32 @@
 
 #define CONFIG_BAUDRATE	115200
 
+#ifdef __SW_BOOT_NOR
+#define __NOR_RST_CMD	\
+norboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_NOR 1; \
+i2c mw 18 3 __SW_BOOT_MASK 1; reset
+#endif
+#ifdef __SW_BOOT_SPI
+#define __SPI_RST_CMD	\
+spiboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_SPI 1; \
+i2c mw 18 3 __SW_BOOT_MASK 1; reset
+#endif
+#ifdef __SW_BOOT_SD
+#define __SD_RST_CMD	\
+sdboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_SD 1; \
+i2c mw 18 3 __SW_BOOT_MASK 1; reset
+#endif
+#ifdef __SW_BOOT_NAND
+#define __NAND_RST_CMD	\
+nandboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_NAND 1; \
+i2c mw 18 3 __SW_BOOT_MASK 1; reset
+#endif
+#ifdef __SW_BOOT_PCIE
+#define __PCIE_RST_CMD	\
+nandboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_PCIE 1; \
+i2c mw 18 3 __SW_BOOT_MASK 1; reset
+#endif
+
 #define	CONFIG_EXTRA_ENV_SETTINGS	\
  "netdev=eth0\0"	\
  "uboot=" MK_STR(CONFIG_UBOOTPATH) "\0"	\
@@ -831,7 +891,14 @@
  "norfdtaddr=ef040000\0"	\
  "jffs2nand=mtdblock9\0"	\
  "nandbootaddr=100000\0"	\
- "nandfdtaddr=80000\0"
+ "nandfdtaddr=80000\0"		\
+ "map_lowernorbank=i2c dev 1; i2c mw 18 1 02 1; i2c mw 18 3 fd 1\0" \
+ "map_uppernorbank=i2c dev 1; i2c mw 18 1 00 1; i2c mw 18 3 fd 1\0" \
+ MK_STR(__NOR_RST_CMD)"\0" \
+ MK_STR(__SPI_RST_CMD)"\0" \
+ MK_STR(__SD_RST_CMD)"\0" \
+ MK_STR(__NAND_RST_CMD)"\0" \
+ MK_STR(__PCIE_RST_CMD)"\0"
 
 #define CONFIG_NFSBOOTCOMMAND	\
  "setenv bootargs root=/dev/nfs rw "	\

@@ -211,7 +211,7 @@ int checkboard(void)
 {
 	cpld_data_t *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	u8 in;
+	u8 in, out, io_config, val;
 
 	printf("Board: %s ", CONFIG_BOARDNAME);
 
@@ -227,12 +227,40 @@ int checkboard(void)
 	/* Initialize i2c early for rom_loc and flash bank information */
 	i2c_init (CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 
-	if (i2c_read(CONFIG_SYS_I2C_PCA9557_ADDR, 0, 1, &in, 1) < 0) {
+	if (i2c_read(CONFIG_SYS_I2C_PCA9557_ADDR, 0, 1, &in, 1) < 0 ||
+	    i2c_read(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &out, 1) < 0 ||
+	    i2c_read(CONFIG_SYS_I2C_PCA9557_ADDR, 3, 1, &io_config, 1) < 0 ) {
 		printf("Error reading i2c boot information!\n");
 		return 0; /* Don't want to hang() on this error */
 	}
 
-	if (in & 0x1) {
+	val = (in & io_config) | (out & (~io_config));
+
+	puts("rom_loc: ");
+	if ((val & (~__SW_BOOT_MASK)) == __SW_BOOT_SD) {
+		puts("sd");
+#ifdef __SW_BOOT_SPI
+	} else if ((val & (~__SW_BOOT_MASK)) == __SW_BOOT_SPI) {
+		puts("spi");
+#endif
+#ifdef __SW_BOOT_NAND
+	} else if ((val & (~__SW_BOOT_MASK)) == __SW_BOOT_NAND) {
+		puts("nand");
+#endif
+#ifdef __SW_BOOT_PCIE
+	} else if ((val & (~__SW_BOOT_MASK)) == __SW_BOOT_PCIE) {
+		puts("pcie");
+#endif
+	} else {
+		if (val & 0x2) {
+			puts("nor lower bank");
+		} else {
+			puts("nor upper bank");
+		}
+	}
+	puts("\n");
+
+	if (val & 0x1) {
 		setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_SD_DATA);
 		puts("SD/MMC : 8-bit Mode\n");
 		puts("eSPI : Disabled\n");
