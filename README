@@ -2122,6 +2122,13 @@ FIT uImage format:
 		the SPL.  It is not set when building the code that the SPL
 		loads.
 
+		CONFIG_ELBC_NAND_SPL_STATIC_PGSIZE
+
+		This option will reduce the size of the NAND SPL by assuming
+		a static page size vs. dynamic detection. Is useful if you are
+		coming up against the size limitation for your particular
+		nand_spl configuration needs
+
 - TPL Boot Support
 		CONFIG_HAS_TPL
 
