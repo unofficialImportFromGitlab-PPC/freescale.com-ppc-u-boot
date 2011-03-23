@@ -190,8 +190,8 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
  * Memory map
  *
  * 0x0000_0000	0x3fff_ffff	DDR			1G cacheablen
- * 0xa000_0000	0xbfff_ffff	PCI Express Mem		1G non-cacheable
- * 0xffc2_0000	0xffc5_ffff	PCI IO range		256K non-cacheable
+ * 0x8000_0000  0xbfff_ffff	PCI Express Mem		1G non-cacheable
+ * 0xffc0_0000  0xffc3_ffff	PCI IO range		256k non-cacheable
  *
  * Localbus cacheable (TBD)
  * 0xXXXX_XXXX	0xXXXX_XXXX	SRAM			YZ M Cacheable
@@ -429,40 +429,40 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_PCIE2_NAME		"Slot 1"
 #define CONFIG_SYS_PCIE2_MEM_VIRT	0xa0000000
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_PCIE2_MEM_BUS	0xe0000000
+#define CONFIG_SYS_PCIE2_MEM_BUS	0xc0000000
 #define CONFIG_SYS_PCIE2_MEM_PHYS	0xc20000000ull
 #else
 #define CONFIG_SYS_PCIE2_MEM_BUS	0xa0000000
 #define CONFIG_SYS_PCIE2_MEM_PHYS	0xa0000000
 #endif
 #define CONFIG_SYS_PCIE2_MEM_SIZE	0x20000000	/* 512M */
-#define CONFIG_SYS_PCIE2_IO_VIRT	0xffc20000
+#define CONFIG_SYS_PCIE2_IO_VIRT	0xffc10000
 #define CONFIG_SYS_PCIE2_IO_BUS		0x00000000
 #define CONFIG_SYS_PCIE2_IO_SIZE	0x00010000	/* 64k */
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_PCIE2_IO_PHYS	0xfffc20000ull
+#define CONFIG_SYS_PCIE2_IO_PHYS	0xfffc10000ull
 #else
-#define CONFIG_SYS_PCIE2_IO_PHYS	0xffc20000
+#define CONFIG_SYS_PCIE2_IO_PHYS	0xffc10000
 #endif
 
 /* controller 1, Slot 1, tgtid 1, Base address a000 */
 #define CONFIG_SYS_PCIE1_NAME		"Slot 2"
-#define CONFIG_SYS_PCIE1_MEM_VIRT	0xc0000000
+#define CONFIG_SYS_PCIE1_MEM_VIRT	0x80000000
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_PCIE1_MEM_BUS	0xe0000000
-#define CONFIG_SYS_PCIE1_MEM_PHYS	0xc40000000ull
+#define CONFIG_SYS_PCIE1_MEM_BUS	0x80000000
+#define CONFIG_SYS_PCIE1_MEM_PHYS	0xc00000000ull
 #else
-#define CONFIG_SYS_PCIE1_MEM_BUS	0xc0000000
-#define CONFIG_SYS_PCIE1_MEM_PHYS	0xc0000000
+#define CONFIG_SYS_PCIE1_MEM_BUS	0x80000000
+#define CONFIG_SYS_PCIE1_MEM_PHYS	0x80000000
 #endif
 #define CONFIG_SYS_PCIE1_MEM_SIZE	0x20000000	/* 512M */
-#define CONFIG_SYS_PCIE1_IO_VIRT	0xffc30000
+#define CONFIG_SYS_PCIE1_IO_VIRT	0xffc00000
 #define CONFIG_SYS_PCIE1_IO_BUS		0x00000000
 #define CONFIG_SYS_PCIE1_IO_SIZE	0x00010000	/* 64k */
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_PCIE1_IO_PHYS	0xfffc20000ull
+#define CONFIG_SYS_PCIE1_IO_PHYS	0xfffc00000ull
 #else
-#define CONFIG_SYS_PCIE1_IO_PHYS	0xffc20000
+#define CONFIG_SYS_PCIE1_IO_PHYS	0xffc00000
 #endif
 
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
