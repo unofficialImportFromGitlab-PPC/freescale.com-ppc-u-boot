@@ -243,10 +243,10 @@ extern void ft_pci_board_setup(void *blob);
 void ft_board_setup(void *blob, bd_t *bd)
 {
 #if defined(CONFIG_SDCARD) || defined(CONFIG_SPIFLASH)
-	const char *soc_usb_compat = "fsl-usb2-dr";
 	const char *soc_elbc_compat = "fsl,p1020-elbc";
-	int off, err, usb1_off, usb2_off;
 #endif
+	const char *soc_usb_compat = "fsl-usb2-dr";
+	int off, err, usb1_off, usb2_off;
 	phys_addr_t base;
 	phys_size_t size;
 
@@ -281,6 +281,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 				return;
 		}
 	} else {
+#endif
 		/* Delete USB2 node as it is muxed with eLBC */
 		usb1_off = fdt_node_offset_by_compatible(blob, -1,
 			soc_usb_compat);
@@ -304,6 +305,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 				soc_usb_compat, fdt_strerror(err));
 			return;
 		}
+#if defined(CONFIG_SDCARD) || defined(CONFIG_SPIFLASH)
 	}
 #endif
 }
