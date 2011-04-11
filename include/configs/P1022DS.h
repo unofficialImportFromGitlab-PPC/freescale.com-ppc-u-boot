@@ -34,7 +34,9 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
 #endif
 
+#ifndef CONFIG_DIU
 #define CONFIG_NAND_FSL_ELBC
+#endif
 #if defined(CONFIG_NAND) && defined(CONFIG_NAND_FSL_ELBC)
 #define CONFIG_NAND_U_BOOT
 #define CONFIG_RAMBOOT_NAND
@@ -206,7 +208,7 @@
 #define CONFIG_SYS_FLASH_EMPTY_INFO
 
 /* Nand Flash */
-#ifdef CONFIG_NAND_FSL_ELBC
+#if defined(CONFIG_NAND_FSL_ELBC) && !defined(CONFIG_DIU)
 #define CONFIG_SYS_NAND_BASE		0xff800000
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_NAND_BASE_PHYS	0xfff800000ull
@@ -253,6 +255,12 @@
 #endif
 
 #endif /* CONFIG_NAND_FSL_ELBC */
+
+#ifdef CONFIG_DIU
+#define CONFIG_SYS_BR1_PRELIM \
+	(BR_PHYS_ADDR(0xe0000000) | BR_PS_16 | BR_V)
+#define CONFIG_SYS_OR1_PRELIM	(OR_AM_128MB | 0xff7)
+#endif
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_EARLY_INIT_R

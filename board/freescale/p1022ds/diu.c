@@ -19,6 +19,10 @@
 #include "../common/ngpixis.h"
 #include <fsl_diu_fb.h>
 
+#if !defined(CONFIG_SYS_BR1_PRELIM) && !defined(CONFIG_SYS_BR1_PRELIM)
+#error
+#endif
+
 /* The CTL register is called 'csr' in the ngpixis_t structure */
 #define PX_CTL_ALTACC		0x80
 
