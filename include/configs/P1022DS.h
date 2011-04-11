@@ -98,19 +98,26 @@
  * Base addresses -- Note these are effective addresses where the
  * actual resources get mapped (not physical addresses)
  */
-#define CONFIG_SYS_CCSRBAR		0xffe00000	/* relocated CCSRBAR */
-#ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_CCSRBAR_PHYS		0xfffe00000ull
-#else
-#define CONFIG_SYS_CCSRBAR_PHYS		CONFIG_SYS_CCSRBAR
-#endif
-#define CONFIG_SYS_IMMR			CONFIG_SYS_CCSRBAR
+#define CONFIG_SYS_CCSRBAR	0xffe00000	/* relocated CCSRBAR */
+#define CONFIG_SYS_CCSRBAR_DEFAULT	0xff700000	/* CCSRBAR Default */
 
-#if defined(CONFIG_RAMBOOT_NAND) && !defined(CONFIG_NAND_SPL)
-#define CONFIG_SYS_CCSRBAR_DEFAULT		CONFIG_SYS_CCSRBAR
+/* CCSRBAR PHYSICAL Address */
+/* IN case of NAND bootloader relocate CCSRBAR in RAMboot code not in the 4k
+       SPL code*/
+#if defined(CONFIG_NAND_U_BOOT) && defined(CONFIG_NAND_SPL)
+#define CONFIG_SYS_CCSRBAR_PHYS	CONFIG_SYS_CCSRBAR_DEFAULT
 #else
-#define CONFIG_SYS_CCSRBAR_DEFAULT	0xff700000      /* CCSRBAR Default */
+#ifdef CONFIG_PHYS_64BIT
+#define CONFIG_SYS_CCSRBAR_PHYS	0xfffe00000ull
+#else
+#define CONFIG_SYS_CCSRBAR_PHYS	CONFIG_SYS_CCSRBAR	/* physical addr of */
+	/* CCSRBAR */
 #endif
+#endif
+#define CONFIG_SYS_IMMR	CONFIG_SYS_CCSRBAR	/* PQII uses */
+	/* CONFIG_SYS_IMMR */
+
+
 
 /* DDR Setup */
 #define CONFIG_DDR_SPD
