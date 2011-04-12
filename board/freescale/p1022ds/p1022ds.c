@@ -38,12 +38,19 @@ int board_early_init_f(void)
 
 	/* Set pmuxcr to allow both i2c1 and i2c2 */
 	setbits_be32(&gur->pmuxcr, 0x1000);
+#ifdef CONFIG_SYS_RAMBOOT
+	setbits_be32(&gur->pmuxcr,
+		in_be32(&gur->pmuxcr) | MPC85xx_PMUXCR_SD_DATA);
+#endif
 
 	/* Read back the register to synchronize the write. */
 	in_be32(&gur->pmuxcr);
 
 	/* Set the pin muxing to enable ETSEC2. */
 	clrbits_be32(&gur->pmuxcr2, 0x001F8000);
+
+	/* Enable the SPI */
+	clrsetbits_8(&pixis->brdcfg0, PIXIS_ELBC_SPI_MASK, PIXIS_SPI);
 
 	return 0;
 }

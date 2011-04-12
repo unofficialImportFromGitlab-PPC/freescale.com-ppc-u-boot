@@ -298,6 +298,9 @@
 #define PIXIS_LBMAP_ALTBANK	0x20
 #define PIXIS_SPD		0x07
 #define PIXIS_SPD_SYSCLK_MASK	0x07
+#define PIXIS_ELBC_SPI_MASK	0xc0
+#define PIXIS_SPI		0x80
+
 
 #define CONFIG_SYS_INIT_RAM_LOCK
 #define CONFIG_SYS_INIT_RAM_ADDR	0xffd00000 /* Initial L1 address */
