@@ -25,6 +25,18 @@ struct tsec_mii_mng {
 	u32 ifstat;		/* Interface Status Register */
 } __attribute__ ((packed));
 
+struct fsl_enet_mac {
+	void *base; /* MAC controller registers base address */
+	void *phyregs;
+	int max_rx_len;
+	void (*init_mac)(struct fsl_enet_mac *mac);
+	void (*enable_mac)(struct fsl_enet_mac *mac);
+	void (*disable_mac)(struct fsl_enet_mac *mac);
+	void (*set_mac_addr)(struct fsl_enet_mac *mac, u8 *mac_addr);
+	void (*set_if_mode)(struct fsl_enet_mac *mac, phy_interface_t type,
+				int speed);
+};
+
 int fdt_fixup_phy_connection(void *blob, int offset, phy_interface_t phyc);
 
 #endif /* __ASM_PPC_FSL_ENET_H */
