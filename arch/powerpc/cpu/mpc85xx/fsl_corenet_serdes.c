@@ -729,9 +729,6 @@ void fsl_serdes_init(void)
 		}
 #endif
 
-		/* reset banks for errata */
-		setbits_be32(&srds_regs->bank[bank].rstctl, SRDS_RSTCTL_RST);
-
 		wait_for_rstdone(bank);
 	}
 
