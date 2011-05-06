@@ -461,6 +461,18 @@ int cpu_init_r(void)
 	}
 #endif
 
+	/* On P204x/P304x Rev1.0, USB transmit will result internal multi-bit ECC
+	 * errors, which has impact on performance, so software should
+	 * disable all ECC reporting from USB1 and USB2 by setting bits 16
+	 * and 17 to 1 in the register at DCSRBASE + 0x0002_0520. */
+#ifdef CONFIG_SYS_FSL_ERRATUM_USBxx
+	if (IS_SVR_REV(get_svr(), 1, 0)) {
+		void *p;
+		p = (void *)CONFIG_SYS_DCSRBAR + 0x20520;
+		setbits_be32(p, 3 << (31 - 17));
+	}
+#endif
+
 #ifdef CONFIG_FMAN_ENET
 	fman_enet_init();
 #endif
