@@ -240,6 +240,9 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_SYS_FSL_ERRATUM_A_004934
 	puts("Work-around for Erratum A004934 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_USB138
+	puts("Work-around for Erratum USB138 enabled\n");
+#endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004849
 	/* This work-around is implemented in PBI, so just check for it */
 	check_erratum_a4849(svr);
