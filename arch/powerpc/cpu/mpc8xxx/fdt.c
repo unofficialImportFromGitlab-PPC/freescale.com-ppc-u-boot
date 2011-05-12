@@ -144,24 +144,26 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 				if (hwconfig_subarg_cmp(str, "dr_mode",
 						modes[j])) {
 					mode_idx = j;
-				break;
+					break;
 				}
 			}
 			for (j = 0; j < sizeof(phys); j++) {
 				if (hwconfig_subarg_cmp(str, "phy_type",
 						phys[j])) {
 					phy_idx = j;
-				break;
+					break;
 				}
 			}
-			if ((mode_idx >= 0) || (phy_idx >= 0)) {
+			if (mode_idx >= 0)
 				fdt_fixup_usb_mode_phy_type(blob,
-					modes[mode_idx], phys[phy_idx]);
-				if (!strcmp(str, "usb1"))
-					usb1_defined = 1;
-			} else {
+					modes[mode_idx], NULL);
+			if (phy_idx >= 0)
+				fdt_fixup_usb_mode_phy_type(blob,
+					NULL, phys[phy_idx]);
+			if (!strcmp(str, "usb1"))
+				usb1_defined = 1;
+			if (mode_idx < 0 && phy_idx < 0)
 				printf("WARNING: invalid phy or mode\n");
-			}
 		} else {
 			break;
 		}
