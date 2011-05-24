@@ -87,8 +87,8 @@ fsl_ddr_cfg_regs_t ddr_cfg_regs_667 = {
 };
 
 fixed_ddr_parm_t fixed_ddr_parm_0[] = {
-	{800, 900, &ddr_cfg_regs_800},
-	{607, 700, &ddr_cfg_regs_667},
+	{750, 850, &ddr_cfg_regs_800},
+	{607, 749, &ddr_cfg_regs_667},
 	{0, 0, NULL}
 };
 
@@ -113,7 +113,6 @@ unsigned long get_sdram_size(void)
 phys_size_t fixed_sdram(void)
 {
 	int i;
-	sys_info_t sysinfo;
 	char buf[32];
 	fsl_ddr_cfg_regs_t ddr_cfg_regs;
 	phys_size_t ddr_size;
@@ -127,9 +126,8 @@ phys_size_t fixed_sdram(void)
 	ddr_freq = get_ddr_freq(0);
 	ddr_freq_mhz = ddr_freq / 1000000;
 
-	get_sys_info(&sysinfo);
 	printf("Configuring DDR for %s MT/s data rate\n",
-				strmhz(buf, ddr_freq_mhz));
+				strmhz(buf, ddr_freq));
 
 	for (i = 0; fixed_ddr_parm_0[i].max_freq > 0; i++) {
 		if ((ddr_freq_mhz > fixed_ddr_parm_0[i].min_freq) &&
@@ -142,13 +140,15 @@ phys_size_t fixed_sdram(void)
 
 	if (fixed_ddr_parm_0[i].max_freq == 0)
 		panic("Unsupported DDR data rate %s MT/s data rate\n",
-					strmhz(buf, ddr_freq_mhz));
+					strmhz(buf, ddr_freq));
 
 	cpu = gd->cpu;
 	/* P1014 and it's derivatives support max 16bit DDR width */
 	if (cpu->soc_ver == SVR_P1014 || cpu->soc_ver == SVR_P1014_E) {
 		ddr_cfg_regs.ddr_sdram_cfg |= SDRAM_CFG_16_BE;
 		ddr_cfg_regs.cs[0].bnds = CONFIG_SYS_DDR_CS0_BNDS >> 1;
+		ddr_cfg_regs.ddr_sdram_cfg &= ~0x00180000;
+		ddr_cfg_regs.ddr_sdram_cfg |= 0x001080000;
 	}
 
 	ddr_size = (phys_size_t) CONFIG_SYS_SDRAM_SIZE * 1024 * 1024;
