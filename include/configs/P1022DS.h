@@ -689,7 +689,7 @@
 	"diuerr=md e002c014 1\0" 					\
 	"othbootargs=diufb=15M video=fslfb: $resolution -32@60,monitor=$monitor tty0\0" \
 	"hwconfig=esdhc;audclk:12\0"					\
-	"monitor=0\0"							\
+	"monitor=1\0"							\
 	"resolution=800x600\0"
 
 #define CONFIG_HDBOOT					\
