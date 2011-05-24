@@ -36,8 +36,8 @@ CFLAGS	+= -DCONFIG_NAND_SPL
 
 SOBJS	= start.o resetvec.o ticks.o
 COBJS	= cache.o cpu_init_early.o cpu_init_nand.o fsl_law.o law.o \
-	  nand_boot.o nand_boot_fsl_ifc.o ns16550.o tlb.o tlb_table.o \
-	  time.o
+	  nand_boot.o nand_boot_fsl_ifc.o ns16550.o tlb.o tlb_table.o
+
 
 SRCS	:= $(addprefix $(obj),$(SOBJS:.o=.S) $(COBJS:.o=.c))
 OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
@@ -111,10 +111,6 @@ $(obj)start.S: $(obj)fixed_ivor.S
 $(obj)ticks.S:
 	@rm -f $(obj)ticks.S
 	ln -sf $(SRCTREE)/arch/powerpc/lib/ticks.S $(obj)ticks.S
-
-$(obj)time.c:
-	@rm -f $(obj)time.c
-	ln -sf $(SRCTREE)/arch/powerpc/lib/time.c $(obj)time.c
 
 $(obj)tlb.c:
 	@rm -f $(obj)tlb.c
