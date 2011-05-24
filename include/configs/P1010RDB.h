@@ -261,13 +261,54 @@ extern unsigned long get_sdram_size(void);
  * 0xffe0_0000	0xffef_ffff	CCSR			1M non-cacheable
  */
 
-#define CONFIG_SYS_NO_FLASH		/* NOR Flash support is broken  */
-/* In case of SD card boot, IFC interface is not available because of muxing
- * on P1010 */
-#ifndef CONFIG_SDCARD
+/* In case of SD card boot, IFC interface is not available because of muxing */
+#ifdef CONFIG_SDCARD
+#define CONFIG_SYS_NO_FLASH
+#else
 /*
  * IFC Definitions
  */
+/* NOR Flash on IFC */
+#define CONFIG_SYS_FLASH_BASE		0xee000000
+#define CONFIG_SYS_MAX_FLASH_SECT	256	/* 32M */
+
+#ifdef CONFIG_PHYS_64BIT
+#define CONFIG_SYS_FLASH_BASE_PHYS	(0xf00000000ull | CONFIG_SYS_FLASH_BASE)
+#else
+#define CONFIG_SYS_FLASH_BASE_PHYS	CONFIG_SYS_FLASH_BASE
+#endif
+
+#define CONFIG_SYS_NOR_CSPR	(CSPR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS) | \
+				CSPR_PORT_SIZE_16 | \
+				CSPR_MSEL_NOR | \
+				CSPR_V)
+#define CONFIG_SYS_NOR_AMASK	IFC_AMASK(32*1024*1024)
+#define CONFIG_SYS_NOR_CSOR	CSOR_NOR_ADM_SHIFT(7)
+/* NOR Flash Timing Params */
+#define CONFIG_SYS_NOR_FTIM0	FTIM0_NOR_TACSE(0x4) | \
+				FTIM0_NOR_TEADC(0x5) | \
+				FTIM0_NOR_TEAHC(0x5)
+#define CONFIG_SYS_NOR_FTIM1	FTIM1_NOR_TACO(0x1e) | \
+				FTIM1_NOR_TRAD_NOR(0x0f)
+#define CONFIG_SYS_NOR_FTIM2	FTIM2_NOR_TCS(0x4) | \
+				FTIM2_NOR_TCH(0x4) | \
+				FTIM2_NOR_TWP(0x1c)
+#define CONFIG_SYS_NOR_FTIM3	0x0
+
+#define CONFIG_SYS_FLASH_BANKS_LIST	{CONFIG_SYS_FLASH_BASE_PHYS}
+#define CONFIG_SYS_FLASH_QUIET_TEST
+#define CONFIG_FLASH_SHOW_PROGRESS	45	/* count down from 45/5: 9..1 */
+#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* number of banks */
+
+#undef CONFIG_SYS_FLASH_CHECKSUM
+#define CONFIG_SYS_FLASH_ERASE_TOUT	60000	/* Flash Erase Timeout (ms) */
+#define CONFIG_SYS_FLASH_WRITE_TOUT	500	/* Flash Write Timeout (ms) */
+
+/* CFI for NOR Flash */
+#define CONFIG_FLASH_CFI_DRIVER
+#define CONFIG_SYS_FLASH_CFI
+#define CONFIG_SYS_FLASH_EMPTY_INFO
+
 #ifndef CONFIG_NAND_SPL
 #define CONFIG_SYS_NAND_BASE		0xffa00000
 #ifdef CONFIG_PHYS_64BIT
@@ -293,6 +334,13 @@ extern unsigned long get_sdram_size(void);
 				| CSOR_NAND_PGS_512	/* Page Size = 512b */ \
 				| CSOR_NAND_SPRZ_16	/* Spare size = 16 */ \
 				| CSOR_NAND_PB(32))	/* Pages Per Block = 32 */
+
+#define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
+#define CONFIG_SYS_MAX_NAND_DEVICE	1
+#define CONFIG_MTD_NAND_VERIFY_WRITE
+#define CONFIG_CMD_NAND
+#define CONFIG_SYS_NAND_BLOCK_SIZE	(16 * 1024)
+
 /* NAND Flash Timing Params */
 #define CONFIG_SYS_NAND_FTIM0 		FTIM0_NAND_TCCST(0x01) | \
 					FTIM0_NAND_TWP(0x0C)   | \
@@ -310,6 +358,7 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_NAND_DDR_LAW		11
 
 /* Set up IFC registers from boot location NOR/NAND */
+#ifdef CONFIG_NAND_U_BOOT
 #define CONFIG_SYS_CSPR0		CONFIG_SYS_NAND_CSPR
 #define CONFIG_SYS_AMASK0		CONFIG_SYS_NAND_AMASK
 #define CONFIG_SYS_CSOR0		CONFIG_SYS_NAND_CSOR
@@ -317,12 +366,29 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_CS0_FTIM1		CONFIG_SYS_NAND_FTIM1
 #define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NAND_FTIM2
 #define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NAND_FTIM3
-
-#define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
-#define CONFIG_SYS_MAX_NAND_DEVICE	1
-#define CONFIG_MTD_NAND_VERIFY_WRITE
-#define CONFIG_CMD_NAND
-#define CONFIG_SYS_NAND_BLOCK_SIZE	(16 * 1024)
+#define CONFIG_SYS_CSPR1		CONFIG_SYS_NOR_CSPR
+#define CONFIG_SYS_AMASK1		CONFIG_SYS_NOR_AMASK
+#define CONFIG_SYS_CSOR1		CONFIG_SYS_NOR_CSOR
+#define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_NOR_FTIM0
+#define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_NOR_FTIM1
+#define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_NOR_FTIM2
+#define CONFIG_SYS_CS1_FTIM3		CONFIG_SYS_NOR_FTIM3
+#else
+#define CONFIG_SYS_CSPR0		CONFIG_SYS_NOR_CSPR
+#define CONFIG_SYS_AMASK0		CONFIG_SYS_NOR_AMASK
+#define CONFIG_SYS_CSOR0		CONFIG_SYS_NOR_CSOR
+#define CONFIG_SYS_CS0_FTIM0		CONFIG_SYS_NOR_FTIM0
+#define CONFIG_SYS_CS0_FTIM1		CONFIG_SYS_NOR_FTIM1
+#define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NOR_FTIM2
+#define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NOR_FTIM3
+#define CONFIG_SYS_CSPR1		CONFIG_SYS_NAND_CSPR
+#define CONFIG_SYS_AMASK1		CONFIG_SYS_NAND_AMASK
+#define CONFIG_SYS_CSOR1		CONFIG_SYS_NAND_CSOR
+#define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_NAND_FTIM0
+#define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_NAND_FTIM1
+#define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_NAND_FTIM2
+#define CONFIG_SYS_CS1_FTIM3		CONFIG_SYS_NAND_FTIM3
+#endif
 
 /* NAND boot: 8K NAND loader config */
 #define CONFIG_SYS_NAND_SPL_SIZE	0x2000
@@ -366,6 +432,7 @@ extern unsigned long get_sdram_size(void);
 #endif
 
 #define CONFIG_BOARD_EARLY_INIT_F	/* Call board_pre_init */
+#define CONFIG_BOARD_EARLY_INIT_R
 
 #define CONFIG_SYS_INIT_RAM_LOCK
 #define CONFIG_SYS_INIT_RAM_ADDR	0xffd00000	/* stack in RAM */
@@ -559,6 +626,15 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_MONITOR_BASE - 0x1000)
 #define CONFIG_ENV_SIZE			0x2000
 #endif
+#else
+#define CONFIG_ENV_IS_IN_FLASH
+#if CONFIG_SYS_MONITOR_BASE > 0xfff80000
+#define CONFIG_ENV_ADDR	0xfff80000
+#else
+#define CONFIG_ENV_ADDR	(CONFIG_SYS_MONITOR_BASE - CONFIG_ENV_SECT_SIZE)
+#endif
+#define CONFIG_ENV_SIZE		0x2000
+#define CONFIG_ENV_SECT_SIZE	0x20000 /* 128K (one sector) */
 #endif
 
 #define CONFIG_LOADS_ECHO			/* echo on for serial download */

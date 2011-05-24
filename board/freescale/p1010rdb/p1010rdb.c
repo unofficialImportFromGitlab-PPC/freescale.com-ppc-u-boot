@@ -125,6 +125,35 @@ int board_early_init_f (void)
 
 	return 0;
 }
+int board_early_init_r(void)
+{
+#ifndef CONFIG_SDCARD
+	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
+	const u8 flash_esel = find_tlb_idx((void *)flashbase, 1);
+
+	/*
+	 * Remap Boot flash region to caching-inhibited
+	 * so that flash can be erased properly.
+	 */
+
+	/* Flush d-cache and invalidate i-cache of any FLASH data */
+	flush_dcache();
+	invalidate_icache();
+
+	/* invalidate existing TLB entry for flash */
+	disable_tlb(flash_esel);
+
+	set_tlb(1, flashbase, CONFIG_SYS_FLASH_BASE_PHYS,
+			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+			0, flash_esel, BOOKE_PAGESZ_16M, 1);
+
+	set_tlb(1, flashbase + 0x1000000,
+			CONFIG_SYS_FLASH_BASE_PHYS + 0x1000000,
+			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+			0, flash_esel+1, BOOKE_PAGESZ_16M, 1);
+#endif
+	return 0;
+}
 
 #ifdef CONFIG_PCI
 void pci_init_board(void)
