@@ -51,7 +51,7 @@
 #ifdef CONFIG_NAND	/* NAND Boot */
 #define CONFIG_RAMBOOT_NAND
 #define CONFIG_NAND_U_BOOT
-#define CONFIG_SYS_TEXT_BASE_SPL	0xfff00000
+#define CONFIG_SYS_TEXT_BASE_SPL	0xff800000
 #ifdef CONFIG_NAND_SPL
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE_SPL
 #else
@@ -255,7 +255,7 @@ extern unsigned long get_sdram_size(void);
  * 0xffc0_0000  0xffc3_ffff	PCI IO range		256k non-cacheable
  *
  * Localbus non-cacheable
- * 0xffa0_0000	0xffaf_ffff	NAND Flash		1M non-cacheable
+ * 0xff80_0000	0xff8f_ffff	NAND Flash		1M non-cacheable
  * 0xffb0_0000	0xffbf_ffff	Board CPLD		1M non-cacheable
  * 0xffd0_0000	0xffd0_3fff	L1 for stack		16K Cacheable TLB0
  * 0xffe0_0000	0xffef_ffff	CCSR			1M non-cacheable
@@ -309,21 +309,12 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_FLASH_CFI
 #define CONFIG_SYS_FLASH_EMPTY_INFO
 
-#ifndef CONFIG_NAND_SPL
-#define CONFIG_SYS_NAND_BASE		0xffa00000
+#define CONFIG_SYS_NAND_BASE		0xff800000
 #ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_NAND_BASE_PHYS	0xfffa00000ull
+#define CONFIG_SYS_NAND_BASE_PHYS	0xfff800000ull
 #else
 #define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
 #endif
-#else
-#define CONFIG_SYS_NAND_BASE		0xfff00000
-#ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_NAND_BASE_PHYS	0xffff00000ull
-#else
-#define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
-#endif
-#endif /* CONFIG_NAND_SPL */
 
 #define CONFIG_SYS_NAND_CSPR	(CSPR_PHYS_ADDR(CONFIG_SYS_NAND_BASE_PHYS) \
 				| CSPR_PORT_SIZE_8	/* Port Size = 8 bit */ \

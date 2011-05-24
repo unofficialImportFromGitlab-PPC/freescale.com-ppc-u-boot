@@ -24,8 +24,8 @@
 #
 
 NAND_SPL := y
-CONFIG_SYS_TEXT_BASE_SPL := 0xfff00000
-PAD_TO := 0xfff02000
+CONFIG_SYS_TEXT_BASE_SPL := 0xff800000
+PAD_TO := 0xff802000
 
 include $(TOPDIR)/config.mk
 
