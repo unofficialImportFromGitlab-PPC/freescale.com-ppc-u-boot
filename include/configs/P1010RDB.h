@@ -174,6 +174,10 @@
 
 /* DDR Setup */
 #define CONFIG_FSL_DDR3
+#define CONFIG_DDR_RAW_TIMING
+#define CONFIG_DDR_SPD
+#define CONFIG_SYS_SPD_BUS_NUM		1
+#define SPD_EEPROM_ADDRESS		0x52
 
 #define CONFIG_MEM_INIT_VALUE		0xDeadBeef
 
@@ -481,13 +485,12 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_I2C2_OFFSET		0x3100
 
 /* I2C EEPROM */
-#define CONFIG_ID_EEPROM
-#ifdef CONFIG_ID_EEPROM
-#define CONFIG_SYS_I2C_EEPROM_NXID
-#endif
-#define CONFIG_SYS_I2C_EEPROM_ADDR	0x52
-#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	1
-#define CONFIG_SYS_EEPROM_BUS_NUM	1
+#undef CONFIG_ID_EEPROM
+/* enable read and write access to EEPROM */
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SYS_I2C_MULTI_EEPROMS
+#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN 1
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS 3
 
 /* RTC */
 #define CONFIG_RTC_PT7C4338
