@@ -59,6 +59,7 @@
 #define PCA_IOPORT_OUTPUT_CMD		0x2
 #define PCA_IOPORT_CFG_CMD		0x6
 #define PCA_IOPORT_QE_PIN_ENABLE	0xf8
+#define PCA_IOPORT_QE_TDM_ENABLE	0xf6
 #endif
 
 const qe_iop_conf_t qe_iop_conf_tab[] = {
@@ -366,6 +367,7 @@ static void fdt_board_fixup_qe_pins(void *blob)
 	unsigned int oldbus;
 	u8 val8;
 	int node;
+	fsl_lbc_t *lbc = LBC_BASE_ADDR;
 
 	if (hwconfig("qe")) {
 		/* For QE and eLBC pins multiplexing,
@@ -375,13 +377,21 @@ static void fdt_board_fixup_qe_pins(void *blob)
 		 * function between QE and eLBC.
 		 */
 		oldbus = i2c_get_bus_num();
-		i2c_set_bus_num(1);
-		val8 = PCA_IOPORT_QE_PIN_ENABLE;
+		i2c_set_bus_num(0);
+		if (hwconfig("tdm"))
+			val8 = PCA_IOPORT_QE_TDM_ENABLE;
+		else
+			val8 = PCA_IOPORT_QE_PIN_ENABLE;
 		i2c_write(PCA_IOPORT_I2C_ADDR, PCA_IOPORT_CFG_CMD,
 				1, &val8, 1);
 		i2c_write(PCA_IOPORT_I2C_ADDR, PCA_IOPORT_OUTPUT_CMD,
 				1, &val8, 1);
 		i2c_set_bus_num(oldbus);
+		/* if run QE TDM, Set ABSWP to implement
+		 * conversion of addresses in the eLBC.
+		 */
+		if (hwconfig("tdm"))
+			setbits_be32(&lbc->lbcr, CONFIG_SYS_LBC_LBCR);
 	} else {
 		node = fdt_path_offset(blob, "/qe");
 		if (node >= 0)
