@@ -84,5 +84,7 @@ extern unsigned int get_memory_clk_period_ps(void);
 extern unsigned int picos_to_mclk(unsigned int picos);
 
 /* board specific function */
-int fsl_ddr_get_dimm_params(dimm_params_t *pdimm, unsigned int dimm_number);
+int fsl_ddr_get_dimm_params(dimm_params_t *pdimm,
+			unsigned int controller_number,
+			unsigned int dimm_number);
 #endif

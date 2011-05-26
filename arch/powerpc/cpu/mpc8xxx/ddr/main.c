@@ -371,7 +371,7 @@ fsl_ddr_compute(fsl_ddr_info_t *pinfo, unsigned int start_step,
 			for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
 				dimm_params_t *pdimm =
 					&(pinfo->dimm_params[i][j]);
-				fsl_ddr_get_dimm_params(pdimm, i);
+				fsl_ddr_get_dimm_params(pdimm, i, j);
 			}
 		}
 		debug("Filling dimm parameters from board specific file\n");
