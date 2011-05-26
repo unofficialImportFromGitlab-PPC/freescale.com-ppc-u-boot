@@ -190,13 +190,17 @@ dimm_params_t ddr_raw_timing = {
 #error Missing raw timing data for this board
 #endif
 
-int fsl_ddr_get_dimm_params(dimm_params_t *pdimm, unsigned int dimm_number)
+int fsl_ddr_get_dimm_params(dimm_params_t *pdimm,
+		unsigned int controller_number,
+		unsigned int dimm_number)
 {
 	const char dimm_model[] = "Fixed DDR on board";
 
-	memcpy(pdimm, &ddr_raw_timing, sizeof(dimm_params_t));
-	memset(pdimm->mpart, 0, sizeof(pdimm->mpart));
-	memcpy(pdimm->mpart, dimm_model, sizeof(dimm_model) - 1);
+	if ((controller_number == 0) && (dimm_number == 0)) {
+		memcpy(pdimm, &ddr_raw_timing, sizeof(dimm_params_t));
+		memset(pdimm->mpart, 0, sizeof(pdimm->mpart));
+		memcpy(pdimm->mpart, dimm_model, sizeof(dimm_model) - 1);
+	}
 
 	return 0;
 }
