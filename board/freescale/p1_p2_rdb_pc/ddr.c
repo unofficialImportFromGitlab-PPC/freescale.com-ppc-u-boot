@@ -275,6 +275,8 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->wrlvl_override = 1;
 	popts->wrlvl_sample = 0xf;
 	popts->wrlvl_start = 0x8;
+	popts->trwt_override = 1;
+	popts->trwt = 0;
 
 	if (pdimm->primary_sdram_width == 64)
 		popts->data_bus_width = 0;
