@@ -233,6 +233,8 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->wrlvl_override = 1;
 	popts->wrlvl_sample = 0xf;
 	popts->wrlvl_start = 0x8;
+	popts->trwt_override = 1;
+	popts->trwt = 0;
 
 	cpu = gd->cpu;
 	/* P1014 and it's derivatives support max 16it DDR width */
