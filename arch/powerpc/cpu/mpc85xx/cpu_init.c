@@ -220,6 +220,13 @@ void cpu_init_f (void)
 	disable_tlb(14);
 	disable_tlb(15);
 
+#ifdef CONFIG_SYS_ESBC_FLASH
+	/* Disable the LAW created for NOR flash by the PBI commands */
+	struct law_entry law = find_law(CONFIG_SYS_PBI_FLASH_BASE);
+	if (law.index != -1)
+		disable_law(law.index);
+#endif
+
 #ifdef CONFIG_CPM2
 	config_8560_ioports((ccsr_cpm_t *)CONFIG_SYS_MPC85xx_CPM_ADDR);
 #endif

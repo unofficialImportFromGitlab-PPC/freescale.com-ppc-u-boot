@@ -602,4 +602,8 @@
 
 #define CONFIG_BOOTCOMMAND		CONFIG_HDBOOT
 
+#ifdef CONFIG_SECURE_BOOT
+#include <asm/fsl_secure_boot.h>
+#endif
+
 #endif	/* __CONFIG_H */

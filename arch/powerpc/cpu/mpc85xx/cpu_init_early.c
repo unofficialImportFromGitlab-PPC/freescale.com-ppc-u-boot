@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Freescale Semiconductor, Inc
+ * Copyright 2009-2011 Freescale Semiconductor, Inc
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -108,5 +108,13 @@ void cpu_init_early_f(void)
 
 	init_laws();
 	invalidate_tlb(0);
+
+#if defined(CONFIG_SECURE_BOOT)
+/* Disable the TLBs created by ISBC */
+	for (i = CONFIG_SYS_ISBC_START_TLB;
+	     i < CONFIG_SYS_ISBC_START_TLB + CONFIG_SYS_ISBC_NUM_TLBS; i++)
+			disable_tlb(i);
+#endif
+
 	init_tlbs();
 }
