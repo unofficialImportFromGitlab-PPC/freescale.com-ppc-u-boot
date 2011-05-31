@@ -68,6 +68,8 @@
 #define CONFIG_QE
 #define CONFIG_SPI_FLASH
 #define CONFIG_VSC7385_ENET
+#define CONFIG_SYS_LBC_LBCR	0x00080000	/* Implement conversion of
+						addresses in the LBC */
 #define __SW_BOOT_MASK		0x03
 #define __SW_BOOT_NOR		0x5c
 #define __SW_BOOT_SPI		0x1c
@@ -476,8 +478,6 @@
 #define CONFIG_SYS_OR1_PRELIM	CONFIG_NAND_OR_PRELIM	/* NAND Options */
 #endif
 #endif
-#define CONFIG_SYS_BR2_PRELIM	CONFIG_PMC_BR_PRELIM	/* PMC Base Address */
-#define CONFIG_SYS_OR2_PRELIM	CONFIG_PMC_OR_PRELIM	/* PMC Options */
 #define CONFIG_SYS_BR3_PRELIM	CONFIG_CPLD_BR_PRELIM	/* CPLD Base Address */
 #define CONFIG_SYS_OR3_PRELIM	CONFIG_CPLD_OR_PRELIM	/* CPLD Options */
 
@@ -695,11 +695,13 @@
 #define CONFIG_HAS_ETH2
 #endif /* CONFIG_TSEC_ENET */
 
-#ifdef CONFIG_P1025RDB
+#ifdef CONFIG_QE
 /* QE microcode/firmware address */
 #define CONFIG_SYS_QE_FW_ADDR		0xefec0000
 #define CONFIG_SYS_QE_FW_LENGTH		0x10000
+#endif /* CONFIG_QE */
 
+#ifdef CONFIG_P1025RDB
 /*
  * QE UEC ethernet configuration
  */

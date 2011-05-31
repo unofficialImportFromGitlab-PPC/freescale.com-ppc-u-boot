@@ -33,6 +33,7 @@
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/io.h>
 #include <asm/fsl_law.h>
+#include <asm/fsl_lbc.h>
 #include <asm/mp.h>
 #include <miiphy.h>
 #include <libfdt.h>
@@ -54,7 +55,7 @@
 #define GPIO_SLIC_DATA		(1 << (31 - GPIO_SLIC_PIN))
 
 
-#ifdef CONFIG_P1025RDB
+#if defined(CONFIG_P1025RDB) || defined(CONFIG_P1021RDB)
 #define PCA_IOPORT_I2C_ADDR		0x23
 #define PCA_IOPORT_OUTPUT_CMD		0x2
 #define PCA_IOPORT_CFG_CMD		0x6
@@ -361,7 +362,8 @@ int board_eth_init(bd_t *bis)
 	return pci_eth_init(bis);
 }
 
-#if defined(CONFIG_QE) && defined(CONFIG_P1025RDB)
+#if defined(CONFIG_QE) && \
+	(defined(CONFIG_P1025RDB) || defined(CONFIG_P1021RDB))
 static void fdt_board_fixup_qe_pins(void *blob)
 {
 	unsigned int oldbus;
@@ -390,8 +392,11 @@ static void fdt_board_fixup_qe_pins(void *blob)
 		/* if run QE TDM, Set ABSWP to implement
 		 * conversion of addresses in the eLBC.
 		 */
-		if (hwconfig("tdm"))
+		if (hwconfig("tdm")) {
+			set_lbc_or(2, CONFIG_PMC_OR_PRELIM);
+			set_lbc_br(2, CONFIG_PMC_BR_PRELIM);
 			setbits_be32(&lbc->lbcr, CONFIG_SYS_LBC_LBCR);
+		}
 	} else {
 		node = fdt_path_offset(blob, "/qe");
 		if (node >= 0)
@@ -420,7 +425,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_QE
 	do_fixup_by_compat(blob, "fsl,qe", "status", "okay",
 			sizeof("okay"), 0);
-#ifdef CONFIG_P1025RDB
+#if defined(CONFIG_P1025RDB) || defined(CONFIG_P1021RDB)
 	fdt_board_fixup_qe_pins(blob);
 #endif
 #endif
