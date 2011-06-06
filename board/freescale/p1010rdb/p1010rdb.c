@@ -270,6 +270,8 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	fdt_fixup_memory(blob, (u64)base, (u64)size);
 
+	fdt_fixup_dr_usb(blob, bd);
+
        /* P1014 and it's derivatives don't support CAN and eTSEC3 */
 	if (cpu->soc_ver == SVR_P1014 || cpu->soc_ver == SVR_P1014_E) {
 		fdt_del_flexcan(blob);
