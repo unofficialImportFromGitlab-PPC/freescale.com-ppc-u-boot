@@ -741,8 +741,7 @@ extern unsigned long get_sdram_size(void);
 	"fdtaddr=c00000\0"				\
 	"fdtfile=p1010rdb.dtb\0"		\
 	"bdev=sda1\0"	\
-	"usb_phy_type=utmi\0"		\
-	"usb_dr_mode=host\0"		\
+	"hwconfig=usb1:dr_mode=host,phy_type=utmi\0"	\
 	"othbootargs=ramdisk_size=600000\0" \
 	"usbfatboot=setenv bootargs root=/dev/ram rw "	\
 	"console=$consoledev,$baudrate $othbootargs; "	\

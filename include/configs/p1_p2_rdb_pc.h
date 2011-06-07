@@ -907,6 +907,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
 	"cp.b $loadaddr " MK_STR(CONFIG_SYS_TEXT_BASE) " $filesize; "	\
 	"protect on " MK_STR(CONFIG_SYS_TEXT_BASE) " +$filesize; "	\
 	"cmp.b $loadaddr " MK_STR(CONFIG_SYS_TEXT_BASE) " $filesize\0"	\
+	"hwconfig=usb1:dr_mode=host,phy_type=ulpi\0"    \
  "consoledev=ttyS0\0"	\
  "ramdiskaddr=2000000\0"	\
  "ramdiskfile=rootfs.ext2.gz.uboot\0"	\
