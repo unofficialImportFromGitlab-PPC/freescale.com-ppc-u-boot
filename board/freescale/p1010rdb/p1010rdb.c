@@ -281,7 +281,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 		fdt_del_tdm(blob);
 		fdt_del_spi_slic(blob);
 	}
-#ifdef CONFIG_NAND_U_BOOT
+#if defined(CONFIG_NAND_U_BOOT) || defined(CONFIG_NAND_SECBOOT)
 	else if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
 		printf("fdt TDM");
 		fdt_del_flexcan(blob);
@@ -305,7 +305,7 @@ int misc_init_r(void)
 				MPC85xx_PMUXCR_CAN2_UART);
 		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_CAN_UART);
 	}
-#ifdef CONFIG_NAND_U_BOOT
+#if defined(CONFIG_NAND_U_BOOT) || defined(CONFIG_NAND_SECBOOT)
 		if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
 			printf("TDM");
 		clrbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_UART |
