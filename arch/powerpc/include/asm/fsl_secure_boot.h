@@ -24,13 +24,20 @@
 #define __FSL_SECURE_BOOT_H
 
 /* Starting TLB number for the TLB entried for 3.5 G space created by ISBC */
+#if defined(CONFIG_FSL_CORENET)
 #define CONFIG_SYS_ISBC_START_TLB		3
+#else
+#define CONFIG_SYS_ISBC_START_TLB		0
+#endif
 
 /* Number fo TLB's created by ISBC */
 #define CONFIG_SYS_ISBC_NUM_TLBS		5
 
-/* Address map where flash lies as done by PBI commands */
+#if defined(CONFIG_FSL_CORENET)
 #define CONFIG_SYS_PBI_FLASH_BASE		0xc0000000
+#else
+#define CONFIG_SYS_PBI_FLASH_BASE		0xce000000
+#endif
 #define CONFIG_SYS_PBI_FLASH_WINDOW		0xcff80000
 
 /* esbc_validate command in secure_boot would use sha-256 algorithm */
@@ -49,6 +56,12 @@
 
 #define CONFIG_CMD_ESBC_VALIDATE
 
+#if defined(CONFIG_FSL_CORENET)
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xe8e00000
+#else
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xee020000
+#endif
+
 /*
  * Control should not reach back to uboot after validation of images
  * for secure boot flow and therefore bootscript should have
@@ -57,20 +70,30 @@
  */
 #ifdef CONFIG_BOOTSCRIPT_KEY_HASH
 #define CONFIG_SECBOOT \
-	"setenv bs_hdraddr 0xe8e00000;"			\
+	"setenv bs_hdraddr " MK_STR(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	   \
 	"esbc_validate $bs_hdraddr "  MK_STR(CONFIG_BOOTSCRIPT_KEY_HASH)";" \
 	"source $img_addr;"					\
 	"esbc_halt;"
 #else
 #define CONFIG_SECBOOT \
-	"setenv bs_hdraddr 0xe8e00000;"			\
+	"setenv bs_hdraddr " MK_STR(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	 \
+	"echo $bs_hdraddr;"				\
 	"esbc_validate $bs_hdraddr;"			\
 	"source $img_addr;"				\
 	"esbc_halt;"
 #endif
 
 /* For secure boot flow, default environment used will be used */
+#if defined(CONFIG_SYS_RAMBOOT)
+#if defined(CONFIG_RAMBOOT_SPIFLASH)
+#undef CONFIG_ENV_IS_IN_SPI_FLASH
+#elif defined(CONFIG_NAND)
+#undef CONFIG_ENV_IS_IN_NAND
+#endif
+#else /*CONFIG_SYS_RAMBOOT*/
 #undef CONFIG_ENV_IS_IN_FLASH
+#endif
+
 #define CONFIG_ENV_IS_NOWHERE
 
 /*
