@@ -23,12 +23,6 @@
 #ifndef __FSL_SECURE_BOOT_H
 #define __FSL_SECURE_BOOT_H
 
-/*
- * This define indicates that u-boot is executing from flash
- * after ISBC Validation
- */
-#define CONFIG_SYS_ESBC_FLASH
-
 /* Starting TLB number for the TLB entried for 3.5 G space created by ISBC */
 #define CONFIG_SYS_ISBC_START_TLB		3
 

@@ -88,10 +88,10 @@
 
 _start_e500:
 
-#ifdef CONFIG_SECURE_BOOT
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC)
 	/* ISBC uses L2 as stack.
-	Disable L2 cache here so that u-boot can enable it later
-	as part of it's normal flow
+	 * Disable L2 cache here so that u-boot can enable it later
+	 * as part of it's normal flow
 	*/
 
 	/* Check if L2 is enabled */
@@ -348,7 +348,7 @@ l2_disabled:
 	/* The 85xx has the default boot window 0xff800000 - 0xffffffff */
 	lis     r9,FSL_BOOKE_MAS3(0xffc00000, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@h
 	ori     r9,r9,FSL_BOOKE_MAS3(0xffc00000, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@l
-#elif defined(CONFIG_SECURE_BOOT)
+#elif !defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SECURE_BOOT)
 	/* create a temp mapping in AS = 1 for Flash mapping
 	 * created by PBL for ISBC code
 	*/
@@ -358,8 +358,10 @@ l2_disabled:
 	lis     r8,FSL_BOOKE_MAS2(CONFIG_SYS_MONITOR_BASE, (MAS2_I|MAS2_G))@h
 	ori     r8,r8,FSL_BOOKE_MAS2(CONFIG_SYS_MONITOR_BASE, (MAS2_I|MAS2_G))@l
 
-	lis     r9,FSL_BOOKE_MAS3(CONFIG_SYS_PBI_FLASH_WINDOW, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@h
-	ori     r9,r9,FSL_BOOKE_MAS3(CONFIG_SYS_PBI_FLASH_WINDOW, 0, (MAS3_SX|MAS3_SW|MAS3_SR))@l
+	lis     r9,FSL_BOOKE_MAS3(CONFIG_SYS_PBI_FLASH_WINDOW, 0,
+						(MAS3_SX|MAS3_SW|MAS3_SR))@h
+	ori     r9,r9,FSL_BOOKE_MAS3(CONFIG_SYS_PBI_FLASH_WINDOW, 0,
+						(MAS3_SX|MAS3_SW|MAS3_SR))@l
 #else
 	/*
 	 * create a temp mapping in AS=1 to the 1M CONFIG_SYS_MONITOR_BASE space, the main

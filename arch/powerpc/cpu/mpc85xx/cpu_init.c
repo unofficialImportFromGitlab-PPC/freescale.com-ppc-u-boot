@@ -203,6 +203,9 @@ static void corenet_tb_init(void)
 void cpu_init_f (void)
 {
 	extern void m8560_cpm_reset (void);
+#if defined(CONFIG_SECURE_BOOT)
+	struct law_entry law;
+#endif
 #ifdef CONFIG_MPC8548
 	ccsr_local_ecm_t *ecm = (void *)(CONFIG_SYS_MPC85xx_ECM_ADDR);
 	uint svr = get_svr();
@@ -220,9 +223,9 @@ void cpu_init_f (void)
 	disable_tlb(14);
 	disable_tlb(15);
 
-#ifdef CONFIG_SYS_ESBC_FLASH
+#if defined(CONFIG_SECURE_BOOT)
 	/* Disable the LAW created for NOR flash by the PBI commands */
-	struct law_entry law = find_law(CONFIG_SYS_PBI_FLASH_BASE);
+	law = find_law(CONFIG_SYS_PBI_FLASH_BASE);
 	if (law.index != -1)
 		disable_law(law.index);
 #endif
