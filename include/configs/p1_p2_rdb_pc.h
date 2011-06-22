@@ -892,7 +892,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
 #endif
 #ifdef __SW_BOOT_PCIE
 #define __PCIE_RST_CMD	\
-nandboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_PCIE 1; \
+pciboot=i2c dev 1; i2c mw 18 1 __SW_BOOT_PCIE 1; \
 i2c mw 18 3 __SW_BOOT_MASK 1; reset
 #endif
 
