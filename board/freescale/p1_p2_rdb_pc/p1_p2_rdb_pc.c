@@ -176,9 +176,10 @@ void board_gpio_init(void)
 	 * GPIO13  SLIC Reset
 	 */
 
+	setbits_be32(&pgpio->gpdir, 0x02130000);
 #ifndef CONFIG_SYS_RAMBOOT
 	/* init DDR3 reset signal */
-	setbits_be32(&pgpio->gpdir, 0x023f0000);
+	setbits_be32(&pgpio->gpdir, 0x00200000);
 	setbits_be32(&pgpio->gpodr, 0x00200000);
 	clrbits_be32(&pgpio->gpdat, 0x00200000);
 	udelay(1000);
@@ -187,8 +188,17 @@ void board_gpio_init(void)
 	clrbits_be32(&pgpio->gpdir, 0x00200000);
 #endif
 
-	/* reset switch and SLIC */
-	setbits_be32(&pgpio->gpdat, 0x000c0000);
+#ifdef CONFIG_VSC7385_ENET
+	/* reset VSC7385 Switch */
+	setbits_be32(&pgpio->gpdir, 0x00080000);
+	setbits_be32(&pgpio->gpdat, 0x00080000);
+#endif
+
+#ifdef CONFIG_SLIC
+	/* reset SLIC */
+	setbits_be32(&pgpio->gpdir, 0x00040000);
+	setbits_be32(&pgpio->gpdat, 0x00040000);
+#endif
 #endif
 }
 
