@@ -21,6 +21,7 @@
 #include <asm/processor.h>
 #include <asm/mmu.h>
 #include <asm/fsl_law.h>
+#include <asm/io.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -29,7 +30,7 @@ DECLARE_GLOBAL_DATA_PTR;
 static void setup_ccsrbar(void)
 {
 	u32 temp;
-	volatile u32 *ccsr_virt = (volatile u32 *)(CONFIG_SYS_CCSRBAR + 0x1000);
+	u32 *ccsr_virt = (u32 *)(CONFIG_SYS_CCSRBAR + 0x100000);
 	volatile ccsr_local_t *ccm;
 
 	/*
@@ -60,7 +61,7 @@ static void setup_ccsrbar(void)
 static void setup_ccsrbar(void)
 {
 	u32 temp;
-	volatile u32 *ccsr_virt = (volatile u32 *)(CONFIG_SYS_CCSRBAR + 0x1000);
+	u32 *ccsr_virt = (u32 *)(CONFIG_SYS_CCSRBAR + 0x100000);
 
 	temp = in_be32(ccsr_virt);
 	out_be32(ccsr_virt, CONFIG_SYS_CCSRBAR_PHYS >> 12);
@@ -85,8 +86,8 @@ void cpu_init_early_f(void)
 	for (i = 0; i < sizeof(gd_t); i++)
 		((char *)gd)[i] = 0;
 
-	mas0 = MAS0_TLBSEL(0) | MAS0_ESEL(0);
-	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_4K);
+	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
+	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_1M);
 	mas2 = FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR, MAS2_I|MAS2_G);
 	mas3 = FSL_BOOKE_MAS3(CONFIG_SYS_CCSRBAR_PHYS, 0, MAS3_SW|MAS3_SR);
 	mas7 = FSL_BOOKE_MAS7(CONFIG_SYS_CCSRBAR_PHYS);
@@ -95,9 +96,9 @@ void cpu_init_early_f(void)
 
 	/* set up CCSR if we want it moved */
 #if (CONFIG_SYS_CCSRBAR_DEFAULT != CONFIG_SYS_CCSRBAR_PHYS)
-	mas0 = MAS0_TLBSEL(0) | MAS0_ESEL(1);
-	/* mas1 is the same as above */
-	mas2 = FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR + 0x1000, MAS2_I|MAS2_G);
+	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(12);
+	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_4K);
+	mas2 = FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR + 0x100000, MAS2_I|MAS2_G);
 	mas3 = FSL_BOOKE_MAS3(CONFIG_SYS_CCSRBAR_DEFAULT, 0, MAS3_SW|MAS3_SR);
 	mas7 = FSL_BOOKE_MAS7(CONFIG_SYS_CCSRBAR_DEFAULT);
 
@@ -107,7 +108,7 @@ void cpu_init_early_f(void)
 #endif
 
 	init_laws();
-	invalidate_tlb(0);
+	invalidate_tlb(1);
 
 #if defined(CONFIG_SECURE_BOOT)
 	/* Disable the TLBs created by ISBC */
