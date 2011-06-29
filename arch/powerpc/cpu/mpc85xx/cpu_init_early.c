@@ -75,6 +75,9 @@ void cpu_init_early_f(void)
 {
 	u32 mas0, mas1, mas2, mas3, mas7;
 	int i;
+#ifdef CONFIG_SYS_FSL_ERRATUM_P1010_A003549
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+#endif
 
 	/* Pointer is writable since we allocated a register for it */
 	gd = (gd_t *) (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_GBL_DATA_OFFSET);
@@ -105,6 +108,15 @@ void cpu_init_early_f(void)
 	write_tlb(mas0, mas1, mas2, mas3, mas7);
 
 	setup_ccsrbar();
+#endif
+
+/*
+ * Work Around for IFC Erratum A-003549. This issue is P1010
+ * specific. LCLK(a free running clk signal) is muxed with IFC_CS3 on P1010 SOC
+ * Hence specifically selecting CS3.
+ */
+#ifdef CONFIG_SYS_FSL_ERRATUM_P1010_A003549
+	setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_LCLK_IFC_CS3);
 #endif
 
 	init_laws();
