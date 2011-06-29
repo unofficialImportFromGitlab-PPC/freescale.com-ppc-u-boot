@@ -42,7 +42,6 @@ int ehci_hcd_init(void)
 	struct usb_ehci *ehci;
 	char usb_phy[5];
 	const char *phy_type = NULL;
-	int err = -1;
 	size_t len;
 
 	usb_phy[0] = '\0';
@@ -70,7 +69,7 @@ int ehci_hcd_init(void)
 		phy_type = usb_phy;
 #else
 		printf("WARNING: USB phy type not defined !!\n");
-		return err;
+		return -1;
 #endif
 		}
 	if (!strcmp(phy_type, "utmi")) {
