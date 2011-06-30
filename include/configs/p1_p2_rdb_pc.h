@@ -923,6 +923,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
  "jffs2nand=mtdblock9\0"	\
  "nandbootaddr=100000\0"	\
  "nandfdtaddr=80000\0"		\
+ "ramdisk_size=120000\0"	\
  "map_lowernorbank=i2c dev 1; i2c mw 18 1 02 1; i2c mw 18 3 fd 1\0" \
  "map_uppernorbank=i2c dev 1; i2c mw 18 1 00 1; i2c mw 18 3 fd 1\0" \
  MK_STR(__NOR_RST_CMD)"\0" \
@@ -951,7 +952,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
 #define CONFIG_USB_FAT_BOOT	\
  "setenv bootargs root=/dev/ram rw "	\
  "console=$consoledev,$baudrate $othbootargs " \
- "ramdisk_size=120000;"	\
+ "ramdisk_size=$ramdisk_size;"	\
  "usb start;"	\
  "fatload usb 0:2 $loadaddr $bootfile;"	\
  "fatload usb 0:2 $fdtaddr $fdtfile;"	\
@@ -961,7 +962,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
 #define CONFIG_USB_EXT2_BOOT	\
  "setenv bootargs root=/dev/ram rw "	\
  "console=$consoledev,$baudrate $othbootargs " \
- "ramdisk_size=120000;"	\
+ "ramdisk_size=$ramdisk_size;"	\
  "usb start;"	\
  "ext2load usb 0:4 $loadaddr $bootfile;"	\
  "ext2load usb 0:4 $fdtaddr $fdtfile;" \
@@ -976,7 +977,7 @@ i2c mw 18 3 __SW_BOOT_MASK 1; reset
 #define CONFIG_RAMBOOTCOMMAND	\
  "setenv bootargs root=/dev/ram rw "	\
  "console=$consoledev,$baudrate $othbootargs " \
- "ramdisk_size=120000;"	\
+ "ramdisk_size=$ramdisk_size;"	\
  "tftp $ramdiskaddr $ramdiskfile;"	\
  "tftp $loadaddr $bootfile;"	\
  "tftp $fdtaddr $fdtfile;"	\
