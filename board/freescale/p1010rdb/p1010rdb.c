@@ -113,9 +113,6 @@ int board_early_init_f (void)
 
 	/* Clock configuration to access CPLD using IFC(GPCM) */
 	setbits_be32(&ifc->ifc_gcr, 1 << IFC_GCR_TBCTL_TRN_TIME_SHIFT);
-	setbits_be32(&ifc->ifc_ccr, IFC_CCR_CLK_DIV(15) | IFC_CCR_INV_CLK_EN);
-
-	cpld_show();
 #endif
 	/*
 	* Reset PCIe slots via GPIO4
