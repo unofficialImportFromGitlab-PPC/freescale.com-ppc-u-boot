@@ -25,12 +25,20 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+/*
+ * We need a dummy virtual address to access the first 4k of CCSRBAR at.  This
+ * virtual address is while we are in AS=1 address space and should not conflict
+ * with CONFIG_SYS_INIT_RAM_ADDR, CONFIG_SYS_CCSRBAR or CONFIG_SYS_MONITOR_BASE.
+ * We use 0x1000 to make sure NULL access still cause some fault error
+ */
+#define CCSRBAR_VIRT_DUMMY	(0x1000)
+
 #if (CONFIG_SYS_CCSRBAR_DEFAULT != CONFIG_SYS_CCSRBAR_PHYS)
 #ifdef CONFIG_FSL_CORENET
 static void setup_ccsrbar(void)
 {
 	u32 temp;
-	u32 *ccsr_virt = (u32 *)(CONFIG_SYS_CCSRBAR + 0x100000);
+	u32 *ccsr_virt = (u32 *)(CCSRBAR_VIRT_DUMMY);
 	volatile ccsr_local_t *ccm;
 
 	/*
@@ -61,7 +69,7 @@ static void setup_ccsrbar(void)
 static void setup_ccsrbar(void)
 {
 	u32 temp;
-	u32 *ccsr_virt = (u32 *)(CONFIG_SYS_CCSRBAR + 0x100000);
+	u32 *ccsr_virt = (u32 *)(CCSRBAR_VIRT_DUMMY);
 
 	temp = in_be32(ccsr_virt);
 	out_be32(ccsr_virt, CONFIG_SYS_CCSRBAR_PHYS >> 12);
@@ -142,7 +150,7 @@ void cpu_init_early_f(void)
 #if (CONFIG_SYS_CCSRBAR_DEFAULT != CONFIG_SYS_CCSRBAR_PHYS)
 	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(12);
 	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_4K);
-	mas2 = FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR + 0x100000, MAS2_I|MAS2_G);
+	mas2 = FSL_BOOKE_MAS2(CCSRBAR_VIRT_DUMMY, MAS2_I|MAS2_G);
 	mas3 = FSL_BOOKE_MAS3(CONFIG_SYS_CCSRBAR_DEFAULT, 0, MAS3_SW|MAS3_SR);
 	mas7 = FSL_BOOKE_MAS7(CONFIG_SYS_CCSRBAR_DEFAULT);
 
