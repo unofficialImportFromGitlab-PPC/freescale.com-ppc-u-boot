@@ -332,7 +332,10 @@ extern unsigned long get_sdram_size(void);
 				| CSPR_MSEL_NAND	/* MSEL = NAND */ \
 				| CSPR_V)
 #define CONFIG_SYS_NAND_AMASK	IFC_AMASK(64*1024)
-#define CONFIG_SYS_NAND_CSOR	(CSOR_NAND_RAL_2	/* RAL = 2Byes */ \
+#define CONFIG_SYS_NAND_CSOR	(CSOR_NAND_ECC_ENC_EN	/* ECC on encode */ \
+				| CSOR_NAND_ECC_DEC_EN	/* ECC on decode */ \
+				| CSOR_NAND_ECC_MODE_4	/* 4-bit ECC */ \
+				| CSOR_NAND_RAL_2	/* RAL = 2Byes */ \
 				| CSOR_NAND_PGS_512	/* Page Size = 512b */ \
 				| CSOR_NAND_SPRZ_16	/* Spare size = 16 */ \
 				| CSOR_NAND_PB(32))	/* Pages Per Block = 32 */
@@ -394,7 +397,7 @@ extern unsigned long get_sdram_size(void);
 
 /* NAND boot: 8K NAND loader config */
 #define CONFIG_SYS_NAND_SPL_SIZE	0x2000
-#define CONFIG_SYS_NAND_U_BOOT_SIZE	((512 << 10) + CONFIG_SYS_NAND_SPL_SIZE)
+#define CONFIG_SYS_NAND_U_BOOT_SIZE	(512 << 10)
 #define CONFIG_SYS_NAND_U_BOOT_DST	(0x11000000 - CONFIG_SYS_NAND_SPL_SIZE)
 #define CONFIG_SYS_NAND_U_BOOT_START	0x11000000
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	(0)
@@ -622,7 +625,7 @@ extern unsigned long get_sdram_size(void);
 #elif defined(CONFIG_NAND_U_BOOT)
 #define CONFIG_ENV_IS_IN_NAND
 #define CONFIG_ENV_SIZE		CONFIG_SYS_NAND_BLOCK_SIZE
-#define CONFIG_ENV_OFFSET	((512 * 1024) + CONFIG_SYS_NAND_BLOCK_SIZE)
+#define CONFIG_ENV_OFFSET	CONFIG_SYS_NAND_U_BOOT_SIZE
 #define CONFIG_ENV_RANGE	(3 * CONFIG_ENV_SIZE)
 #else
 #define CONFIG_ENV_IS_NOWHERE		/* Store ENV in memory only */
