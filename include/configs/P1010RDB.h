@@ -595,6 +595,9 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_FSL_ESDHC_ADDR	CONFIG_SYS_MPC85xx_ESDHC_ADDR
 #endif
 
+#define CONFIG_HAS_FSL_DR_USB
+
+#if defined(CONFIG_HAS_FSL_DR_USB)
 #define CONFIG_USB_EHCI
 
 #ifdef CONFIG_USB_EHCI
@@ -602,7 +605,7 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_USB_STORAGE
-#define CONFIG_HAS_FSL_DR_USB
+#endif
 #endif
 
 /*
