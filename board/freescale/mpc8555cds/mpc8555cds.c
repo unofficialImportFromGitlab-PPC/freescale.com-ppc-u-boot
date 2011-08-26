@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Freescale Semiconductor.
+ * Copyright 2004, 2011 Freescale Semiconductor.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -220,8 +220,8 @@ int checkboard (void)
 
 	printf("PCI1: %d bit, %s MHz, %s\n",
 		(pci1_32) ? 32 : 64,
-		(pci1_speed == 33000000) ? "33" :
-		(pci1_speed == 66000000) ? "66" : "unknown",
+		(pci1_speed == 33333333) ? "33" :
+		(pci1_speed == 66666666) ? "66" : "unknown",
 		pci1_clk_sel ? "sync" : "async");
 
 	if (pci_dual) {

@@ -238,8 +238,8 @@ void pci_init_board(void)
 		pci_agent = fsl_setup_hose(&pci1_hose, pci_info.regs);
 		printf("PCI1: %d bit, %s MHz, %s, %s, %s (base address %lx)\n",
 			(pci_32) ? 32 : 64,
-			(pci_speed == 33333000) ? "33" :
-			(pci_speed == 66666000) ? "66" : "unknown",
+			(pci_speed == 33333333) ? "33" :
+			(pci_speed == 66666666) ? "66" : "unknown",
 			pci_clk_sel ? "sync" : "async",
 			pci_agent ? "agent" : "host",
 			pci_arb ? "arbiter" : "external-arbiter",
