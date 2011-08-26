@@ -33,6 +33,8 @@
 #include <miiphy.h>
 #include <libfdt.h>
 #include <fdt_support.h>
+#include <tsec.h>
+#include <netdev.h>
 
 #include "../common/cadmus.h"
 #include "../common/eeprom.h"
@@ -287,7 +289,7 @@ void pci_init_board(void)
 	fsl_pcie_init_board(first_free_busno);
 }
 
-int last_stage_init(void)
+void configure_rgmii(void)
 {
 	unsigned short temp;
 
@@ -315,9 +317,50 @@ int last_stage_init(void)
 				TSEC1_PHY_ADDR, 30, 0x8000);
 	}
 
-	return 0;
+	return;
 }
 
+#ifdef CONFIG_TSEC_ENET
+int board_eth_init(bd_t *bis)
+{
+	struct tsec_info_struct tsec_info[4];
+	int num = 0;
+
+#ifdef CONFIG_TSEC1
+	SET_STD_TSEC_INFO(tsec_info[num], 1);
+	num++;
+#endif
+#ifdef CONFIG_TSEC2
+	SET_STD_TSEC_INFO(tsec_info[num], 2);
+	num++;
+#endif
+#ifdef CONFIG_TSEC3
+	/* initialize TSEC3 only if Carrier is 1.3 or above on CDS */
+	if (get_board_version() >= 0x13) {
+		SET_STD_TSEC_INFO(tsec_info[num], 3);
+		num++;
+	}
+#endif
+#ifdef CONFIG_TSEC4
+	/* initialize TSEC4 only if Carrier is 1.3 or above on CDS */
+	if (get_board_version() >= 0x13) {
+		SET_STD_TSEC_INFO(tsec_info[num], 4);
+		num++;
+	}
+#endif
+
+	if (!num) {
+		printf("No TSECs initialized\n");
+
+		return 0;
+	}
+
+	tsec_eth_init(bis, tsec_info, num);
+	configure_rgmii();
+
+	return pci_eth_init(bis);
+}
+#endif
 
 #if defined(CONFIG_OF_BOARD_SETUP)
 void ft_pci_setup(void *blob, bd_t *bd)
