@@ -53,6 +53,9 @@ int checkboard (void)
 	uint cpu_board_rev = get_cpu_board_revision ();
 
 	puts ("Board: MPC8548CDS");
+#ifdef CONFIG_PHYS_64BIT
+	puts ("(36-bit addrmap)");
+#endif
 	printf (" Carrier Rev: 0x%02x, PCI Slot %d\n",
 			get_board_version(), pci_slot);
 	printf ("       Daughtercard Rev: %d.%d (0x%04x)\n",
