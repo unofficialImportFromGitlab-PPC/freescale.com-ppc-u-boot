@@ -425,6 +425,9 @@ int cpu_init_r(void)
 	clrsetbits_be32(&lbc->lcrr, LCRR_CLKDIV, CONFIG_SYS_LBC_LCRR);
 	__raw_readl(&lbc->lcrr);
 	isync();
+#ifdef CONFIG_SYS_FSL_ERRATUM_NMG_LBC103
+	udelay(100);
+#endif
 #endif
 
 	return 0;
