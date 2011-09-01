@@ -31,13 +31,14 @@
  * LAW(Local Access Window) configuration:
  *
  * 0x0000_0000     0x7fff_ffff     DDR                     2G
- * 0x8000_0000     0x9fff_ffff     PCI1 MEM                512M
+ * 0x8000_0000     0x8fff_ffff     PCI1 MEM                256M
+ * 0x9000_0000     0x9fff_ffff     PCI2 MEM                256M
  * 0xa000_0000     0xbfff_ffff     PCIe MEM                512M
  * 0xc000_0000     0xdfff_ffff     RapidIO                 512M
- * 0xe000_0000     0xe000_ffff     CCSR                    1M
- * 0xe200_0000     0xe10f_ffff     PCI1 IO                 1M
- * 0xe280_0000     0xe20f_ffff     PCI2 IO                 1M
- * 0xe300_0000     0xe30f_ffff     PCIe IO                 1M
+ * 0xe000_0000     0xe00f_ffff     CCSR                    1M
+ * 0xe200_0000     0xe27f_ffff     PCI1 IO                 8M
+ * 0xe280_0000     0xe2ff_ffff     PCI2 IO                 8M
+ * 0xe300_0000     0xe3ff_ffff     PCIe IO                 16M
  * 0xf000_0000     0xf3ff_ffff     SDRAM                   64M
  * 0xf800_0000     0xf80f_ffff     NVRAM/CADMUS (*)        1M
  * 0xff00_0000     0xff7f_ffff     FLASH (2nd bank)        8M
@@ -52,11 +53,11 @@
 
 struct law_entry law_table[] = {
 #ifdef CONFIG_SYS_PCI2_MEM_PHYS
-	SET_LAW(CONFIG_SYS_PCI2_MEM_PHYS, LAW_SIZE_512M, LAW_TRGT_IF_PCI_2),
-	SET_LAW(CONFIG_SYS_PCI2_IO_PHYS, LAW_SIZE_1M, LAW_TRGT_IF_PCI_2),
+	SET_LAW(CONFIG_SYS_PCI2_MEM_PHYS, LAW_SIZE_256M, LAW_TRGT_IF_PCI_2),
+	SET_LAW(CONFIG_SYS_PCI2_IO_PHYS, LAW_SIZE_8M, LAW_TRGT_IF_PCI_2),
 #endif
-	/* LBC window - maps 256M 0xf0000000 -> 0xffffffff */
-	SET_LAW(CONFIG_SYS_LBC_SDRAM_BASE, LAW_SIZE_256M, LAW_TRGT_IF_LBC),
+	/* LBC window - maps 256M */
+	SET_LAW(CONFIG_SYS_LBC_SDRAM_BASE_PHYS, LAW_SIZE_256M, LAW_TRGT_IF_LBC),
 };
 
 int num_law_entries = ARRAY_SIZE(law_table);

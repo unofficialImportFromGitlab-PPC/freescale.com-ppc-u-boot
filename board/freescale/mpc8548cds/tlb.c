@@ -41,63 +41,66 @@ struct fsl_e_tlb_entry tlb_table[] = {
 		      MAS3_SX|MAS3_SW|MAS3_SR, 0,
 		      0, 0, BOOKE_PAGESZ_4K, 0),
 
+	/* TLB 1 */
 	/*
-	 * TLB 0:	16M	Non-cacheable, guarded
-	 * 0xff000000	16M	FLASH
-	 * Out of reset this entry is only 4K.
+	 * Entry 0:	16M	Non-cacheable, guarded
+	 * 0xff00_0000	16M	FLASH(cover boot page)
 	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_BOOT_BLOCK, CONFIG_SYS_BOOT_BLOCK,
+	SET_TLB_ENTRY(1, CONFIG_SYS_FLASH_BASE, CONFIG_SYS_FLASH_BASE_PHYS,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 		      0, 0, BOOKE_PAGESZ_16M, 1),
 
 	/*
-	 * TLB 1:	1G	Non-cacheable, guarded
-	 * 0x80000000	1G	PCI1/PCIE  8,9,a,b
-	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_PCI_VIRT, CONFIG_SYS_PCI_PHYS,
-		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-		      0, 1, BOOKE_PAGESZ_1G, 1),
-
-	/*
-	 * TLB 2:	256M	Non-cacheable, guarded
-	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_SRIO1_MEM_VIRT, CONFIG_SYS_SRIO1_MEM_PHYS,
-		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-		      0, 2, BOOKE_PAGESZ_256M, 1),
-
-	/*
-	 * TLB 3:	256M	Non-cacheable, guarded
-	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_SRIO1_MEM_VIRT + 0x10000000, CONFIG_SYS_SRIO1_MEM_PHYS + 0x10000000,
-		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-		      0, 3, BOOKE_PAGESZ_256M, 1),
-
-	/*
-	 * TLB 5:	64M	Non-cacheable, guarded
+	 * Entry 1:	1M	Non-cacheable, guarded
 	 * 0xe000_0000	1M	CCSRBAR
-	 * 0xe200_0000	1M	PCI1 IO
-	 * 0xe210_0000	1M	PCI2 IO
-	 * 0xe300_0000	1M	PCIe IO
 	 */
 	SET_TLB_ENTRY(1, CONFIG_SYS_CCSRBAR, CONFIG_SYS_CCSRBAR_PHYS,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-		      0, 5, BOOKE_PAGESZ_64M, 1),
+		      0, 1, BOOKE_PAGESZ_1M, 1),
 
 	/*
-	 * TLB 6:	64M	Cacheable, non-guarded
+	 * Entry 2:	64M	Cacheable, non-guarded
 	 * 0xf000_0000	64M	LBC SDRAM
 	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_LBC_CACHE_BASE, CONFIG_SYS_LBC_CACHE_BASE,
+	SET_TLB_ENTRY(1, CONFIG_SYS_LBC_SDRAM_BASE,
+		      CONFIG_SYS_LBC_SDRAM_BASE_PHYS,
 		      MAS3_SX|MAS3_SW|MAS3_SR, 0,
-		      0, 6, BOOKE_PAGESZ_64M, 1),
+		      0, 2, BOOKE_PAGESZ_64M, 1),
 
 	/*
-	 * TLB 7:	64M	Non-cacheable, guarded
-	 * 0xf8000000	64M	CADMUS registers, relocated L2SRAM
+	 * Entry 3:	1M	Non-cacheable, guarded
+	 * 0xf800_0000	1M	CADMUS registers
 	 */
-	SET_TLB_ENTRY(1, CONFIG_SYS_LBC_NONCACHE_BASE, CONFIG_SYS_LBC_NONCACHE_BASE,
+	SET_TLB_ENTRY(1, CADMUS_BASE_ADDR, CADMUS_BASE_ADDR_PHYS,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-		      0, 7, BOOKE_PAGESZ_64M, 1),
+		      0, 3, BOOKE_PAGESZ_1M, 1),
+
+	/*
+	 * Entry 4:	1G	Non-cacheable, guarded
+	 * 0x8000_0000	256G	PCI1 MEM
+	 * 0x9000_0000	256M	PCI2 MEM
+	 * 0xa000_0000	512M	PCIe MEM
+	 */
+	SET_TLB_ENTRY(1, CONFIG_SYS_PCI1_MEM_VIRT, CONFIG_SYS_PCI1_MEM_PHYS,
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 4, BOOKE_PAGESZ_1G, 1),
+
+	/*
+	 * Entry 5:	32M	Non-cacheable, guarded
+	 * 0xe200_0000	8M	PCI1 IO
+	 * 0xe280_0000	8M	PCI2 IO
+	 */
+	SET_TLB_ENTRY(1, CONFIG_SYS_PCI1_IO_VIRT, CONFIG_SYS_PCI1_IO_PHYS,
+		      MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 5, BOOKE_PAGESZ_16M, 1),
+
+	/*
+	 * Entry 6:	32M	Non-cacheable, guarded
+	 * 0xe300_0000	16M	PCIe IO
+	 */
+	SET_TLB_ENTRY(1, CONFIG_SYS_PCIE1_IO_VIRT, CONFIG_SYS_PCIE1_IO_PHYS,
+		      MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 6, BOOKE_PAGESZ_16M, 1),
 };
 
 int num_tlb_entries = ARRAY_SIZE(tlb_table);
