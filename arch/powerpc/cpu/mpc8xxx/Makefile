@@ -1,5 +1,5 @@
 #
-# Copyright 2009-2010 Freescale Semiconductor, Inc.
+# Copyright 2009-2010, 2012 Freescale Semiconductor, Inc.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@ COBJS-$(CONFIG_OF_LIBFDT) += fdt.o
 COBJS-$(CONFIG_FSL_IFC) += fsl_ifc.o
 COBJS-$(CONFIG_FSL_LBC) += fsl_lbc.o
 COBJS-$(CONFIG_SYS_SRIO) += srio.o
+COBJS-$(CONFIG_FSL_CORENET) += fsl_pamu.o pamu_table.o
 
 SRCS	:= $(START:.o=.S) $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
 OBJS	:= $(addprefix $(obj),$(SOBJS-y) $(COBJS-y))

@@ -1,7 +1,7 @@
 /*
  * MPC85xx Internal Memory Map
  *
- * Copyright 2007-2011 Freescale Semiconductor, Inc.
+ * Copyright 2007-2012 Freescale Semiconductor, Inc.
  *
  * Copyright(c) 2002,2003 Motorola Inc.
  * Xianghua Xiao (x.xiao@motorola.com)
@@ -2317,6 +2317,21 @@ typedef struct ccsr_pme {
 	u8	res4[0x400];
 } ccsr_pme_t;
 
+typedef struct ccsr_pamu {
+	u32 ppbah;
+	u32 ppbal;
+	u32 pplah;
+	u32 pplal;
+	u32 spbah;
+	u32 spbal;
+	u32 splah;
+	u32 splal;
+	u32 obah;
+	u32 obal;
+	u32 olah;
+	u32 olal;
+} ccsr_pamu_t;
+
 typedef struct ccsr_usb_phy {
 	u8	res0[0x18];
 	u32	usb_enable_override;
@@ -2433,6 +2448,7 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_FSL_FM2_RX3_1G_OFFSET	0x58b000
 #define CONFIG_SYS_FSL_FM2_RX4_1G_OFFSET	0x58c000
 #define CONFIG_SYS_FSL_FM2_RX0_10G_OFFSET	0x590000
+#define CONFIG_SYS_FSL_PAMU1_OFFSET		0x21000
 #else
 #define CONFIG_SYS_MPC85xx_ECM_OFFSET		0x0000
 #define CONFIG_SYS_MPC85xx_DDR_OFFSET		0x2000
@@ -2553,6 +2569,8 @@ typedef struct ccsr_snvs_regs {
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_FM1_DTSEC1_OFFSET)
 #define CONFIG_SYS_FSL_FM2_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_FM2_OFFSET)
+#define CONFIG_SYS_PAMU_ADDR \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_PAMU1_OFFSET)
 
 #define CONFIG_SYS_PCI1_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_PCI1_OFFSET)
