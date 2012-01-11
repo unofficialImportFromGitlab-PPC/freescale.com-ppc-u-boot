@@ -1,0 +1,20 @@
+Overview
+--------
+The B4860QDS is a Freescale reference board that hosts the B4860 SoC (and variants).
+
+Memory map
+----------
+The addresses in brackets are physical addresses.
+
+0x0_0000_0000 (0x0_0000_0000) - 0x0_7fff_ffff   2GB DDR (more than 2GB is initialized but not mapped under with TLB)
+0x0_8000_0000 (0xc_0000_0000) - 0x0_8fff_ffff 512MB PCIE memory
+0x0_f000_0000 (0xf_0000_0000) - 0x0_f03f_ffff  4MB  DCSR
+0x0_f400_0000 (0xf_f400_0000) - 0x0_f5ff_ffff  32MB BMan
+0x0_f600_0000 (0xf_f500_0000) - 0x0_f7ff_ffff  32MB QMan
+0x0_f800_0000 (0xf_f800_0000) - 0x0_f800_ffff  64KB PCIE IO
+0x0_e000_0000 (0xf_e000_0000) - 0x0_efff_ffff 256MB NOR flash
+0x0_fe00_0000 (0xf_fe00_0000) - 0x0_feff_ffff  16MB CCSR
+0x0_ffdf_0000 (0xf_ffdf_0000) - 0x0_ffdf_03ff   4KB QIXIS
+0x0_ffff_f000 (0x0_7fff_fff0) - 0x0_ffff_ffff   4KB Boot page translation for secondary cores
+
+The physical address of the last (boot page translation) varies with the actual DDR size.
