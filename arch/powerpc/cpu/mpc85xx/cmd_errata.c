@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 Freescale Semiconductor, Inc.
+ * Copyright 2010-2012 Freescale Semiconductor, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -242,6 +242,9 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_USB138
 	puts("Work-around for Erratum USB138 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
+	puts("Work-around for Erratum ELBC MULTIBIT ECC enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004849
 	/* This work-around is implemented in PBI, so just check for it */
