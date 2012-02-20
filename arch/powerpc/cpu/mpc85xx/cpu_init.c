@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2011 Freescale Semiconductor, Inc.
+ * Copyright 2007-2012 Freescale Semiconductor, Inc.
  *
  * (C) Copyright 2003 Motorola Inc.
  * Modified by Xianghua Xiao, X.Xiao@motorola.com
@@ -594,6 +594,16 @@ skip_l2:
 		p = (void *)CONFIG_SYS_DCSRBAR + 0x20520;
 		setbits_be32(p, 3 << (31 - 17));
 	}
+#endif
+#ifdef CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
+	/*
+	 * On P3041/P3060/P5020, NAND operations will result internal multi-bit
+	 * ECC error, which causes call trace in kernel, so software should
+	 * disable the ECC error reported from eLBC by setting bit 15 in
+	 * the register at DCSRBASE + 0x0002_0520.
+	 */
+#define DCFG_ECC	(CONFIG_SYS_DCSRBAR + 0x20520)
+	setbits_be32((void *)DCFG_ECC, 1 << (31 - 15));
 #endif
 
 #ifdef CONFIG_FMAN_ENET
