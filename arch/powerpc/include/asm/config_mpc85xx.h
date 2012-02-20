@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Freescale Semiconductor, Inc.
+ * Copyright 2011-2012 Freescale Semiconductor, Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -352,6 +352,7 @@
 #define CONFIG_SYS_NUM_FMAN		1
 #define CONFIG_SYS_NUM_FM1_DTSEC	5
 #define CONFIG_SYS_NUM_FM1_10GEC	1
+#define CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 #define CONFIG_NUM_DDR_CONTROLLERS	1
 #define CONFIG_SYS_FM_MURAM_SIZE	0x28000
 #define CONFIG_SYS_FSL_TBCLK_DIV	32
@@ -380,6 +381,7 @@
 #define CONFIG_SYS_CCSRBAR_DEFAULT	0xfe000000
 #define CONFIG_SYS_FSL_ERRATUM_DDR_A003
 #define CONFIG_SYS_FSL_ERRATUM_CPU_A003999
+#define CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 
 #elif defined(CONFIG_PPC_P4040)
 #define CONFIG_MAX_CPUS			4
@@ -444,6 +446,7 @@
 #define CONFIG_SYS_FSL_ERRATUM_ESDHC111
 #define CONFIG_SYS_FSL_ERRATUM_USB138
 #define CONFIG_SYS_FSL_ERRATUM_DDR_A003474
+#define CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 
 #elif defined(CONFIG_PPC_P5020)
 #define CONFIG_MAX_CPUS			2
@@ -465,6 +468,7 @@
 #define CONFIG_SYS_FSL_ERRATUM_ESDHC111
 #define CONFIG_SYS_FSL_ERRATUM_USB138
 #define CONFIG_SYS_FSL_ERRATUM_DDR_A003474
+#define CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 
 #else
 #error Processor type not defined for this platform
