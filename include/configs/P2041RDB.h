@@ -67,6 +67,9 @@
 #define CONFIG_SRIO1			/* SRIO port 1 */
 #define CONFIG_SRIO2			/* SRIO port 2 */
 #define CONFIG_SYS_DPAA_RMAN		/* RMan */
+#define CONFIG_SRIO_PORT_MAX_NUM	2	/* SRIO port max number */
+#define CONFIG_SRIO_OB_WIN_NUM	9	/* SRIO outbound window number */
+#define CONFIG_SRIO_IB_WIN_NUM	5	/* SRIO inbound window number */
 
 #define CONFIG_FSL_LAW			/* Use common FSL init code */
 

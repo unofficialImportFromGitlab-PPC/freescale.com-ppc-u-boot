@@ -37,6 +37,11 @@
 
 #define CONFIG_SYS_SRIO
 #define CONFIG_SRIO1			/* SRIO port 1 */
+#define CONFIG_SRIO_PORT_MAX_NUM 1	/* SRIO port max number */
+#define CONFIG_SRIO_OB_WIN_NUM 9	/* SRIO outbound window number */
+#define CONFIG_SRIO_IB_WIN_NUM 5	/* SRIO inbound window number */
+#define CONFIG_SYS_RMU
+#define CONFIG_SRIO_MSG_UNIT_NUM	  2	/* SRIO message unit number */
 
 #define CONFIG_PCI		1	/* Disable PCI/PCIE */
 #define CONFIG_PCIE1		1	/* PCIE controller */
