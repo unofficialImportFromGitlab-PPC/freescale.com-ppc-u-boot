@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2000-2011
+ * (C) Copyright 2000-2012
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
  * See file CREDITS for list of people who contributed to this
@@ -663,12 +663,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #ifdef CONFIG_SERIAL_MULTI
 	serial_initialize();
 #endif
-
-#ifdef CONFIG_CW
-	printf("Now running in RAM - U-Boot at: %08lx\n", dest_addr);
-#else
 	debug("Now running in RAM - U-Boot at: %08lx\n", dest_addr);
-#endif
 
 	WATCHDOG_RESET();
 
