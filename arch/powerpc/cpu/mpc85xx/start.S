@@ -82,6 +82,11 @@
 	.globl _start_e500
 
 _start_e500:
+#if defined(CONFIG_E500_V1_V2)
+/* Enable debug exception */
+	li	r1,MSR_DE
+	mtmsr 	r1
+#endif
 
 #if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC)
 	/* ISBC uses L2 as stack.
@@ -729,8 +734,8 @@ create_init_ram_area:
 	msync
 	tlbwe
 
-	lis	r6,MSR_IS|MSR_DS@h
-	ori	r6,r6,MSR_IS|MSR_DS@l
+	lis	r6,MSR_IS|MSR_DS|MSR_DE@h
+	ori	r6,r6,MSR_IS|MSR_DS|MSR_DE@l
 	lis	r7,switch_as@h
 	ori	r7,r7,switch_as@l
 
