@@ -53,11 +53,7 @@ endif
 
 # clean the slate ...
 PLATFORM_RELFLAGS =
-ifdef CONFIG_CW
-PLATFORM_CPPFLAGS = -DCONFIG_CW
-else
 PLATFORM_CPPFLAGS =
-endif
 PLATFORM_LDFLAGS =
 
 #########################################################################
@@ -182,7 +178,7 @@ endif
 # who are porting old code to latest mainline but not updating $(AR).
 ARFLAGS = $(error update your Makefile to use cmd_link_o_target and not AR)
 RELFLAGS= $(PLATFORM_RELFLAGS)
-DBGFLAGS= -g # -DDEBUG
+DBGFLAGS= -g -gdwarf-2 # -DDEBUG
 OPTFLAGS= -Os #-fomit-frame-pointer
 
 OBJCFLAGS += --gap-fill=0xff
@@ -229,10 +225,6 @@ else
 CFLAGS := $(CPPFLAGS) -Wall -Wstrict-prototypes
 endif
 
-ifdef CONFIG_CW
-CFLAGS += -ggdb
-endif
-
 CFLAGS_SSP := $(call cc-option,-fno-stack-protector)
 CFLAGS += $(CFLAGS_SSP)
 # Some toolchains enable security related warning flags by default,
@@ -250,10 +242,6 @@ ifeq ($(ARCH),m68k)
 ifeq ($(findstring 3.4,$(shell $(CC) --version)),3.4)
 AFLAGS_DEBUG := -Wa,-gstabs,-S
 endif
-endif
-
-ifdef CONFIG_CW
-AFLAGS_DEBUG := -Wa,-gdwarf2
 endif
 
 AFLAGS := $(AFLAGS_DEBUG) -D__ASSEMBLY__ $(CPPFLAGS)
