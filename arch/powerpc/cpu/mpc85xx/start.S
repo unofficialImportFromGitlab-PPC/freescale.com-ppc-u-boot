@@ -1415,28 +1415,30 @@ relocate_code:
 7:	sync			/* Wait for all icbi to complete on bus */
 	isync
 
-	/*
-	 * Re-point the IVPR at RAM
-	 */
-	mtspr	IVPR,r10
-
 /*
  * We are done. Do not return, instead branch to second part of board
  * initialization, now running from RAM.
  */
 
 	addi	r0,r10,in_ram - _start + _START_OFFSET
+
+#if defined(CONFIG_E500_V1_V2) && defined(CONFIG_NAND_SPL)
+/*
+ * As IVPR is going to point RAM address,
+ * Make sure IVOR15 has valid opcode to support debugger
+ */
+	mtspr	IVOR15,r0
+#endif
+	/*
+	 * Re-point the IVPR at RAM
+	 */
+	mtspr	IVPR,r10
+
 	mtlr	r0
 	blr				/* NEVER RETURNS! */
 	.globl	in_ram
 in_ram:
-#if defined(CONFIG_CW)
-	/* CW debug hack. */
-	li      r0,0
-	mtspr IVPR,r0
-	li      r0,0x0f00
-	mtspr IVOR15,r0
-#endif
+
 	/*
 	 * Relocation Function, r12 point to got2+0x8000
 	 *
