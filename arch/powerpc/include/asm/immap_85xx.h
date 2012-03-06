@@ -2505,6 +2505,37 @@ typedef struct ccsr_pamu {
 	u32 olal;
 } ccsr_pamu_t;
 
+typedef struct jr_regs {
+	u32 irba_h;
+	u32 irba_l;
+	u32 rsvd1;
+	u32 irs;
+	u32 rsvd2;
+	u32 irsa;
+	u32 rsvd3;
+	u32 irja;
+	u32 orba_h;
+	u32 orba_l;
+	u32 rsvd4;
+	u32 ors;
+	u32 rsvd5;
+	u32 orjr;
+	u32 rsvd6;
+	u32 orsf;
+	u32 rsvd7;
+	u32 jrsta;
+	u32 rsvd8;
+	u32 jrint;
+	u32 jrcfg0;
+	u32 jrcfg1;
+	u32 rsvd9;
+	u32 irri;
+	u32 rsvd10;
+	u32 orwi;
+	u32 rsvd11;
+	u32 jrcr;
+} jr_regs_t;
+
 typedef struct ccsr_usb_phy {
 	u8	res0[0x18];
 	u32	usb_enable_override;
@@ -2566,6 +2597,7 @@ struct ccsr_rman {
 #define CONFIG_SYS_MPC85xx_SATA1_OFFSET		0x220000
 #define CONFIG_SYS_MPC85xx_SATA2_OFFSET		0x221000
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x300000
+#define CONFIG_SYS_FSL_JR0_OFFSET		0x301000
 #define CONFIG_SYS_FSL_CORENET_PME_OFFSET	0x316000
 #define CONFIG_SYS_FSL_QMAN_OFFSET		0x318000
 #define CONFIG_SYS_FSL_BMAN_OFFSET		0x31a000
@@ -2592,6 +2624,8 @@ struct ccsr_rman {
 #define CONFIG_SYS_MPC85xx_LBC_OFFSET		0x5000
 #define CONFIG_SYS_MPC85xx_DDR2_OFFSET		0x6000
 #define CONFIG_SYS_MPC85xx_ESPI_OFFSET		0x7000
+#define CONFIG_SYS_FSL_SEC_OFFSET		0x30000
+#define CONFIG_SYS_FSL_JR0_OFFSET		0x31000
 #define CONFIG_SYS_MPC85xx_PCI1_OFFSET		0x8000
 #define CONFIG_SYS_MPC85xx_PCIX_OFFSET		0x8000
 #define CONFIG_SYS_MPC85xx_PCI2_OFFSET		0x9000
@@ -2701,6 +2735,8 @@ struct ccsr_rman {
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_USB2_PHY_OFFSET)
 #define CONFIG_SYS_FSL_SEC_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_SEC_OFFSET)
+#define CONFIG_SYS_FSL_JR0_ADDR \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_JR0_OFFSET)
 #define CONFIG_SYS_FSL_FM1_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_FM1_OFFSET)
 #define CONFIG_SYS_FSL_FM1_DTSEC1_ADDR \
