@@ -1864,6 +1864,7 @@ typedef struct ccsr_gur {
 #define FSL_CORENET_RCWSR5_SRDS_EN		0x00002000
 #define FSL_CORENET_RCWSR5_SRDS2_EN		0x00001000
 #define FSL_CORENET_RCWSR6_BOOT_LOC	0x0f800000
+#define FSL_CORENET_RCWSR6_SB_EN		0x00200000
 #define FSL_CORENET_RCWSRn_SRDS_LPD_B2		0x3c000000 /* bits 162..165 */
 #define FSL_CORENET_RCWSRn_SRDS_LPD_B3		0x003c0000 /* bits 170..173 */
 #endif /* CONFIG_SYS_FSL_QORIQ_CHASSIS2 */
@@ -2906,6 +2907,36 @@ struct ccsr_pman {
 };
 #endif
 
+#ifdef CONFIG_SECURE_BOOT
+typedef struct ccsr_sfp_regs {
+	u8 reserved0[0x40];
+	u32 ospr;	/* 0x40  OEM Security Policy Register */
+	u8 reserved2[0x38];
+	u32 srk_hash[8];	/* 0x7c  Super Root Key Hash */
+	u32 oem_uid;	/* 0x9c  OEM Unique ID */
+	u8 reserved4[0x4];
+	u32 ovpr;	/* 0xA4  OEM Validation Policy Register */
+	u8 reserved8[0x8];
+	u32 fsl_uid;	/* 0xB0  FSL Unique ID */
+} ccsr_sfp_regs_t;
+
+typedef struct ccsr_snvs_regs {
+	u8 reserved0[0x04];
+	u32 hp_com;	/* 0x04 SNVS_HP Command Register */
+	u8 reserved2[0x0c];
+	u32 hp_stat;	/* 0x08 SNVS_HP Status Register */
+} ccsr_snvs_regs_t;
+
+#define HPCOMR_SW_SV 0x100		/* Security Violation bit */
+#define HPCOMR_SW_FSV 0x200		/* Fatal Security Violation bit */
+#define HPCOMR_SSM_ST 0x1		/* SSM_ST field in SNVS command reg */
+#define HPSR_SSM_ST_CHECK	0x900	/* SNVS is in check state */
+#define HPSR_SSM_ST_NON_SECURE	0xb00	/* SNVS is in non secure state */
+#define HPSR_SSM_ST_TRUST	0xd00	/* SNVS is in trusted state */
+#define HPSR_SSM_ST_SOFT_FAIL	0x300	/* SNVS is in soft fail state */
+#define HPSR_SSM_ST_MASK	0xf00	/* Mask for SSM_ST field */
+#endif
+
 #ifdef CONFIG_FSL_CORENET
 #define CONFIG_SYS_FSL_CORENET_CCM_OFFSET	0x0000
 #ifdef CONFIG_SYS_PMAN
@@ -2918,6 +2949,9 @@ struct ccsr_pman {
 #define CONFIG_SYS_MPC85xx_DDR3_OFFSET		0xA000
 #define CONFIG_SYS_FSL_CORENET_CLK_OFFSET	0xE1000
 #define CONFIG_SYS_FSL_CORENET_RCPM_OFFSET	0xE2000
+#ifdef	CONFIG_SECURE_BOOT
+#define CONFIG_SYS_SFP_OFFSET			0xE8000
+#endif
 #define CONFIG_SYS_FSL_CORENET_SERDES_OFFSET	0xEA000
 #define CONFIG_SYS_FSL_CORENET_SERDES2_OFFSET	0xEB000
 #define CONFIG_SYS_FSL_CPC_OFFSET		0x10000
@@ -2950,6 +2984,9 @@ struct ccsr_pman {
 #define CONFIG_SYS_MPC85xx_SATA2_OFFSET		0x221000
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x300000
 #define CONFIG_SYS_FSL_JR0_OFFSET		0x301000
+#ifdef	CONFIG_SECURE_BOOT
+#define CONFIG_SYS_SNVS_OFFSET			0x314000
+#endif
 #define CONFIG_SYS_FSL_CORENET_PME_OFFSET	0x316000
 #define CONFIG_SYS_FSL_QMAN_OFFSET		0x318000
 #define CONFIG_SYS_FSL_BMAN_OFFSET		0x31a000
@@ -3121,6 +3158,13 @@ struct ccsr_pman {
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_PCIE3_OFFSET)
 #define CONFIG_SYS_PCIE4_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_PCIE4_OFFSET)
+
+#ifdef CONFIG_SECURE_BOOT
+#define CONFIG_SYS_SFP_ADDR  \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_SFP_OFFSET)
+#define CONFIG_SYS_SNVS_ADDR  \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_SNVS_OFFSET)
+#endif
 
 #define TSEC_BASE_ADDR		(CONFIG_SYS_IMMR + CONFIG_SYS_TSEC1_OFFSET)
 #define MDIO_BASE_ADDR		(CONFIG_SYS_IMMR + CONFIG_SYS_MDIO1_OFFSET)

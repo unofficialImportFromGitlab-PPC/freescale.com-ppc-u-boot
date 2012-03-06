@@ -46,9 +46,21 @@
 #include <errno.h>
 #endif
 
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+#include <asm/fsl_pamu.h>
+#endif
+#ifdef CONFIG_SECURE_BOOT
+#include <jr.h>
+#include <fsl_secboot_err.h>
+#endif
+
 #include "../../../../drivers/block/fsl_sata.h"
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_SECURE_BOOT
+struct jobring jr;
+#endif
 
 #ifdef CONFIG_QE
 extern qe_iop_conf_t qe_iop_conf_tab[];
@@ -633,6 +645,15 @@ skip_l2:
 	}
 #endif
 
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+	if (pamu_init() < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_PAMU_INIT);
+#endif
+
+#ifdef CONFIG_SECURE_BOOT
+	if (sec_init(&jr) < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
+#endif
 
 	return 0;
 }
