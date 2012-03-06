@@ -27,6 +27,26 @@
 #define ERROR_ESBC_SEC_DEQ_TO					0x1000000
 #define ERROR_ESBC_SEC_ENQ					0x2000000
 #define ERROR_ESBC_SEC_JOBQ_STATUS				0x4000000
+#define ERROR_ESBC_CLIENT_CPUID_NO_MATCH			0x1
+#define ERROR_ESBC_CLIENT_HDR_LOC				0x2
+#define ERROR_ESBC_CLIENT_HEADER_BARKER				0x4
+#define ERROR_ESBC_CLIENT_HEADER_KEY_LEN			0x8
+#define ERROR_ESBC_CLIENT_HEADER_SIG_LEN			0x10
+#define ERROR_ESBC_CLIENT_HEADER_KEY_LEN_NOT_TWICE_SIG_LEN	0x20
+#define ERROR_ESBC_CLIENT_HEADER_KEY_MOD_1			0x40
+#define ERROR_ESBC_CLIENT_HEADER_KEY_MOD_2			0x80
+#define ERROR_ESBC_CLIENT_HEADER_SIG_KEY_MOD			0x100
+#define ERROR_ESBC_CLIENT_HEADER_SG_ESBC_EP			0x200
+#define ERROR_ESBC_CLIENT_HASH_COMPARE_KEY			0x400
+#define ERROR_ESBC_CLIENT_HASH_COMPARE_EM			0x800
+#define ERROR_ESBC_CLIENT_SSM_TRUSTSTS				0x1000
+#define ERROR_ESBC_CLIENT_BAD_ADDRESS				0x2000
+#define ERROR_ESBC_CLIENT_MISC					0x4000
+#define ERROR_ESBC_CLIENT_HEADER_SG_ENTIRES_BAD			0x8000
+#define ERROR_ESBC_CLIENT_HEADER_SG				0x10000
+#define ERROR_ESBC_CLIENT_HEADER_IMG_SIZE			0x20000
+#define ERROR_ESBC_WRONG_CMD					0x40000
+#define ERROR_ESBC_MISSING_BOOTM				0x80000
 #define ERROR_ESBC_CLIENT_MAX					0x0
 
 struct fsl_secboot_errcode {
@@ -49,6 +69,43 @@ static const struct fsl_secboot_errcode fsl_secboot_errcodes[] = {
 		"Error in dequeue operation by SEC"},
 	{ ERROR_ESBC_SEC_JOBQ_STATUS,
 		"Error in status of the job submitted to SEC"},
+	{ ERROR_ESBC_CLIENT_CPUID_NO_MATCH,
+		"Current core is not boot core i.e core0" },
+	{ ERROR_ESBC_CLIENT_HDR_LOC,
+		"Header address not in allowed memory range" },
+	{ ERROR_ESBC_CLIENT_HEADER_BARKER,
+		"Wrong barker code in header" },
+	{ ERROR_ESBC_CLIENT_HEADER_KEY_LEN,
+		"Wrong public key length in header" },
+	{ ERROR_ESBC_CLIENT_HEADER_SIG_LEN,
+		"Wrong signature length in header" },
+	{ ERROR_ESBC_CLIENT_HEADER_KEY_LEN_NOT_TWICE_SIG_LEN,
+		"Public key length not twice of signature length" },
+	{ ERROR_ESBC_CLIENT_HEADER_KEY_MOD_1,
+		"Public key Modulus most significant bit not set" },
+	{ ERROR_ESBC_CLIENT_HEADER_KEY_MOD_2,
+		"Public key Modulus in header not odd" },
+	{ ERROR_ESBC_CLIENT_HEADER_SIG_KEY_MOD,
+		"Signature not less than modulus" },
+	{ ERROR_ESBC_CLIENT_HEADER_SG_ESBC_EP,
+		"Entry point not in allowed space or one of the SG entries" },
+	{ ERROR_ESBC_CLIENT_HASH_COMPARE_KEY,
+		"Public key hash comparison failed" },
+	{ ERROR_ESBC_CLIENT_HASH_COMPARE_EM,
+		"RSA verification failed" },
+	{ ERROR_ESBC_CLIENT_SSM_TRUSTSTS,
+		"SNVS not in TRUSTED state" },
+	{ ERROR_ESBC_CLIENT_BAD_ADDRESS,
+		"Bad address error" },
+	{ ERROR_ESBC_CLIENT_MISC,
+		"Miscallaneous error" },
+	{ ERROR_ESBC_CLIENT_HEADER_SG,
+		"No SG support"  },
+	{ ERROR_ESBC_WRONG_CMD,
+		"Failure in command/Unknown command/Wrong arguments," \
+		" Core in infinite loop"},
+	{ ERROR_ESBC_MISSING_BOOTM,
+		"Bootm command missing from bootscript"},
 	{ ERROR_ESBC_CLIENT_MAX, "NULL" }
 };
 
