@@ -31,18 +31,6 @@
 #include "ehci.h"
 #include "ehci-core.h"
 
-/* Check USB PHY clock valid */
-static int usb_phy_clk_valid(struct usb_ehci *ehci)
-{
-	if ((!(in_be32(&ehci->control) & PHY_CLK_VALID)) &&
-			(!in_be32(&ehci->prictrl))) {
-		printf("WARNING: USB PHY clock invalid\n");
-		return 0;
-	} else {
-		return 1;
-	}
-}
-
 /*
  * Create the appropriate control structures to manage
  * a new EHCI host controller.
@@ -71,9 +59,6 @@ int ehci_hcd_init(void)
 	out_be32(&ehci->snoop1, SNOOP_SIZE_2GB);
 	out_be32(&ehci->snoop2, 0x80000000 | SNOOP_SIZE_2GB);
 
-	/* Enable interface. */
-	setbits_be32(&ehci->control, USB_EN);
-
 	/* Init phy */
 	if (hwconfig_sub("usb1", "phy_type"))
 		phy_type = hwconfig_subarg("usb1", "phy_type", &len);
@@ -97,8 +82,6 @@ int ehci_hcd_init(void)
 		setbits_be32(&ehci->control, UTMI_PHY_EN);
 		udelay(1000); /* delay required for PHY Clk to appear */
 #endif
-		if (!usb_phy_clk_valid(ehci))
-			return -1;
 		out_le32(&(hcor->or_portsc[0]), PORT_PTS_UTMI);
 	} else {
 #if defined(CONFIG_SYS_FSL_USB_INTERNAL_UTMI_PHY)
@@ -106,10 +89,11 @@ int ehci_hcd_init(void)
 		setbits_be32(&ehci->control, PHY_CLK_SEL_ULPI);
 		udelay(1000); /* delay required for PHY Clk to appear */
 #endif
-		if (!usb_phy_clk_valid(ehci))
-			return -1;
 		out_le32(&(hcor->or_portsc[0]), PORT_PTS_ULPI);
 	}
+
+	/* Enable interface. */
+	setbits_be32(&ehci->control, USB_EN);
 
 	out_be32(&ehci->prictrl, 0x0000000c);
 	out_be32(&ehci->age_cnt_limit, 0x00000040);
