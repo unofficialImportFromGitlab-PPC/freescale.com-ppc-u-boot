@@ -256,6 +256,21 @@ void fdt_del_tdm(void *blob)
 	}
 }
 
+void fdt_disable_uart1(void *blob)
+{
+	int off;
+
+	off = fdt_node_offset_by_compat_reg(blob, "fsl,ns16550",
+					CONFIG_SYS_NS16550_COM2);
+
+	if (off > 0) {
+		off = fdt_status_disabled(blob, off);
+	} else {
+		printf("WARNING unable to set status for fsl,ns16550 "
+			"uart1: %s\n", fdt_strerror(off));
+	}
+}
+
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	phys_addr_t base;
@@ -291,10 +306,14 @@ void ft_board_setup(void *blob, bd_t *bd)
 		fdt_del_spi_slic(blob);
 	}
 #ifndef CONFIG_SPIFLASH
-	else if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
-		printf("fdt TDM");
+	else {
+		/* If we don't set fsl_p1010mux:tdm_can to "can" explicitly,
+		 * the default value of CPLD register 'tdm_uart1_sel'
+		 * (at 0xFFB00012) is 1 (tdm).
+		 */
 		fdt_del_flexcan(blob);
 		fdt_del_spi_flash(blob);
+		fdt_disable_uart1(blob);
 	}
 #endif
 #endif
@@ -315,8 +334,8 @@ int misc_init_r(void)
 		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_CAN_UART);
 	}
 #ifndef CONFIG_SPIFLASH
-		if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
-			printf("TDM");
+	else {
+		/* TDM is default */
 		clrbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_UART |
 				MPC85xx_PMUXCR_CAN1_UART);
 		setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_TDM |
@@ -325,7 +344,7 @@ int misc_init_r(void)
 		setbits_be32(&gur->pmuxcr2, MPC85xx_PMUXCR2_UART_TDM);
 		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_TDM);
 		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_SLIC);
-		}
+	}
 #endif
 	return 0;
 }
