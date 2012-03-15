@@ -28,7 +28,7 @@ COBJS-y        += $(BOARD).o
 COBJS-y        += ddr.o
 COBJS-y        += law.o
 COBJS-y        += tlb.o
-#COBJS-y		+= psc9131rdb_mux.o
+#COBJS-y		+= bsc9131rdb_mux.o
 
 SRCS   := $(SOBJS:.o=.S) $(COBJS-y:.o=.c)
 OBJS   := $(addprefix $(obj),$(COBJS-y))

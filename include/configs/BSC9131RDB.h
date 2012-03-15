@@ -21,14 +21,14 @@
  */
 
 /*
- * PSC9131 RDB board configuration file
+ * BSC9131 RDB board configuration file
  */
 
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#ifdef CONFIG_PSC9131RDB
-#define CONFIG_PSC9131
+#ifdef CONFIG_BSC9131RDB
+#define CONFIG_BSC9131
 #define CONFIG_NAND_FSL_IFC
 #endif
 
@@ -420,23 +420,23 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_HAS_ETH0
 #endif
 
-#define CONFIG_HOSTNAME		PSC9131rdb
+#define CONFIG_HOSTNAME		BSC9131rdb
 #define CONFIG_ROOTPATH		"/opt/nfsroot"
 #define CONFIG_BOOTFILE		"uImage"
-#define CONFIG_UBOOTPATH	u-boot.bin /* U-Boot image on TFTP server */
+#define CONFIG_UBOOTPATH	"u-boot.bin" /* U-Boot image on TFTP server */
 
 #define CONFIG_BAUDRATE		115200
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"netdev=eth0\0"						\
-	"uboot=" MK_STR(CONFIG_UBOOTPATH) "\0"				\
+	"uboot=" CONFIG_UBOOTPATH "\0"				\
 	"loadaddr=1000000\0"			\
 	"bootfile=uImage\0"	\
 	"consoledev=ttyS0\0"				\
 	"ramdiskaddr=2000000\0"			\
 	"ramdiskfile=rootfs.ext2.gz.uboot\0"		\
 	"fdtaddr=c00000\0"				\
-	"fdtfile=psc9131rdb.dtb\0"		\
+	"fdtfile=bsc9131rdb.dtb\0"		\
 	"bdev=sda1\0"	\
 	"hwconfig=usb1:dr_mode=host,phy_type=ulpi\0"	\
 	"othbootargs=ramdisk_size=600000 \0" \

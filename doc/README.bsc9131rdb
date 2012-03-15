@@ -1,11 +1,11 @@
 Overview
 --------
-- PSC9131 is integrated device that targets Femto base station market.
+- BSC9131 is integrated device that targets Femto base station market.
  It combines Power Architecture e500v2 and DSP StarCore SC3850 core
  technologies with MAPLE-B2F baseband acceleration processing elements.
 - It's MAPLE disabled personality is called 9231.
 
-The PSC9131 SoC includes the following function and features:
+The BSC9131 SoC includes the following function and features:
 . Power Architecture subsystem including a e500 processor with 256-Kbyte shared
   L2 cache
 . StarCore SC3850 DSP subsystem with a 512-Kbyte private L2 cache
@@ -59,7 +59,7 @@ The SC3850 core subsystem consists of the following:
 . Debug and profiling unit (DPU)
 . Two 32-bit timers
 
-PSC9131RDB board Overview
+BSC9131RDB board Overview
 -------------------------
  1Gbyte DDR3 (on board DDR)
  128Mbyte 2K page size NAND Flash
@@ -88,11 +88,11 @@ NAND boot
 
 Building U-boot
 --------------
-To build the u-boot for PSC9131RDB:
+To build the u-boot for BSC9131RDB:
 1. NAND Flash
-	make PSC9131RDB_NAND
+	make BSC9131RDB_NAND
 2. SPI Flash
-	make PSC9131RDB_SPIFLASH
+	make BSC9131RDB_SPIFLASH
 
 Memory map
 -----------
@@ -121,11 +121,11 @@ Using the Device Tree Source File
 To create the DTB (Device Tree Binary) image file,
 use a command similar to this:
 
-	dtc -b 0 -f -I dts -O dtb psc9131rdb.dts > psc9131rdb.dtb
+	dtc -b 0 -f -I dts -O dtb bsc9131rdb.dts > bsc9131rdb.dtb
 
 Likely, that .dts file will come from here;
 
-	linux-2.6/arch/powerpc/boot/dts/psc9131rdb.dts
+	linux-2.6/arch/powerpc/boot/dts/bsc9131rdb.dts
 
 Booting Linux
 -------------
@@ -133,5 +133,5 @@ Place a linux uImage in the TFTP disk area.
 
 	tftp 1000000 uImage
 	tftp 2000000 rootfs.ext2.gz.uboot
-	tftp c00000 psc9131rdb.dtb
+	tftp c00000 bsc9131rdb.dtb
 	bootm 1000000 2000000 c00000
