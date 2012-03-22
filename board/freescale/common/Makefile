@@ -54,6 +54,7 @@ COBJS-$(CONFIG_P3041DS)		+= ics307_clk.o
 COBJS-$(CONFIG_P3060QDS)       	+= ics307_clk.o
 COBJS-$(CONFIG_P4080DS)		+= ics307_clk.o
 COBJS-$(CONFIG_P5020DS)		+= ics307_clk.o
+COBJS-$(CONFIG_P5040DS)		+= ics307_clk.o
 
 # deal with common files for P-series corenet based devices
 SUBLIB-$(CONFIG_P2041RDB)	+= p_corenet/libp_corenet.o
@@ -61,6 +62,7 @@ SUBLIB-$(CONFIG_P3041DS)	+= p_corenet/libp_corenet.o
 SUBLIB-$(CONFIG_P3060QDS)	+= p_corenet/libp_corenet.o
 SUBLIB-$(CONFIG_P4080DS)	+= p_corenet/libp_corenet.o
 SUBLIB-$(CONFIG_P5020DS)	+= p_corenet/libp_corenet.o
+SUBLIB-$(CONFIG_P5040DS)	+= p_corenet/libp_corenet.o
 
 SRCS	:= $(SOBJS:.o=.S) $(COBJS-y:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS-y))

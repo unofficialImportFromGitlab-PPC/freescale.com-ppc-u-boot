@@ -68,6 +68,7 @@ static const char *serdes_prtcl_str[] = {
 	[SGMII_FM2_DTSEC2] = "SGMII_FM2_DTSEC2",
 	[SGMII_FM2_DTSEC3] = "SGMII_FM2_DTSEC3",
 	[SGMII_FM2_DTSEC4] = "SGMII_FM2_DTSEC4",
+	[SGMII_FM2_DTSEC5] = "SGMII_FM2_DTSEC5",
 	[XAUI_FM1] = "XAUI_FM1",
 	[XAUI_FM2] = "XAUI_FM2",
 	[AURORA] = "DEBUG",
@@ -97,6 +98,8 @@ static const struct {
 	{ 21, 171, FSL_SRDS_BANK_3 },
 	{ 22, 172, FSL_SRDS_BANK_3 },
 	{ 23, 173, FSL_SRDS_BANK_3 },
+	{ 24, 175, FSL_SRDS_BANK_4 },
+	{ 25, 176, FSL_SRDS_BANK_4 },
 };
 
 int serdes_get_lane_idx(int lane)

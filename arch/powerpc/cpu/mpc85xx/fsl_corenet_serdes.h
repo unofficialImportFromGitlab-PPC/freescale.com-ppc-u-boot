@@ -22,13 +22,19 @@
 #ifndef __FSL_CORENET_SERDES_H
 #define __FSL_CORENET_SERDES_H
 
+#if defined(CONFIG_PPC_P5040)
+#define SRDS_MAX_LANES         20
+#define SRDS_MAX_BANK          4
+#else
 #define SRDS_MAX_LANES		18
 #define SRDS_MAX_BANK		3
+#endif
 
 enum srds_bank {
 	FSL_SRDS_BANK_1  = 0,
 	FSL_SRDS_BANK_2  = 1,
 	FSL_SRDS_BANK_3  = 2,
+	FSL_SRDS_BANK_4  = 3,
 };
 
 int is_serdes_prtcl_valid(u32 prtcl);

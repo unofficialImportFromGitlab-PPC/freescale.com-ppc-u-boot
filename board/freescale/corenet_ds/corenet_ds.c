@@ -36,6 +36,7 @@
 
 #include "../common/ngpixis.h"
 #include "corenet_ds.h"
+#include "../../../arch/powerpc/cpu/mpc85xx/fsl_corenet_serdes.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -87,11 +88,19 @@ int checkboard (void)
 	 * don't match.
 	 */
 	puts("SERDES Reference Clocks: ");
-#if defined(CONFIG_P3041DS) || defined(CONFIG_P5020DS)
+#if defined(CONFIG_P3041DS) || defined(CONFIG_P5020DS) \
+	|| defined(CONFIG_P5040DS)
 	sw = in_8(&PIXIS_SW(5));
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < SRDS_MAX_BANK; i++) {
 		static const char *freq[] = {"100", "125", "156.25", "212.5" };
-		unsigned int clock = (sw >> (6 - (2 * i))) & 3;
+		unsigned int clock;
+
+		/* On P5040DS, SW11[7:8] determine the Bank 4 frequency */
+		if (i == 3) {
+			sw = in_8(&PIXIS_SW(9));
+			clock = sw & 0x3;
+		} else
+			clock = (sw >> (6 - (2 * i))) & 3;
 
 		printf("Bank%u=%sMhz ", i+1, freq[clock]);
 	}
