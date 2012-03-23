@@ -89,6 +89,23 @@ _start_e500:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
+	mfpvr	r3
+	rlwinm	r3,r3,0,0xff
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV
+	cmpw	r3,r4
+	beq	1f
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV2
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV2
+	cmpw	r3,r4
+	beq	1f
+#endif
+
+	/* Not a supported revision affected by erratum */
+	li	r27,0
+	b	2f
+
+1:	li	r27,1	/* Remember for later that we have the erratum */
 	/* Erratum says set bits 55:60 to 001001 */
 	msync
 	isync
@@ -97,6 +114,7 @@ _start_e500:
 	rlwimi	r3,r4,0,0x1f8
 	mtspr	976,r3
 	isync
+2:
 #endif
 
 #if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC)
@@ -433,9 +451,12 @@ nexti:	mflr	r1		/* R1 = our PC */
 	andc	r2, r2, r3
 	or	r2, r2, r1
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
+	cmpwi	r27,0
+	beq	1f
 	andi.	r15, r2, MAS2_I|MAS2_G /* save the old I/G for later */
 	rlwinm	r2, r2, 0, ~MAS2_I
 	ori	r2, r2, MAS2_G
+1:
 #endif
 	mtspr	MAS2, r2	/* Set the EPN to our PC base address */
 
@@ -720,6 +741,9 @@ delete_temp_tlbs:
 #define LAW_SIZE_1M	0x13
 #define DCSRBAR_LAWAR	(LAW_EN | (0x1d << 20) | LAW_SIZE_1M)
 
+	cmpwi	r27,0
+	beq	9f
+
 	/*
 	 * Create a TLB entry for CCSR
 	 *
@@ -807,7 +831,7 @@ delete_temp_tlbs:
 	erratum_set_dcsr 0xb0e38 0xe0400000
 	erratum_set_dcsr 0xb0008 0x00900000
 	erratum_set_dcsr 0xb0e40 0xe00a0000
-	erratum_set_ccsr 0x18600 0xff000000
+	erratum_set_ccsr 0x18600 CONFIG_SYS_FSL_CORENET_SNOOPVEC_COREONLY
 	erratum_set_ccsr 0x10f00 0x415e5000
 	erratum_set_ccsr 0x11f00 0x415e5000
 
@@ -873,7 +897,7 @@ delete_temp_tlbs:
 	isync
 	msync
 
-	b	1f
+	b	9f
 
 	/* r3 = addr, r4 = value, clobbers r5, r11, r12 */
 erratum_set_value:
@@ -947,7 +971,7 @@ erratum_set_value:
 	mtlr	r12
 	blr
 
-1:
+9:
 #endif
 
 create_init_ram_area:

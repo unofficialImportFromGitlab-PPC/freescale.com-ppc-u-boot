@@ -75,7 +75,22 @@ __secondary_start_page:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
-	/* Erratum says set bits 55:60 to 001001 */
+	mfpvr	r3
+	rlwinm	r3,r3,0,0xff
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV
+	cmpw	r3,r4
+	beq	1f
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV2
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV2
+	cmpw	r3,r4
+	beq	1f
+#endif
+
+	/* Not a supported revision affected by erratum */
+	b	2f
+
+1:	/* Erratum says set bits 55:60 to 001001 */
 	msync
 	isync
 	mfspr	r3,976
@@ -83,6 +98,7 @@ __secondary_start_page:
 	rlwimi	r3,r4,0,0x1f8
 	mtspr	976,r3
 	isync
+2:
 #endif
 
 	/* Enable branch prediction */
