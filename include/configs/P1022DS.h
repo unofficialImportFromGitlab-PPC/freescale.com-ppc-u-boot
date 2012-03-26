@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2011 Freescale Semiconductor, Inc.
+ * Copyright 2010-2012 Freescale Semiconductor, Inc.
  * Authors: Srikanth Srinivasan <srikanth.srinivasan@freescale.com>
  *          Timur Tabi <timur@freescale.com>
  *
@@ -588,6 +588,8 @@
 /*
  * USB
  */
+#define CONFIG_HAS_FSL_DR_USB
+#ifdef CONFIG_HAS_FSL_DR_USB
 #define CONFIG_USB_EHCI
 
 #ifdef CONFIG_USB_EHCI
@@ -596,6 +598,7 @@
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_FAT
+#endif
 #endif
 
 /*
