@@ -1235,13 +1235,9 @@ int mmc_init(struct mmc *mmc)
 	int err;
 
 	if (mmc_getcd(mmc) == 0) {
-		mmc->has_init = 0;
 		printf("MMC: no card present\n");
 		return NO_CARD_ERR;
 	}
-
-	if (mmc->has_init)
-		return 0;
 
 	err = mmc->init(mmc);
 
@@ -1277,10 +1273,7 @@ int mmc_init(struct mmc *mmc)
 	}
 
 	err = mmc_startup(mmc);
-	if (err)
-		mmc->has_init = 0;
-	else
-		mmc->has_init = 1;
+
 	return err;
 }
 

@@ -131,9 +131,8 @@ int do_mmcinfo (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	mmc = find_mmc_device(curr_device);
 
 	if (mmc) {
-		mmc_init(mmc);
-
-		print_mmcinfo(mmc);
+		if (!mmc_init(mmc))
+			print_mmcinfo(mmc);
 		return 0;
 	} else {
 		printf("no mmc device at slot %x\n", curr_device);
@@ -171,8 +170,6 @@ int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			printf("no mmc device at slot %x\n", curr_device);
 			return 1;
 		}
-
-		mmc->has_init = 0;
 
 		if (mmc_init(mmc))
 			return 1;
