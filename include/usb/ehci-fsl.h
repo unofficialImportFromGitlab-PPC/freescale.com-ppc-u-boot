@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, 2009 Freescale Semiconductor, Inc
+ * Copyright (c) 2005, 2009, 2012 Freescale Semiconductor, Inc
  * Copyright (c) 2005 MontaVista Software
  * Copyright (c) 2008 Excito Elektronik i Sk=E5ne AB
  *
@@ -53,7 +53,11 @@
 /* CONTROL Register bits */
 #define ULPI_INT_EN		(1 << 0)
 #define WU_INT_EN		(1 << 1)
+#if defined(CONFIG_BSC9131)
+#define ULPI_PHY_EN             (1 << 2)
+#else
 #define USB_EN			(1 << 2)
+#endif
 #define LSF_EN			(1 << 3)
 #define KEEP_OTG_ON		(1 << 4)
 #define OTG_PORT		(1 << 5)

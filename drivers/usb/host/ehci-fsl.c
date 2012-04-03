@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2009, 2011 Freescale Semiconductor, Inc.
+ * (C) Copyright 2009, 2011-2012 Freescale Semiconductor, Inc.
  *
  * (C) Copyright 2008, Excito Elektronik i Sk=E5ne AB
  *
@@ -88,13 +88,17 @@ int ehci_hcd_init(void)
 		clrbits_be32(&ehci->control, UTMI_PHY_EN);
 		setbits_be32(&ehci->control, PHY_CLK_SEL_ULPI);
 		udelay(1000); /* delay required for PHY Clk to appear */
+#elif defined(CONFIG_BSC9131)
+		clrsetbits_be32(&ehci->control, UTMI_PHY_EN, ULPI_PHY_EN);
 #endif
 		out_le32(&(hcor->or_portsc[0]), PORT_PTS_ULPI);
+		udelay(1000); /* Workaround for ULPI bus issue */
 	}
 
 	/* Enable interface. */
+#ifndef CONFIG_BSC9131
 	setbits_be32(&ehci->control, USB_EN);
-
+#endif
 	out_be32(&ehci->prictrl, 0x0000000c);
 	out_be32(&ehci->age_cnt_limit, 0x00000040);
 	out_be32(&ehci->sictrl, 0x00000001);
