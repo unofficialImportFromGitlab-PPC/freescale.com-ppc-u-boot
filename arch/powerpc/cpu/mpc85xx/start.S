@@ -89,7 +89,7 @@ _start_e500:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
-	mfpvr	r3
+	mfspr	r3,SPRN_SVR
 	rlwinm	r3,r3,0,0xff
 	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV
 	cmpw	r3,r4
