@@ -99,7 +99,7 @@
  * This array contains the BRDCFG1 values (in mask/val format) that route the
  * MDIO bus to a particular RGMII or SGMII PHY.
  */
-struct {
+static struct {
 	u8 mask;
 	u8 val;
 } mdio_mux[NUM_FM_PORTS];
@@ -202,43 +202,37 @@ static int super_hydra_mdio_init(char *realbusname, char *fakebusname)
 }
 
 /*
- * Given an alias or a path for a node, set the mux value of that node.
+ * Return the SerDes device enum for a given Fman port
  *
- * If 'alias' is not a valid alias, then it is treated as a full path to the
- * node.  No error checking is performed.
- *
- * This function is normally called to set the fsl,hydra-mdio-mux-val property
- * of a virtual MDIO node.
+ * This should probably be a standard function in fm.c, but for now, implement
+ * a P5040DS-specific version here.
  */
-static void fdt_set_mdio_mux_val(void *fdt, const char *alias, u32 mux)
+static enum srds_prtcl serdes_device_from_fm_port(enum fm_port port)
 {
-	const char *path = fdt_get_alias(fdt, alias);
-
-	if (!path)
-		path = alias;
-
-	do_fixup_by_path(fdt, path, "fsl,hydra-mdio-mux-val",
-			 &mux, sizeof(mux), 1);
-}
-
-/*
- * Given an alias or a path for a node, set the mux value of that node.
- *
- * If 'alias' is not a valid alias, then it is treated as a full path to the
- * node.  No error checking is performed.
- *
- * This function is normally called to set the fsl,hydra-mdio-mux-mask property
- * of a virtual MDIO node.
- */
-static void fdt_set_mdio_mux_mask(void *fdt, const char *alias, u32 mask)
-{
-	const char *path = fdt_get_alias(fdt, alias);
-
-	if (!path)
-		path = alias;
-
-	do_fixup_by_path(fdt, path, "fsl,hydra-mdio-mux-mask",
-			 &mask, sizeof(mask), 1);
+	switch (port) {
+	case FM1_DTSEC1:
+		return SGMII_FM1_DTSEC1;
+	case FM1_DTSEC2:
+		return SGMII_FM1_DTSEC2;
+	case FM1_DTSEC3:
+		return SGMII_FM1_DTSEC3;
+	case FM1_DTSEC4:
+		return SGMII_FM1_DTSEC4;
+	case FM1_10GEC1:
+		return XAUI_FM1;
+	case FM2_DTSEC1:
+		return SGMII_FM2_DTSEC1;
+	case FM2_DTSEC2:
+		return SGMII_FM2_DTSEC2;
+	case FM2_DTSEC3:
+		return SGMII_FM2_DTSEC3;
+	case FM2_DTSEC4:
+		return SGMII_FM2_DTSEC4;
+	case FM2_10GEC1:
+		return XAUI_FM2;
+	default:
+		return NONE;
+	}
 }
 
 /*
@@ -254,50 +248,30 @@ static void fdt_set_mdio_mux_mask(void *fdt, const char *alias, u32 mask)
  * information is stored in mdio_mux[].
  *
  * The offset of the Fman Ethernet node is also passed in for convenience, but
- * it is not used, and we recalculate the offset anyway.
+ * it is not used.
  *
  * Note that what we call "Fman ports" (enum fm_port) is really an Fman MAC.
  * Inside the Fman, "ports" are things that connect to MACs.  We only call them
  * ports in U-Boot because on previous Ethernet devices (e.g. Gianfar), MACs
  * and ports are the same thing.
- *
- * Note that this code would be cleaner if had a function called
- * fm_info_get_phy_address(), which returns a value from the fm1_dtsec_info[]
- * array.  That's because all we're doing is figuring out the PHY address for
- * a given Fman MAC and writing it to the device tree.  Well, we already did
- * the hard work to figure that out in board_eth_init(), so it's silly to
- * repeat that here.
  */
 void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
 			      enum fm_port port, int offset)
 {
-	unsigned int mux = mdio_mux[port].val & mdio_mux[port].mask;
-	char phy[16];
+	enum srds_prtcl device;
+	int lane, slot, phy;
+	char alias[32];
 
-	if (port == FM1_10GEC1) {
-		/* XAUI */
-		int lane = serdes_get_first_lane(XAUI_FM1);
-		if (lane >= 0) {
-			/* The XAUI PHY is identified by the slot */
-			sprintf(phy, "phy_xgmii_%u", lane_to_slot[lane]);
-			fdt_set_phy_handle(fdt, compat, addr, phy);
-		}
-		return;
-	}
+	/* RGMII and XGMII are already mapped correctly in the DTS */
 
-	if (mux == BRDCFG1_EMI1_SEL_RGMII) {
-		/* RGMII */
-		/* The RGMII PHY is identified by the MAC connected to it */
-		sprintf(phy, "phy_rgmii_%u", port == FM1_DTSEC4 ? 0 : 1);
-		fdt_set_phy_handle(fdt, compat, addr, phy);
-	}
+	if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_SGMII) {
+		device = serdes_device_from_fm_port(port);
+		lane = serdes_get_first_lane(device);
+		slot = lane_to_slot[lane];
+		phy = fm_info_get_phy_address(port);
 
-	/* If it's not RGMII or XGMII, it must be SGMII */
-	if (mux) {
-		/* The SGMII PHY is identified by the MAC connected to it */
-		sprintf(phy, "phy_sgmii_%x",
-			CONFIG_SYS_FM1_DTSEC1_PHY_ADDR + (port - FM1_DTSEC1));
-		fdt_set_phy_handle(fdt, compat, addr, phy);
+		sprintf(alias, "phy_sgmii_slot%u_%x", slot, phy);
+		fdt_set_phy_handle(fdt, compat, addr, alias);
 	}
 }
 
@@ -362,13 +336,11 @@ static void initialize_lane_to_slot(void)
  * We assume that the DTS already hard-codes the status for all the
  * virtual MDIO nodes to "disabled", so all we need to do is enable the
  * active ones.
- *
- * For SGMII, we also need to set the mux value in the node.
  */
 void fdt_fixup_board_enet(void *fdt)
 {
 #ifdef CONFIG_FMAN_ENET
-	unsigned int i;
+	enum fm_port i;
 	int lane, slot;
 
 	for (i = FM1_DTSEC1; i < FM1_DTSEC1 + CONFIG_SYS_NUM_FM1_DTSEC; i++) {
@@ -377,63 +349,19 @@ void fdt_fixup_board_enet(void *fdt)
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_SGMII:
 			lane = serdes_get_first_lane(SGMII_FM1_DTSEC1 + idx);
-			slot = lane_to_slot[lane];
-
 			if (lane >= 0) {
-				switch (slot) {
-				case 2:
-					fdt_status_okay_by_alias(fdt,
-							"emi1_sgmii_slot2");
-					/* Also set the MUX value */
-					fdt_set_mdio_mux_val(fdt,
-							"emi1_sgmii_slot2",
-							mdio_mux[i].val);
-					fdt_set_mdio_mux_mask(fdt,
-							"emi1_sgmii_slot2",
-							mdio_mux[i].mask);
-					break;
-				case 3:
-					fdt_status_okay_by_alias(fdt,
-							"emi1_sgmii_slot3");
-					/* Also set the MUX value */
-					fdt_set_mdio_mux_val(fdt,
-							"emi1_sgmii_slot3",
-							mdio_mux[i].val);
-					fdt_set_mdio_mux_mask(fdt,
-							"emi1_sgmii_slot3",
-							mdio_mux[i].mask);
-					break;
-				case 5:
-					fdt_status_okay_by_alias(fdt,
-							"emi1_sgmii_slot5");
-					/* Also set the MUX value */
-					fdt_set_mdio_mux_val(fdt,
-							"emi1_sgmii_slot5",
-							mdio_mux[i].val);
-					fdt_set_mdio_mux_mask(fdt,
-							"emi1_sgmii_slot5",
-							mdio_mux[i].mask);
-					break;
-				case 6:
-					fdt_status_okay_by_alias(fdt,
-							"emi1_sgmii_slot6");
-					/* Also set the MUX value */
-					fdt_set_mdio_mux_val(fdt,
-							"emi1_sgmii_slot6",
-							mdio_mux[i].val);
-					fdt_set_mdio_mux_mask(fdt,
-							"emi1_sgmii_slot6",
-							mdio_mux[i].mask);
-					break;
-				}
+				char alias[32];
+
+				slot = lane_to_slot[lane];
+				sprintf(alias, "hydra_sg_slot%u", slot);
+				fdt_status_okay_by_alias(fdt, alias);
+				debug("Enabled MDIO node %s (slot %i)\n",
+				      alias, slot);
 			}
 			break;
 		case PHY_INTERFACE_MODE_RGMII:
-			fdt_status_okay_by_alias(fdt, "emi1_rgmii");
-			fdt_set_mdio_mux_val(fdt, "emi1_rgmii",
-						 mdio_mux[i].val);
-			fdt_set_mdio_mux_mask(fdt, "emi1_rgmii",
-						 mdio_mux[i].mask);
+			fdt_status_okay_by_alias(fdt, "hydra_rg");
+			debug("Enabled MDIO node hydra_rg\n");
 			break;
 		default:
 			break;
@@ -441,18 +369,52 @@ void fdt_fixup_board_enet(void *fdt)
 	}
 
 	lane = serdes_get_first_lane(XAUI_FM1);
-	slot = lane_to_slot[lane];
 	if (lane >= 0) {
-		if (slot == 2) {
-			fdt_status_okay_by_alias(fdt, "emi2_xgmii_slot2");
-			/* Also set the MUX value */
-			fdt_set_mdio_mux_val(fdt, "emi2_xgmii_slot2",
-					 mdio_mux[FM1_10GEC1].val);
-			fdt_set_mdio_mux_mask(fdt, "emi2_xgmii_slot2",
-				 mdio_mux[FM1_10GEC1].mask);
+		char alias[32];
+
+		slot = lane_to_slot[lane];
+		sprintf(alias, "hydra_xg_slot%u", slot);
+		fdt_status_okay_by_alias(fdt, alias);
+		debug("Enabled MDIO node %s (slot %i)\n", alias, slot);
+	}
+
+#if CONFIG_SYS_NUM_FMAN == 2
+	for (i = FM2_DTSEC1; i < FM2_DTSEC1 + CONFIG_SYS_NUM_FM2_DTSEC; i++) {
+		int idx = i - FM2_DTSEC1;
+
+		switch (fm_info_get_enet_if(i)) {
+		case PHY_INTERFACE_MODE_SGMII:
+			lane = serdes_get_first_lane(SGMII_FM2_DTSEC1 + idx);
+			if (lane >= 0) {
+				char alias[32];
+
+				slot = lane_to_slot[lane];
+				sprintf(alias, "hydra_sg_slot%u", slot);
+				fdt_status_okay_by_alias(fdt, alias);
+				debug("Enabled MDIO node %s (slot %i)\n",
+				      alias, slot);
+			}
+			break;
+		case PHY_INTERFACE_MODE_RGMII:
+			fdt_status_okay_by_alias(fdt, "hydra_rg");
+			debug("Enabled MDIO node hydra_rg\n");
+			break;
+		default:
+			break;
 		}
 	}
-#endif
+
+	lane = serdes_get_first_lane(XAUI_FM2);
+	if (lane >= 0) {
+		char alias[32];
+
+		slot = lane_to_slot[lane];
+		sprintf(alias, "hydra_xg_slot%u", slot);
+		fdt_status_okay_by_alias(fdt, alias);
+		debug("Enabled MDIO node %s (slot %i)\n", alias, slot);
+	}
+#endif /* CONFIG_SYS_NUM_FMAN == 2 */
+#endif /* CONFIG_FMAN_ENET */
 }
 
 /*
