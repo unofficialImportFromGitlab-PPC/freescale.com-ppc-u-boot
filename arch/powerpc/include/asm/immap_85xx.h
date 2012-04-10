@@ -2646,6 +2646,32 @@ typedef struct serdes_corenet {
 } serdes_corenet_t;
 #endif /* CONFIG_SYS_FSL_QORIQ_CHASSIS2 */
 
+typedef struct serdes2_corenet {
+	u32	rstctl;	/* Reset Control Register */
+	u32	pllcr0; /* PLL Control Register 0 */
+	u32	pllcr1; /* PLL Control Register 1 */
+	u32	res1[25];
+	u32	srdstcalcr;	/* TX Calibration Control */
+	u32	res2[3];
+	u32	srdsrcalcr;	/* RX Calibration Control */
+	u32	res3[3];
+	u32	srdsgr0;	/* General Register 0 */
+	u32	res4[11];
+	u32	srdspccr0;	/* Protocol Converter Config 0 */
+	u32	res5[79];
+	struct {
+		u32	gcr0;	/* General Control Register 0 */
+		u32	gcr1;	/* General Control Register 1 */
+		u32	res1[2];
+		u32	recr0;	/* Receive Equalization Control Reg 0 */
+		u32	res2;
+		u32	tecr0;	/* TX Equalization Control Reg 0 */
+		u32	res3;
+		u32	ttlcr0;	/* Transition Tracking Loop Ctrl 0 */
+		u32	res4[7];
+	} lane[2];
+} serdes2_corenet_t;
+
 enum {
 	FSL_SRDS_B1_LANE_A = 0,
 	FSL_SRDS_B1_LANE_B = 1,
