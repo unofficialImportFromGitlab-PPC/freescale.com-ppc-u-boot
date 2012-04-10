@@ -1759,6 +1759,7 @@ typedef struct ccsr_gur {
 #define FSL_CORENET_RCWSR5_DDR_SYNC		0x00000080
 #define FSL_CORENET_RCWSR5_DDR_SYNC_SHIFT		 7
 #define FSL_CORENET_RCWSR5_SRDS_EN		0x00002000
+#define FSL_CORENET_RCWSR5_SRDS2_EN		0x00001000
 #define FSL_CORENET_RCWSR6_SB_EN		0x00200000
 #define FSL_CORENET_RCWSRn_SRDS_LPD_B2		0x3c000000 /* bits 162..165 */
 #define FSL_CORENET_RCWSRn_SRDS_LPD_B3		0x003c0000 /* bits 170..173 */
@@ -2358,6 +2359,32 @@ typedef struct serdes_corenet {
 	u32 res6[384];
 } serdes_corenet_t;
 
+typedef struct serdes2_corenet {
+	u32	rstctl;	/* Reset Control Register */
+	u32	pllcr0; /* PLL Control Register 0 */
+	u32	pllcr1; /* PLL Control Register 1 */
+	u32	res1[25];
+	u32	srdstcalcr;	/* TX Calibration Control */
+	u32	res2[3];
+	u32	srdsrcalcr;	/* RX Calibration Control */
+	u32	res3[3];
+	u32	srdsgr0;	/* General Register 0 */
+	u32	res4[11];
+	u32	srdspccr0;	/* Protocol Converter Config 0 */
+	u32	res5[79];
+	struct {
+		u32	gcr0;	/* General Control Register 0 */
+		u32	gcr1;	/* General Control Register 1 */
+		u32	res1[2];
+		u32	recr0;	/* Receive Equalization Control Reg 0 */
+		u32	res2;
+		u32	tecr0;	/* TX Equalization Control Reg 0 */
+		u32	res3;
+		u32	ttlcr0;	/* Transition Tracking Loop Ctrl 0 */
+		u32	res4[7];
+	} lane[2];
+} serdes2_corenet_t;
+
 enum {
 	FSL_SRDS_B1_LANE_A = 0,
 	FSL_SRDS_B1_LANE_B = 1,
@@ -2620,6 +2647,7 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_SFP_OFFSET			0xE8000
 #endif
 #define CONFIG_SYS_FSL_CORENET_SERDES_OFFSET	0xEA000
+#define CONFIG_SYS_FSL_CORENET_SERDES2_OFFSET	0xEB000
 #define CONFIG_SYS_FSL_CPC_OFFSET		0x10000
 #define CONFIG_SYS_MPC85xx_DMA1_OFFSET		0x100000
 #define CONFIG_SYS_MPC85xx_DMA2_OFFSET		0x101000
@@ -2774,6 +2802,8 @@ typedef struct ccsr_snvs_regs {
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_SERDES2_OFFSET)
 #define CONFIG_SYS_FSL_CORENET_SERDES_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_CORENET_SERDES_OFFSET)
+#define CONFIG_SYS_FSL_CORENET_SERDES2_ADDR \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_CORENET_SERDES2_OFFSET)
 #define CONFIG_SYS_MPC85xx_USB_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_USB_OFFSET)
 #define CONFIG_SYS_MPC85xx_USB1_PHY_ADDR \
