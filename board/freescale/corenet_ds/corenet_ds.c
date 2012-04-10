@@ -181,7 +181,8 @@ int misc_init_r(void)
 	unsigned int i;
 	u8 sw;
 
-#if defined(CONFIG_P3041DS) || defined(CONFIG_P5020DS)
+#if defined(CONFIG_P3041DS) || defined(CONFIG_P5020DS) \
+	|| defined(CONFIG_P5040DS)
 	sw = in_8(&PIXIS_SW(5));
 	for (i = 0; i < 3; i++) {
 		unsigned int clock = (sw >> (6 - (2 * i))) & 3;
