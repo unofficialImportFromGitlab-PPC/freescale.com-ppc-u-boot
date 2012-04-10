@@ -94,10 +94,17 @@ static const struct {
 	{ 17, 163, FSL_SRDS_BANK_2 },
 	{ 18, 164, FSL_SRDS_BANK_2 },
 	{ 19, 165, FSL_SRDS_BANK_2 },
+#if defined(CONFIG_PPC_P4080) || defined(CONFIG_PPC_P3060)
 	{ 20, 170, FSL_SRDS_BANK_3 },
 	{ 21, 171, FSL_SRDS_BANK_3 },
 	{ 22, 172, FSL_SRDS_BANK_3 },
 	{ 23, 173, FSL_SRDS_BANK_3 },
+#else
+	{ 20, 166, FSL_SRDS_BANK_3 },
+	{ 21, 167, FSL_SRDS_BANK_3 },
+	{ 22, 168, FSL_SRDS_BANK_3 },
+	{ 23, 169, FSL_SRDS_BANK_3 },
+#endif
 	{ 24, 175, FSL_SRDS_BANK_4 },
 	{ 25, 176, FSL_SRDS_BANK_4 },
 };
