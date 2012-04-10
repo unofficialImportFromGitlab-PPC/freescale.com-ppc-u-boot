@@ -455,6 +455,47 @@ void fdt_fixup_board_enet(void *fdt)
 #endif
 }
 
+/*
+ * Mapping of SerDes Protocol to MDIO MUX value and PHY address.
+ *
+ * Fman 1:
+ *       DTSEC1        |   DTSEC2        |   DTSEC3        |   DTSEC4
+ *       Mux     Phy   |   Mux     Phy   |   Mux     Phy   |   Mux     Phy
+ *       Value   Addr  |   Value   Addr  |   Value   Addr  |   Value   Addr
+ * 0x00  2       1c    |   2       1d    |   2       1e    |   2       1f
+ * 0x01                |                 |   6       1c    |
+ * 0x02                |                 |   3       1c    |   3       1d
+ * 0x03  2       1c    |   2       1d    |   2       1e    |   2       1f
+ * 0x04  2       1c    |   2       1d    |   2       1e    |   2       1f
+ * 0x05                |                 |   3       1c    |   3       1d
+ * 0x06  2       1c    |   2       1d    |   2       1e    |   2       1f
+ * 0x07                |                 |   6       1c    |
+ * 0x11  2       1c    |   2       1d    |   2       1e    |   2       1f
+ * 0x2a  2             |                 |   2       1e    |   2       1f
+ * 0x34  6       1c    |   6       1d    |   4       1e    |   4       1f
+ * 0x35                |                 |   3       1c    |   3       1d
+ * 0x36  6       1c    |   6       1d    |   4       1e    |   4       1f
+ *                     |                 |                 |
+ * Fman  2:            |                 |                 |
+ *       DTSEC1        |   DTSEC2        |   DTSEC3        |   DTSEC4
+ *       EMI1          |   EMI1          |   EMI1          |   EMI1
+ *       Mux     Phy   |   Mux     Phy   |   Mux     Phy   |   Mux     Phy
+ *       Value   Addr  |   Value   Addr  |   Value   Addr  |   Value   Addr
+ * 0x00                |                 |   6       1c    |   6       1d
+ * 0x01                |                 |                 |
+ * 0x02                |                 |   6       1c    |   6       1d
+ * 0x03  3       1c    |   3       1d    |   6       1c    |   6       1d
+ * 0x04  3       1c    |   3       1d    |   6       1c    |   6       1d
+ * 0x05                |                 |   6       1c    |   6       1d
+ * 0x06                |                 |   6       1c    |   6       1d
+ * 0x07                |                 |                 |
+ * 0x11                |                 |                 |
+ * 0x2a                |                 |                 |
+ * 0x34                |                 |                 |
+ * 0x35                |                 |                 |
+ * 0x36                |                 |                 |
+ */
+
 int board_eth_init(bd_t *bis)
 {
 #ifdef CONFIG_FMAN_ENET
@@ -500,6 +541,7 @@ int board_eth_init(bd_t *bis)
 				"SUPER_HYDRA_FM1_TGEC_MDIO");
 	super_hydra_mdio_init(DEFAULT_FM_TGEC_MDIO_NAME,
 				"SUPER_HYDRA_FM2_TGEC_MDIO");
+
 	/*
 	 * Program the DTSEC PHY addresses assuming that they are all SGMII.
 	 * For any DTSEC that's RGMII, we'll override its PHY address later.
@@ -507,67 +549,42 @@ int board_eth_init(bd_t *bis)
 	 */
 	fm_info_set_phy_address(FM1_DTSEC1, CONFIG_SYS_FM1_DTSEC1_PHY_ADDR);
 	fm_info_set_phy_address(FM1_DTSEC2, CONFIG_SYS_FM1_DTSEC2_PHY_ADDR);
-	fm_info_set_phy_address(FM1_DTSEC3, CONFIG_SYS_FM1_DTSEC3_PHY_ADDR);
-	fm_info_set_phy_address(FM1_DTSEC4, CONFIG_SYS_FM1_DTSEC4_PHY_ADDR);
-	fm_info_set_phy_address(FM1_10GEC1, CONFIG_SYS_FM1_10GEC1_PHY_ADDR);
+	fm_info_set_phy_address(FM1_10GEC1, CONFIG_SYS_FM2_10GEC1_PHY_ADDR);
 
 #if (CONFIG_SYS_NUM_FMAN == 2)
 	fm_info_set_phy_address(FM2_DTSEC1, CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
 	fm_info_set_phy_address(FM2_DTSEC2, CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
-	fm_info_set_phy_address(FM2_DTSEC3, CONFIG_SYS_FM2_DTSEC3_PHY_ADDR);
-	fm_info_set_phy_address(FM2_DTSEC4, CONFIG_SYS_FM2_DTSEC4_PHY_ADDR);
-	fm_info_set_phy_address(FM2_10GEC1, CONFIG_SYS_FM2_10GEC1_PHY_ADDR);
+	fm_info_set_phy_address(FM2_DTSEC3, CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
+	fm_info_set_phy_address(FM2_DTSEC4, CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
+	fm_info_set_phy_address(FM2_10GEC1, CONFIG_SYS_FM1_10GEC1_PHY_ADDR);
 #endif
 
 	switch (srds_prtcl) {
-	case 0x0:
-	case 0x6:
-		fm_info_set_phy_address(FM2_DTSEC3,
-					CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC4,
-					CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
-		break;
-	case 0x1:
-	case 0x7:
+	case 0:
+	case 3:
+	case 4:
+	case 6:
+	case 0x11:
+	case 0x2a:
+	case 0x34:
+	case 0x36:
 		fm_info_set_phy_address(FM1_DTSEC3,
-					CONFIG_SYS_FM1_DTSEC1_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC4,
-					CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
-	case 0x2:
-	case 0x5:
-		fm_info_set_phy_address(FM1_DTSEC3,
-					CONFIG_SYS_FM1_DTSEC1_PHY_ADDR);
+					CONFIG_SYS_FM1_DTSEC3_PHY_ADDR);
 		fm_info_set_phy_address(FM1_DTSEC4,
-					CONFIG_SYS_FM1_DTSEC2_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC3,
-					CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC4,
-					CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
+					CONFIG_SYS_FM1_DTSEC4_PHY_ADDR);
 		break;
-	case 0x3:
-	case 0x4:
-		fm_info_set_phy_address(FM2_DTSEC1,
-					CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC2,
-					CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC3,
-					CONFIG_SYS_FM2_DTSEC1_PHY_ADDR);
-		fm_info_set_phy_address(FM2_DTSEC4,
-					CONFIG_SYS_FM2_DTSEC2_PHY_ADDR);
-		break;
+	case 1:
+	case 2:
+	case 5:
+	case 7:
 	case 0x35:
 		fm_info_set_phy_address(FM1_DTSEC3,
 					CONFIG_SYS_FM1_DTSEC1_PHY_ADDR);
 		fm_info_set_phy_address(FM1_DTSEC4,
 					CONFIG_SYS_FM1_DTSEC2_PHY_ADDR);
 		break;
-	case 0x11:
-	case 0x15:
-	case 0x2a:
-	case 0x34:
-	case 0x36:
-		break;
 	default:
+		printf("Fman:  Unsupport SerDes Protocol 0x%02x\n", srds_prtcl);
 		break;
 	}
 
@@ -581,6 +598,8 @@ int board_eth_init(bd_t *bis)
 				break;
 			slot = lane_to_slot[lane];
 			mdio_mux[i].mask = BRDCFG1_EMI1_SEL_MASK;
+			debug("FM1@DTSEC%u expects SGMII in slot %u\n",
+			      idx + 1, slot);
 			switch (slot) {
 			case 1:
 				mdio_mux[i].val = BRDCFG1_EMI1_SEL_SLOT1 |
@@ -620,7 +639,8 @@ int board_eth_init(bd_t *bis)
 			 * second on-board RGMII port. The other DTSECs cannot
 			 * be routed to RGMII.
 			 */
-			/* PHY addr = 0 */
+			debug("FM1@DTSEC%u is RGMII at address %u\n",
+			      idx + 1, 0);
 			fm_info_set_phy_address(i, 0);
 			mdio_mux[i].mask = BRDCFG1_EMI1_SEL_MASK;
 			mdio_mux[i].val  = BRDCFG1_EMI1_SEL_RGMII |
@@ -628,7 +648,7 @@ int board_eth_init(bd_t *bis)
 			super_hydra_mdio_set_mux("SUPER_HYDRA_RGMII_MDIO",
 					mdio_mux[i].mask, mdio_mux[i].val);
 			fm_info_set_mdio(i,
-			miiphy_get_dev_by_name("SUPER_HYDRA_RGMII_MDIO"));
+				miiphy_get_dev_by_name("SUPER_HYDRA_RGMII_MDIO"));
 			break;
 		case PHY_INTERFACE_MODE_NONE:
 			fm_info_set_phy_address(i, 0);
@@ -656,18 +676,7 @@ int board_eth_init(bd_t *bis)
 	 */
 	lane = serdes_get_first_lane(XAUI_FM1);
 	if (lane >= 0) {
-		/* Addding some debug code */
-		slot = lane_to_slot[lane];
-		if (slot != 2) {
-			printf("Incorrect slot for FM1 XAUI\n");
-			return -1;
-		}
-
-		/* clrsetbits_8(&pixis->brdcfg1, BRDCFG1_EMI2_SEL_MASK, */
-		/* BRDCFG1_EMI2_SEL_SLOT2); */
-
-		fm_info_set_phy_address(FM1_10GEC1,
-					CONFIG_SYS_FM2_10GEC1_PHY_ADDR);
+		debug("FM1@TGEC1 expects XAUI in slot %u\n", lane_to_slot[lane]);
 		mdio_mux[FM1_10GEC1].mask = BRDCFG1_EMI2_SEL_MASK;
 		mdio_mux[FM1_10GEC1].val = BRDCFG1_EMI2_SEL_SLOT2;
 		super_hydra_mdio_set_mux("SUPER_HYDRA_FM1_TGEC_MDIO",
@@ -688,6 +697,8 @@ int board_eth_init(bd_t *bis)
 				break;
 			slot = lane_to_slot[lane];
 			mdio_mux[i].mask = BRDCFG1_EMI1_SEL_MASK;
+			debug("FM2@DTSEC%u expects SGMII in slot %u\n",
+			      idx + 1, slot);
 			switch (slot) {
 			case 1:
 				mdio_mux[i].val = BRDCFG1_EMI1_SEL_SLOT1 |
@@ -727,7 +738,8 @@ int board_eth_init(bd_t *bis)
 			 * second on-board RGMII port. The other DTSECs cannot
 			 * be routed to RGMII.
 			 */
-			/* PHY addr = 1*/
+			debug("FM2@DTSEC%u is RGMII at address %u\n",
+			      idx + 1, 1);
 			fm_info_set_phy_address(i, 1);
 			mdio_mux[i].mask = BRDCFG1_EMI1_SEL_MASK;
 			mdio_mux[i].val  = BRDCFG1_EMI1_SEL_RGMII |
@@ -763,17 +775,7 @@ int board_eth_init(bd_t *bis)
 	 */
 	lane = serdes_get_first_lane(XAUI_FM2);
 	if (lane >= 0) {
-		/* Adding some debug code */
-		slot = lane_to_slot[lane];
-		if (slot != 1) {
-			printf("Incorrect slot for FM2 XAUI\n");
-			return -1;
-		}
-		/* XAUI card is in slot 1 */
-		/* clrsetbits_8(&pixis->brdcfg1, BRDCFG1_EMI2_SEL_MASK, */
-		/* BRDCFG1_EMI2_SEL_SLOT1); */
-		fm_info_set_phy_address(FM2_10GEC1,
-					CONFIG_SYS_FM1_10GEC1_PHY_ADDR);
+		debug("FM2@TGEC1 expects XAUI in slot %u\n", lane_to_slot[lane]);
 		mdio_mux[FM2_10GEC1].mask = BRDCFG1_EMI2_SEL_MASK;
 		mdio_mux[FM2_10GEC1].val = BRDCFG1_EMI2_SEL_SLOT1;
 		super_hydra_mdio_set_mux("SUPER_HYDRA_FM2_TGEC_MDIO",
