@@ -23,8 +23,13 @@
 #define __FSL_CORENET_SERDES_H
 
 #if defined(CONFIG_PPC_P5040)
-#define SRDS_MAX_LANES         20
-#define SRDS_MAX_BANK          4
+/*
+ * The fourth SerDes bank is on SerDes2, but U-boot currently only supports
+ * one SerDes controller.  For now, pretend that we have three banks and 18
+ * lanes.
+ */
+#define SRDS_MAX_LANES		18
+#define SRDS_MAX_BANK		3
 #else
 #define SRDS_MAX_LANES		18
 #define SRDS_MAX_BANK		3
