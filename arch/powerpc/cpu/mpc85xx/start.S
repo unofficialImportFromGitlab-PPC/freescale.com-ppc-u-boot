@@ -738,6 +738,15 @@ delete_temp_tlbs:
 	isync
 	msync
 
+	/* enable the timebase */
+#define CTBENR	0xe2084
+	li	r3, 1
+	addis	r4, r7, CTBENR@ha
+	stw	r3, CTBENR@l(r4)
+	lwz	r3, CTBENR@l(r4)
+	twi	0,r3,0
+	isync
+
 	.macro	erratum_set_ccsr offset value
 	addis	r3, r7, \offset@ha
 	lis	r4, \value@h
@@ -864,16 +873,16 @@ erratum_set_value:
 2:	sync
 
 	mfspr	r5, SPRN_TBRL
-4:	addis	r11, r5, 0x100000@h /* wait around one million timebase ticks */
-	mfspr	r5, SPRN_TBRL
+	addis	r11, r5, 0x10000@h /* wait 65536 timebase ticks */
+4:	mfspr	r5, SPRN_TBRL
 	subf.	r5, r5, r11
 	bgt	4b
 
 	stw	r4, 0(r3)
 
 	mfspr	r5, SPRN_TBRL
-4:	addis	r11, r5, 0x100000@h /* wait around one million timebase ticks */
-	mfspr	r5, SPRN_TBRL
+	addis	r11, r5, 0x10000@h /* wait 65536 timebase ticks */
+4:	mfspr	r5, SPRN_TBRL
 	subf.	r5, r5, r11
 	bgt	4b
 
