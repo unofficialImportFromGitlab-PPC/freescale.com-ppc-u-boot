@@ -43,7 +43,8 @@ endif
 
 SOBJS	= start.o resetvec.o ticks.o
 COBJS	= cache.o cpu_init_early.o cpu_init_nand.o fsl_law.o law.o \
-	  nand_boot.o nand_boot_fsl_ifc.o ns16550.o tlb.o tlb_table.o
+	  nand_boot.o nand_boot_fsl_ifc.o ns16550.o tlb.o tlb_table.o \
+	  ../common.o
 
 SRCS	:= $(addprefix $(obj),$(SOBJS:.o=.S) $(COBJS:.o=.c))
 OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))

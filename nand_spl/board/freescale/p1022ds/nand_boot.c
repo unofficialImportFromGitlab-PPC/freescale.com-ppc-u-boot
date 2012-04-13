@@ -26,7 +26,6 @@
 #include <asm/fsl_law.h>
 #include <asm/fsl_ddr_sdram.h>
 
-#define udelay(x) {int i, j; for (i = 0; i < x; i++) for (j = 0; j < 10000; j++); }
 
 /*
  * Fixed sdram init -- doesn't use serial presence detect.
@@ -71,6 +70,7 @@ void sdram_init(void)
 	set_next_law(0, CONFIG_SYS_SDRAM_SIZE_LAW, LAW_TRGT_IF_DDR_1);
 }
 
+u32 bus_clk;
 u32 sysclk_tbl[] = {
 	66666000, 7499900, 83332500, 8999900,
 	99999000, 11111000, 12499800, 13333200
@@ -79,7 +79,7 @@ u32 sysclk_tbl[] = {
 void board_init_f(ulong bootflag)
 {
 	int px_spd;
-	u32 plat_ratio, bus_clk, sys_clk;
+	u32 plat_ratio, sys_clk;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
 #if defined(CONFIG_SYS_BR2_PRELIM) && defined(CONFIG_SYS_OR2_PRELIM)

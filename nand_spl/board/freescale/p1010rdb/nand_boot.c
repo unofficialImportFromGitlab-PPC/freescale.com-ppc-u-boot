@@ -28,8 +28,6 @@
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_law.h>
 
-#define udelay(x) { int j; for (j = 0; j < x * 10000; j++) isync(); }
-
 unsigned long ddr_freq_mhz;
 
 void sdram_init(void)
@@ -71,7 +69,7 @@ void sdram_init(void)
 	out_be32(&ddr->ddr_zq_cntl, CONFIG_SYS_DDR_ZQ_CONTROL);
 
 	/* mimic 500us delay, with busy isync() loop */
-	udelay(100);
+	udelay(500);
 
 	/* Let the controller go */
 	out_be32(&ddr->sdram_cfg, in_be32(&ddr->sdram_cfg) | SDRAM_CFG_MEM_EN);
@@ -79,10 +77,11 @@ void sdram_init(void)
 	set_next_law(CONFIG_SYS_NAND_DDR_LAW, LAW_SIZE_1G, LAW_TRGT_IF_DDR_1);
 }
 
+u32 bus_clk;
+
 void board_init_f(ulong bootflag)
 {
 	u32 plat_ratio, ddr_ratio;
-	unsigned long bus_clk;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
 	/* initialize selected port with appropriate baud rate */
