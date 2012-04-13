@@ -25,6 +25,7 @@
 #include <asm/io.h>
 #include <nand.h>
 #include <asm/fsl_law.h>
+#include <asm/fsl_ddr_sdram.h>
 
 /* Fixed sdram init -- doesn't use serial presence detect. */
 void sdram_init(void)
@@ -53,12 +54,21 @@ void sdram_init(void)
 	out_be32(&ddr->ddr_wrlvl_cntl, CONFIG_SYS_DDR_WRLVL_CNTL);
 	out_be32(&ddr->ddr_cdr1, CONFIG_SYS_DDR_CDR_1);
 	out_be32(&ddr->ddr_cdr2, CONFIG_SYS_DDR_CDR_2);
-	out_be32(&ddr->sdram_cfg, CONFIG_SYS_DDR_CONTROL);
+	/* Set, but do not enable the memory */
+	out_be32(&ddr->sdram_cfg, CONFIG_SYS_DDR_CONTROL & ~SDRAM_CFG_MEM_EN);
+
+	asm volatile("sync;isync");
+	udelay(500);
+
+	/* Let the controller go */
+	out_be32(&ddr->sdram_cfg, in_be32(&ddr->sdram_cfg) | SDRAM_CFG_MEM_EN);
 }
+
+u32 bus_clk;
 
 void board_init_f(ulong bootflag)
 {
-	u32 plat_ratio, bus_clk;
+	u32 plat_ratio;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
 	/* initialize selected port with appropriate baud rate */
