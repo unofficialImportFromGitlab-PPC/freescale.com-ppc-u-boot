@@ -224,14 +224,10 @@ void fdt_fixup_qportals(void *blob)
 		if (err < 0)
 			goto err;
 
-#ifdef CONFIG_FSL_CORENET
 #ifdef CONFIG_SYS_DPAA_PME
 		err = fdt_qportal(blob, off, i, "pme@0", FSL_HW_PORTAL_PME, 1);
 		if (err < 0)
 			goto err;
-#else
-		fdt_qportal(blob, off, i, "pme@0", FSL_HW_PORTAL_PME, 0);
-#endif
 #endif
 
 #ifdef CONFIG_SYS_DPAA_FMAN
