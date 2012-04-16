@@ -33,6 +33,8 @@
 #define CONFIG_MMC
 #define CONFIG_PCIE3
 
+#define CONFIG_SYS_DPAA_PME
+
 #define CONFIG_ICS307_REFCLK_HZ		33333000  /* ICS307 ref clk freq */
 
 #include "corenet_ds.h"

@@ -36,6 +36,7 @@
 #define CONFIG_SPI_FLASH_EON
 #define CONFIG_SPI_FLASH_SST
 
+#define CONFIG_SYS_DPAA_PME
 #include "corenet_ds.h"
 
 #define SGMII_CARD_PORT1_PHY_ADDR 0x1C
