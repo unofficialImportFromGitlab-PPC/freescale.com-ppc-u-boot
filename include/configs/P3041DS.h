@@ -35,6 +35,7 @@
 #define CONFIG_PCIE3
 #define CONFIG_PCIE4
 #define CONFIG_SYS_DPAA_RMAN
+#define CONFIG_SYS_DPAA_PME
 
 #define CONFIG_SYS_SRIO
 #define CONFIG_SRIO1			/* SRIO port 1 */

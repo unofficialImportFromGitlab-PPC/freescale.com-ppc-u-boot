@@ -517,7 +517,6 @@
 #define CONFIG_SYS_QMAN_MEM_SIZE	0x00200000
 
 #define CONFIG_SYS_DPAA_FMAN
-#define CONFIG_SYS_DPAA_PME
 /* Default address of microcode for the Linux Fman driver */
 #if defined(CONFIG_SPIFLASH)
 /*
