@@ -304,18 +304,20 @@ void ft_board_setup(void *blob, bd_t *bd)
 		printf("fdt CAN");
 		fdt_del_tdm(blob);
 		fdt_del_spi_slic(blob);
-	}
-#ifndef CONFIG_SPIFLASH
-	else {
-		/* If we don't set fsl_p1010mux:tdm_can to "can" explicitly,
-		 * the default value of CPLD register 'tdm_uart1_sel'
-		 * (at 0xFFB00012) is 1 (tdm).
-		 */
+	} else if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
 		fdt_del_flexcan(blob);
 		fdt_del_spi_flash(blob);
 		fdt_disable_uart1(blob);
+	} else {
+		/*
+		 * If we don't set fsl_p1010mux:tdm_can to "can" or "tdm"
+		 * explicitly, defaultly spi_cs_sel to spi-flash instead of
+		 * to tdm/slic.
+		 */
+		fdt_del_tdm(blob);
+		fdt_del_flexcan(blob);
+		fdt_disable_uart1(blob);
 	}
-#endif
 #endif
 }
 #endif
@@ -332,10 +334,7 @@ int misc_init_r(void)
 				MPC85xx_PMUXCR_CAN2_TDM |
 				MPC85xx_PMUXCR_CAN2_UART);
 		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_CAN_UART);
-	}
-#ifndef CONFIG_SPIFLASH
-	else {
-		/* TDM is default */
+	} else if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
 		clrbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_UART |
 				MPC85xx_PMUXCR_CAN1_UART);
 		setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_TDM |
@@ -344,8 +343,11 @@ int misc_init_r(void)
 		setbits_be32(&gur->pmuxcr2, MPC85xx_PMUXCR2_UART_TDM);
 		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_TDM);
 		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_SLIC);
+	} else {
+		/* defaultly spi_cs_sel to flash */
+		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_FLASH);
 	}
-#endif
+
 	return 0;
 }
 #endif
