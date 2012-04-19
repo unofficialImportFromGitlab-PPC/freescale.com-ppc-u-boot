@@ -630,6 +630,38 @@ void fsl_serdes_init(void)
 		}
 	}
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004699
+	/*
+	 * To avoid the situation that resulted in the P4080 erratum
+	 * SERDES-8, a given SerDes bank will use the PLLs from the previous
+	 * bank if one of the PLL frequencies is a multiple of the other.  For
+	 * instance, if bank 3 is running at 2.5GHz and bank 2 is at 1.25GHz,
+	 * then bank 3 will use bank 2's PLL.  P5040 Erratum A-004699 says
+	 * that, in this situation, lane synchronization is not initiated.  So
+	 * when we detect a bank with a "borrowed" PLL, we have to manually
+	 * initiate lane synchronization.
+	 */
+	for (bank = FSL_SRDS_BANK_2; bank <= FSL_SRDS_BANK_3; bank++) {
+		/* Determine the first lane for this bank */
+		unsigned int lane;
+
+		for (lane = 0; lane < SRDS_MAX_LANES; lane++)
+			if (lanes[lane].bank == bank)
+				break;
+		idx = lanes[lane].idx;
+
+		/*
+		 * Check if the PLL for the bank is borrowed.  The UOTHL
+		 * bit of the first lane will tell us that.
+		 */
+		if (in_be32(&srds_regs->lane[idx].gcr0) & SRDS_GCR0_UOTHL) {
+			/* Manually start lane synchronization */
+			setbits_be32(&srds_regs->bank[bank].pllcr0,
+				     SRDS_PLLCR0_PVCOCNT_EN);
+		}
+	}
+#endif
+
 #if defined(CONFIG_SYS_P4080_ERRATUM_SERDES8) || defined (CONFIG_SYS_P4080_ERRATUM_SERDES9)
 	for (lane = 0; lane < SRDS_MAX_LANES; lane++) {
 		enum srds_prtcl lane_prtcl;

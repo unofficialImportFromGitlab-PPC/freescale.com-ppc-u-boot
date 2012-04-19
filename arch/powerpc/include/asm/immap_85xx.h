@@ -2311,6 +2311,7 @@ typedef struct serdes_corenet {
 #define SRDS_RSTCTL_SDPD	0x00000020
 		u32	pllcr0; /* PLL Control Register 0 */
 #define SRDS_PLLCR0_RFCK_SEL_MASK	0x30000000
+#define SRDS_PLLCR0_PVCOCNT_EN		0x02000000
 #define SRDS_PLLCR0_RFCK_SEL_100	0x00000000
 #define SRDS_PLLCR0_RFCK_SEL_125	0x10000000
 #define SRDS_PLLCR0_RFCK_SEL_156_25	0x20000000
@@ -2339,6 +2340,7 @@ typedef struct serdes_corenet {
 		u32	gcr0;	/* General Control Register 0 */
 #define SRDS_GCR0_RRST			0x00400000
 #define SRDS_GCR0_1STLANE		0x00010000
+#define SRDS_GCR0_UOTHL			0x00100000
 		u32	gcr1;	/* General Control Register 1 */
 #define SRDS_GCR1_REIDL_CTL_MASK	0x001f0000
 #define SRDS_GCR1_REIDL_CTL_PCIE	0x00100000
