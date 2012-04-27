@@ -31,6 +31,7 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 {
 	struct eth_device *dev;
 	int node;
+	int mdio_node;
 	int i = -1;
 	int etsec_num = 0;
 
@@ -38,16 +39,38 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 	if (node < 0)
 		return;
 
+	mdio_node = fdt_node_offset_by_compatible(fdt, -1, "fsl,gianfar-mdio");
+	if (mdio_node < 0)
+		return;
+
 	while ((dev = eth_get_dev_by_index(++i)) != NULL) {
 		struct tsec_private *priv;
+		int phy_node;
 		int enet_node;
+		uint32_t ph;
+		char sgmii_phy[16];
 		char enet[16];
 		const u32 *phyh;
-		int phynode;
 		const char *model;
 		const char *path;
 
 		if (!strstr(dev->name, "eTSEC"))
+			continue;
+
+		priv = dev->priv;
+		if (!(priv->flags & TSEC_SGMII)) {
+			etsec_num++;
+			continue;
+		}
+
+		sprintf(sgmii_phy, "sgmii-phy@%d", etsec_num);
+		phy_node = fdt_subnode_offset(fdt, mdio_node, sgmii_phy);
+		if (phy_node < 0)
+			continue;
+
+		fdt_increase_size(fdt, 32);
+		ph = fdt_create_phandle(fdt, phy_node);
+		if (!ph)
 			continue;
 
 		sprintf(enet, "ethernet%d", etsec_num++);
@@ -74,15 +97,8 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 		if (!strstr(model, "TSEC"))
 			continue;
 
-		phyh = fdt_getprop(fdt, enet_node, "phy-handle", NULL);
-		if (!phyh)
-			continue;
-
-		phynode = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(*phyh));
-
-		priv = dev->priv;
-
-		if (priv->flags & TSEC_SGMII)
-			fdt_setprop_cell(fdt, phynode, "reg", priv->phyaddr);
+		fdt_setprop(fdt, enet_node, "phy-handle", &ph, sizeof(ph));
+		fdt_setprop_string(fdt, enet_node, "phy-connection-type",
+			phy_string_for_interface(PHY_INTERFACE_MODE_SGMII));
 	}
 }
