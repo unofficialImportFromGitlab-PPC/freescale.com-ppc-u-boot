@@ -128,6 +128,9 @@ ifneq ($(OBJTREE), $(SRCTREE))
 $(obj)nand_boot.c:
 	@rm -f $(obj)nand_boot.c
 	ln -s $(SRCTREE)/nand_spl/board/$(BOARDDIR)/nand_boot.c $(obj)nand_boot.c
+$(obj)../common.c:
+	@rm -f $(obj)../common.c
+	ln -s $(SRCTREE)/nand_spl/board/freescale/common.c $(obj)../common.c
 endif
 
 #########################################################################
