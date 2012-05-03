@@ -67,6 +67,8 @@ static u8 px_brdcfg0;
 static u32 pmuxcr;
 static void *lbc_lcs0_ba;
 static void *lbc_lcs1_ba;
+static u32 old_br0, old_or0, old_br1, old_or1;
+static u32 new_br0, new_or0, new_br1, new_or1;
 
 void diu_set_pixel_clock(unsigned int pixclock)
 {
@@ -93,9 +95,43 @@ int platform_diu_init(unsigned int xres, unsigned int yres, const char *port)
 	u32 pixel_format;
 	u8 temp;
 
+	/*
+	 * Indirect mode requires both BR0 and BR1 to be set to "GPCM",
+	 * otherwise writes to these addresses won't actually appear on the
+	 * local bus, and so the PIXIS won't see them.
+	 *
+	 * In FCM mode, writes go to the NAND controller, which does not pass
+	 * them to the localbus directly.  So we force BR0 and BR1 into GPCM
+	 * mode, since we don't care about what's behind the localbus any
+	 * more.  However, we save those registers first, so that we can
+	 * restore them when necessary.
+	 */
+	new_br0 = old_br0 = get_lbc_br(0);
+	new_br1 = old_br1 = get_lbc_br(1);
+	new_or0 = old_or0 = get_lbc_or(0);
+	new_or1 = old_or1 = get_lbc_or(1);
+
+	/*
+	 * Use the existing BRx/ORx values if it's already GPCM. Otherwise,
+	 * force the values to simple 32KB GPCM windows with the most
+	 * conservative timing.
+	 */
+	if ((old_br0 & BR_MSEL) != BR_MS_GPCM) {
+		new_br0 = (get_lbc_br(0) & BR_BA) | BR_V;
+		new_or0 = OR_AM_32KB | 0xFF7;
+		set_lbc_br(0, new_br0);
+		set_lbc_or(0, new_or0);
+	}
+	if ((old_br1 & BR_MSEL) != BR_MS_GPCM) {
+		new_br1 = (get_lbc_br(1) & BR_BA) | BR_V;
+		new_or1 = OR_AM_32KB | 0xFF7;
+		set_lbc_br(1, new_br1);
+		set_lbc_or(1, new_or1);
+	}
+
 	/* Save the LBC LCS0 and LCS1 addresses for the DIU mux functions */
-	lbc_lcs0_ba = (void *)(get_lbc_br(0) & get_lbc_or(0) & 0xFFFF8000);
-	lbc_lcs1_ba = (void *)(get_lbc_br(1) & get_lbc_or(1) & 0xFFFF8000);
+	lbc_lcs0_ba = map_physmem(old_br0 & old_or0 & BR_BA, 1, 0);
+	lbc_lcs1_ba = map_physmem(old_br1 & old_or1 & BR_BA, 1, 0);
 
 	pixel_format = cpu_to_le32(AD_BYTE_F | (3 << AD_ALPHA_C_SHIFT) |
 		(0 << AD_BLUE_C_SHIFT) | (1 << AD_GREEN_C_SHIFT) |
@@ -138,6 +174,7 @@ int platform_diu_init(unsigned int xres, unsigned int yres, const char *port)
 	out_8(lbc_lcs0_ba, offsetof(ngpixis_t, brdcfg0));
 	px_brdcfg0 = in_8(lbc_lcs1_ba);
 	out_8(lbc_lcs1_ba, px_brdcfg0 | PX_BRDCFG0_ELBC_DIU);
+	in_8(lbc_lcs1_ba);
 
 	/* Set PMUXCR to switch the muxed pins from the LBC to the DIU */
 	clrsetbits_be32(&gur->pmuxcr, PMUXCR_ELBCDIU_MASK, PMUXCR_ELBCDIU_DIU);
@@ -172,12 +209,10 @@ static int set_mux_to_lbc(void)
 		 * In DIU mode, the PIXIS can only be accessed indirectly
 		 * since we can't read/write the LBC directly.
 		 */
-
 		/* Set the board mux to LBC.  This will disable the display. */
 		out_8(lbc_lcs0_ba, offsetof(ngpixis_t, brdcfg0));
-		px_brdcfg0 = in_8(lbc_lcs1_ba);
-		out_8(lbc_lcs1_ba, (px_brdcfg0 & ~(PX_BRDCFG0_ELBC_SPI_MASK
-			| PX_BRDCFG0_ELBC_DIU)) | PX_BRDCFG0_ELBC_SPI_ELBC);
+		out_8(lbc_lcs1_ba, px_brdcfg0);
+		in_8(lbc_lcs1_ba);
 
 		/* Disable indirect PIXIS mode */
 		out_8(lbc_lcs0_ba, offsetof(ngpixis_t, csr));
@@ -187,6 +222,12 @@ static int set_mux_to_lbc(void)
 		out_be32(&gur->pmuxcr, (pmuxcr & ~PMUXCR_ELBCDIU_MASK) |
 			 PMUXCR_ELBCDIU_NOR16);
 		in_be32(&gur->pmuxcr);
+
+		/* Restore the BR0 and BR1 settings */
+		set_lbc_br(0, old_br0);
+		set_lbc_or(0, old_or0);
+		set_lbc_br(1, old_br1);
+		set_lbc_or(1, old_or1);
 
 		return 1;
 	}
@@ -203,12 +244,18 @@ static void set_mux_to_diu(void)
 {
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
+	/* Set BR0 and BR1 to GPCM mode */
+	set_lbc_br(0, new_br0);
+	set_lbc_or(0, new_or0);
+	set_lbc_br(1, new_br1);
+	set_lbc_or(1, new_or1);
+
 	/* Enable indirect PIXIS mode */
 	setbits_8(&pixis->csr, PX_CTL_ALTACC);
 
 	/* Set the board mux to DIU.  This will enable the display. */
 	out_8(lbc_lcs0_ba, offsetof(ngpixis_t, brdcfg0));
-	out_8(lbc_lcs1_ba, px_brdcfg0);
+	out_8(lbc_lcs1_ba, px_brdcfg0 | PX_BRDCFG0_ELBC_DIU);
 	in_8(lbc_lcs1_ba);
 
 	/* Set the chip mux to DIU mode. */
