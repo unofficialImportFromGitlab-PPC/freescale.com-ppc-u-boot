@@ -180,6 +180,9 @@ void srio_boot_master_release_slave(void)
 {
 	struct ccsr_rio *srio = (void *)CONFIG_SYS_FSL_SRIO_ADDR;
 	u32 escsr;
+	u32 resp;
+	u32 resp_ackid;
+	u32 local_ackid;
 	debug("SRIOBOOT - MASTER: "
 			"Check the port status and release slave core ...\n");
 
@@ -190,6 +193,40 @@ void srio_boot_master_release_slave(void)
 			debug("SRIOBOOT - MASTER: Port [ %d ] is error.\n",
 					CONFIG_SRIOBOOT_MASTER_PORT);
 		} else {
+			/* check the partner port status */
+			out_be32((void *)&srio->lp_serial
+					.port[CONFIG_SRIOBOOT_MASTER_PORT]
+					.plmreqcsr, 0x4);
+			udelay(500);
+			resp = in_be32((void *)&srio->lp_serial
+					.port[CONFIG_SRIOBOOT_MASTER_PORT]
+					.plmrespcsr);
+			debug("SRIOBOOT - MASTER: "
+					"Port [ %d ] plmrespcsr = 0x%x\n",
+					CONFIG_SRIOBOOT_MASTER_PORT, resp);
+			if (resp & 0x80000000) {
+				resp_ackid = (resp >> 5) & 0x1f;
+				local_ackid = in_be32((void *)&srio->lp_serial
+					.port[CONFIG_SRIOBOOT_MASTER_PORT]
+					.plascsr);
+				debug("SRIOBOOT - MASTER: "
+						"Port [ %d ] plascsr = 0x%x\n",
+						CONFIG_SRIOBOOT_MASTER_PORT,
+						local_ackid);
+				if ((resp_ackid != (local_ackid & 0x1f))
+					|| ((resp & 0x1f) != 0x10)) {
+					debug("SRIOBOOT - MASTER: "
+						"Port [ %d ] link error.\n",
+						CONFIG_SRIOBOOT_MASTER_PORT);
+					return;
+				}
+			} else {
+				debug("SRIOBOOT - MASTER: "
+						"Port [ %d ] link error.\n",
+						CONFIG_SRIOBOOT_MASTER_PORT);
+				return;
+			}
+
 			debug("SRIOBOOT - MASTER: "
 					"Port [ %d ] is ready, now release slave's core ...\n",
 					CONFIG_SRIOBOOT_MASTER_PORT);
