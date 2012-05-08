@@ -120,3 +120,29 @@ U_BOOT_CMD(
 	"[on, off, flush]\n"
 	"    - enable, disable, or flush data (writethrough) cache"
 );
+
+#ifdef CONFIG_CMD_CACHE_FLUSH
+int do_flush_cache(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	ulong addr, size;
+
+	switch (argc) {
+	case 3:
+		addr = simple_strtoul(argv[1], NULL, 16);
+		size = simple_strtoul(argv[2], NULL, 16);
+		flush_cache(addr, size);
+		break;
+	default:
+		return cmd_usage(cmdtp);
+	}
+	return 0;
+
+}
+
+U_BOOT_CMD(
+	flush,   3,   0,     do_flush_cache,
+	"flush cache for a range",
+	"<addr> <size>\n"
+	"    - flush cache for specificed range"
+);
+#endif

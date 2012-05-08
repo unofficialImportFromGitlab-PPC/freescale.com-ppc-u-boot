@@ -809,6 +809,7 @@ The following options need to be configured:
 		CONFIG_CMD_BSP		* Board specific commands
 		CONFIG_CMD_BOOTD	  bootd
 		CONFIG_CMD_CACHE	* icache, dcache
+		CONFIG_CMD_CACHE_FLUSH	* flush cache by the address and range
 		CONFIG_CMD_CONSOLE	  coninfo
 		CONFIG_CMD_CRC32	* crc32
 		CONFIG_CMD_DATE		* support for RTC, date/time...
@@ -912,7 +913,9 @@ The following options need to be configured:
 		8260 (where accesses to the IMMR region must be
 		uncached), and it cannot be disabled on all other
 		systems where we (mis-) use the data cache to hold an
-		initial stack and some data.
+		initial stack and some data. The CONFIG_CMD_CACHE_FLUSH
+		macro enables flushing cache by the address and range to
+		maintain coherency if required by architecture.
 
 
 		XXX - this list needs to get updated!
