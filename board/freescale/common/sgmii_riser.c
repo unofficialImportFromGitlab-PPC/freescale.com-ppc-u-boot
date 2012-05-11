@@ -17,6 +17,7 @@
 #include <net.h>
 #include <libfdt.h>
 #include <tsec.h>
+#include <fdt_support.h>
 
 void fsl_sgmii_riser_init(struct tsec_info_struct *tsec_info, int num)
 {
@@ -46,7 +47,6 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 		uint32_t ph;
 		char sgmii_phy[16];
 		char enet[16];
-		const u32 *phyh;
 		const char *model;
 		const char *path;
 
