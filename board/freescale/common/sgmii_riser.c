@@ -39,10 +39,6 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 	if (node < 0)
 		return;
 
-	mdio_node = fdt_node_offset_by_compatible(fdt, -1, "fsl,gianfar-mdio");
-	if (mdio_node < 0)
-		return;
-
 	while ((dev = eth_get_dev_by_index(++i)) != NULL) {
 		struct tsec_private *priv;
 		int phy_node;
@@ -62,6 +58,10 @@ void fsl_sgmii_riser_fdt_fixup(void *fdt)
 			etsec_num++;
 			continue;
 		}
+
+		mdio_node = fdt_node_offset_by_compatible(fdt, -1, "fsl,gianfar-mdio");
+		if (mdio_node < 0)
+			return;
 
 		sprintf(sgmii_phy, "sgmii-phy@%d", etsec_num);
 		phy_node = fdt_subnode_offset(fdt, mdio_node, sgmii_phy);
