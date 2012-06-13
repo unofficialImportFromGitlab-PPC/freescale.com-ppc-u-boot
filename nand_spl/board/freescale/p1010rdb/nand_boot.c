@@ -33,7 +33,8 @@ unsigned long ddr_freq_mhz;
 void sdram_init(void)
 {
 	ccsr_ddr_t *ddr = (ccsr_ddr_t *)CONFIG_SYS_MPC85xx_DDR_ADDR;
-	u32 svr = mfspr(SPRN_SVR);
+	/* mask off E bit */
+	u32 svr = SVR_SOC_VER(mfspr(SPRN_SVR));
 
 	__raw_writel(CONFIG_SYS_DDR_CONTROL | SDRAM_CFG_32_BE, &ddr->sdram_cfg);
 	__raw_writel(CONFIG_SYS_DDR_CS0_BNDS, &ddr->cs0_bnds);
