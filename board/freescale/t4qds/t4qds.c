@@ -389,7 +389,10 @@ void ft_board_setup(void *blob, bd_t *bd)
 	fdt_fixup_dr_usb(blob, bd);
 
 #ifdef CONFIG_SYS_DPAA_FMAN
+	/* FIXME: Temporarily comment out Fman eth fixups */
+#if 0
 	fdt_fixup_fman_ethernet(blob);
+#endif
 	fdt_fixup_board_enet(blob);
 #endif
 }
