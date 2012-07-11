@@ -386,7 +386,7 @@ __spin_table:
 	.align L1_CACHE_SHIFT
 	.global enable_cpu_a011_workaround
 enable_cpu_a011_workaround:
-	.long	0
+	.long	1
 
 	/* Fill in the empty space.  The actual reset vector is
 	 * the last word of the page */

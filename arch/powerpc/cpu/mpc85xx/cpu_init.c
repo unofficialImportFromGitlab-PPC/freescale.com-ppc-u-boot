@@ -329,14 +329,15 @@ int cpu_init_r(void)
 	 * CPU22 and NMG_CPU_A011 share the same workaround.
 	 * CPU22 applies to P4080 rev 1.0, 2.0, fixed in 3.0
 	 * NMG_CPU_A011 applies to P4080 rev 1.0, 2.0, fixed in 3.0
-	 * also applies to P3041 rev 1.0, 1.1, P2041 rev 1.0, 1.1
-	 * NMG_CPU_A011 is activated by hwconfig with syntax:
-	 * fsl_cpu_a011:enable
+	 * also applies to P3041 rev 1.0, 1.1, P2041 rev 1.0, 1.1, both
+	 * fixed in 2.0. NMG_CPU_A011 is activated by default and can
+	 * be disabled by hwconfig with syntax:
+	 *
+	 * fsl_cpu_a011:disable
 	 */
 	extern int enable_cpu_a011_workaround;
 #ifdef CONFIG_SYS_P4080_ERRATUM_CPU22
-	enable_cpu_a011_workaround =
-		(SVR_SOC_VER(svr) != SVR_P4080 || SVR_MAJ(svr) < 3);
+	enable_cpu_a011_workaround = (SVR_MAJ(svr) < 3);
 #else
 	char buffer[HWCONFIG_BUFFER_SIZE];
 	char *buf = NULL;
@@ -344,9 +345,12 @@ int cpu_init_r(void)
 	if (getenv_f("hwconfig", buffer, sizeof(buffer)) > 0)
 		buf = buffer;
 
-	if (hwconfig_arg_cmp_f("fsl_cpu_a011", "enable", buf) > 0) {
+	if (hwconfig_arg_cmp_f("fsl_cpu_a011", "disable", buf) > 0)
+		enable_cpu_a011_workaround = 0;
+	else {
 		enable_cpu_a011_workaround =
-			(SVR_SOC_VER(svr) != SVR_P4080 || SVR_MAJ(svr) < 3);
+			(SVR_SOC_VER(svr) == SVR_P4080 && SVR_MAJ(svr) < 3) ||
+			(SVR_SOC_VER(svr) != SVR_P4080 && SVR_MAJ(svr) < 2);
 	}
 #endif
 	if (enable_cpu_a011_workaround) {
