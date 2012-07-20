@@ -35,6 +35,9 @@
 #define CONFIG_FSL_SATA_V2
 #define CONFIG_PCIE3
 #define CONFIG_PCIE4
+#define CONFIG_SYS_SRIO
+#define CONFIG_SRIO1			/* SRIO port 1 */
+#define CONFIG_SRIO2			/* SRIO port 2 */
 #define CONFIG_SYS_FSL_RAID_ENGINE
 #define CONFIG_SYS_DPAA_RMAN
 #define CONFIG_SYS_DPAA_PME
