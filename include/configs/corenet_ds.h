@@ -739,6 +739,7 @@
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"hwconfig=fsl_ddr:ctlr_intlv=cacheline,"		\
 	"bank_intlv=cs0_cs1;"					\
+	"usb2:dr_mode=peripheral,phy_type=" MK_STR(__USB_PHY_TYPE) ";"\
 	"usb1:dr_mode=host,phy_type=" MK_STR(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
 	"uboot=" MK_STR(CONFIG_UBOOTPATH) "\0"			\
