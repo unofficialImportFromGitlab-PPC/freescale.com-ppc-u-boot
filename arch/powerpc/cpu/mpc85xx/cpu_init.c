@@ -56,8 +56,6 @@
 
 #include "../../../../drivers/block/fsl_sata.h"
 
-#define HWCONFIG_BUFFER_SIZE 128
-
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_SECURE_BOOT

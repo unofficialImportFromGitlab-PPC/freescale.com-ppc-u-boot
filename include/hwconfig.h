@@ -18,6 +18,8 @@
 #include <linux/types.h>
 #include <asm/errno.h>
 
+#define HWCONFIG_BUFFER_SIZE 256
+
 #ifdef CONFIG_HWCONFIG
 
 extern int hwconfig_f(const char *opt, char *buf);
