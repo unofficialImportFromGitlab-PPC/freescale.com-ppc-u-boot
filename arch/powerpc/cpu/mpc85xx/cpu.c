@@ -1,5 +1,5 @@
 /*
- * Copyright 2004,2007-2011 Freescale Semiconductor, Inc.
+ * Copyright 2004,2007-2012 Freescale Semiconductor, Inc.
  * (C) Copyright 2002, 2003 Motorola Inc.
  * Xianghua Xiao (X.Xiao@motorola.com)
  *
