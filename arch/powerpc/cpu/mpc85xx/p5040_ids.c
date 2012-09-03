@@ -60,9 +60,9 @@ struct liodn_id_table liodn_tbl[] = {
 	SET_SATA_LIODN(1, 127),
 	SET_SATA_LIODN(2, 128),
 
-	SET_PCI_LIODN("fsl,qoriq-pcie-v2.2", 1, 193),
-	SET_PCI_LIODN("fsl,qoriq-pcie-v2.2", 2, 194),
-	SET_PCI_LIODN("fsl,qoriq-pcie-v2.2", 3, 195),
+	SET_PCI_LIODN_BASE("fsl,qoriq-pcie-v2.4", 1, 193),
+	SET_PCI_LIODN_BASE("fsl,qoriq-pcie-v2.4", 2, 194),
+	SET_PCI_LIODN_BASE("fsl,qoriq-pcie-v2.4", 3, 195),
 
 	SET_DMA_LIODN(1, 197),
 	SET_DMA_LIODN(2, 198),
