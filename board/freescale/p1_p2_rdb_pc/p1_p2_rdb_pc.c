@@ -396,6 +396,100 @@ int board_eth_init(bd_t *bis)
 
 #if defined(CONFIG_QE) && \
 	(defined(CONFIG_P1025RDB) || defined(CONFIG_P1021RDB))
+#ifdef CONFIG_P1021RDB
+static void fdt_board_fixup_lbc_cs(void *blob)
+{
+	int offset, len;
+	const u32 pmc_range[] = {
+		CONFIG_SYS_PMC_BASE, 0x00010000
+	};
+
+	if (hwconfig("qe") && hwconfig("tdm")) {
+		/*
+		 * PMC has a shared CS pin with vitesse-7385, and
+		 * TDM has some pin muxed with lbc, so we modefy
+		 * the range and size of vitesse-7385 to the PMC,
+		 * then disable these both nor and l2switch nodes.
+		 */
+		int i;
+		u32 *size_cell, *range;
+
+		offset = fdt_node_offset_by_compatible(blob, -1, "fsl,elbc");
+		range = fdt_getprop(blob, offset, "ranges", &len);
+		size_cell = fdt_getprop(blob, offset, "#size-cells", NULL);
+
+		/*
+		 * Scan the value from DTS, modify the address and size
+		 * of l2switch to the PMC if it was there.
+		 */
+		for (i = 0; i < len; i++)
+			if (range[i] == CONFIG_SYS_VSC7385_BASE)
+				break;
+
+		if (i < len) {
+			range[i] = pmc_range[0];
+			range[i + *size_cell] = pmc_range[1];
+		} else
+			printf("WARNING: no range for PMC\n");
+
+		do_fixup_by_compat(blob, "cfi-flash", "status",
+			"disabled", sizeof("disabled"), 1);
+		do_fixup_by_compat(blob, "vitesse-7385", "status",
+			"disabled", sizeof("disabled"), 1);
+	} else {
+		/*
+		 * Disable the TDM tdmphy node, if there is no
+		 * "qe;tdm" string in hwconfig.
+		 */
+		do_fixup_by_compat(blob, "fsl,pq-mds-t1", "status",
+			"disabled", sizeof("disabled"), 1);
+	}
+}
+#endif
+
+#ifdef CONFIG_P1025RDB
+static void fdt_board_fixup_ucc_node(void *blob)
+{
+	int offset, ucc_sum;
+
+	if (hwconfig("qe") && hwconfig("tdm")) {
+		/* delete ucc geth and serial node, use tdm node */
+		for (ucc_sum = 4; ucc_sum > 0; ucc_sum--) {
+			offset = fdt_node_offset_by_compatible(blob,
+					-1, "ucc_geth");
+			if (offset >= 0)
+				fdt_del_node(blob, offset);
+			offset = fdt_node_offset_by_compatible(blob,
+					-1, "ucc_uart");
+			if (offset >= 0)
+				fdt_del_node(blob, offset);
+		}
+
+		do_fixup_by_compat(blob, "cfi-flash", "status",
+			"disabled", sizeof("disabled"), 1);
+	} else {
+		/*
+		 * Disable the TDM tdmphy node if don't use the mode
+		 * remove tdm node
+		 */
+		for (ucc_sum = 4; ucc_sum > 0; ucc_sum--) {
+			offset = fdt_node_offset_by_compatible(blob,
+					-1, "fsl,ucc-tdm");
+			if (offset >= 0)
+				fdt_del_node(blob, offset);
+		}
+
+		do_fixup_by_compat(blob, "fsl,pq-mds-t1", "status",
+			"disabled", sizeof("disabled"), 1);
+
+		offset = fdt_node_offset_by_compatible(blob,
+				-1, "fsl,mpc8569-qe-spi");
+		if (offset >= 0)
+			fdt_del_node(blob, offset);
+	}
+}
+#endif
+
 static void fdt_board_fixup_qe_pins(void *blob)
 {
 	unsigned int oldbus;
@@ -460,6 +554,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 	do_fixup_by_compat(blob, "fsl,qe", "status", "okay",
 			sizeof("okay"), 0);
 #if defined(CONFIG_P1025RDB) || defined(CONFIG_P1021RDB)
+#ifdef CONFIG_P1021RDB
+	fdt_board_fixup_lbc_cs(blob);
+#endif
+#ifdef CONFIG_P1025RDB
+	fdt_board_fixup_ucc_node(blob);
+#endif
 	fdt_board_fixup_qe_pins(blob);
 #endif
 #endif
