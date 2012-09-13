@@ -584,6 +584,27 @@ void fsl_serdes_init(void)
 			serdes_prtcl_map |= (1 << lane_prtcl);
 		}
 	}
+#ifdef CONFIG_PPC_P5040
+	/*
+	 * lanes on bank4 on P5040 are commented out, but for some SERDES
+	 * protocols, lanes on bank4 are route to SATA, and we use
+	 * serdes_prtcl_map to decide whether a protocol is supported on
+	 * a given lane, then SATA will be identified as not supported,
+	 * SATA will not be initialized in u-boot. So for protocols which
+	 * use SATA on bank4, we add SATA support in serdes_prtcl_map.
+	 */
+	switch (cfg) {
+	case 0x0:
+	case 0x1:
+	case 0x2:
+	case 0x3:
+	case 0x4:
+	case 0x5:
+	case 0x6:
+	case 0x7:
+		serdes_prtcl_map |= 1 << SATA1 | 1 << SATA2;
+	}
+#endif
 
 	soc_serdes_init();
 
