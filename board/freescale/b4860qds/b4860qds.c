@@ -285,21 +285,13 @@ unsigned long get_board_sys_clk(void)
 {
 	u8 sysclk_conf = QIXIS_READ(brdcfg[1]);
 
-	switch (sysclk_conf & 0x0F) {
-	case QIXIS_SYSCLK_83:
-		return 83333333;
-	case QIXIS_SYSCLK_100:
+	switch ((sysclk_conf & 0x0C) >> 2) {
+	case QIXIS_CLK_100:
 		return 100000000;
-	case QIXIS_SYSCLK_125:
+	case QIXIS_CLK_125:
 		return 125000000;
-	case QIXIS_SYSCLK_133:
+	case QIXIS_CLK_133:
 		return 133333333;
-	case QIXIS_SYSCLK_150:
-		return 150000000;
-	case QIXIS_SYSCLK_160:
-		return 160000000;
-	case QIXIS_SYSCLK_166:
-		return 166666666;
 	}
 	return 66666666;
 }
@@ -308,12 +300,12 @@ unsigned long get_board_ddr_clk(void)
 {
 	u8 ddrclk_conf = QIXIS_READ(brdcfg[1]);
 
-	switch ((ddrclk_conf & 0x30) >> 4) {
-	case QIXIS_DDRCLK_100:
+	switch (ddrclk_conf & 0x03) {
+	case QIXIS_CLK_100:
 		return 100000000;
-	case QIXIS_DDRCLK_125:
+	case QIXIS_CLK_125:
 		return 125000000;
-	case QIXIS_DDRCLK_133:
+	case QIXIS_CLK_133:
 		return 133333333;
 	}
 	return 66666666;
