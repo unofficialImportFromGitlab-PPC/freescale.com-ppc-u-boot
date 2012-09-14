@@ -32,20 +32,32 @@ void qixis_write(unsigned int reg, u8 value)
 
 void qixis_reset(void)
 {
+#ifdef CONFIG_FSL_QIXIS_V2
+	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_LOCK);
+	QIXIS_WRITE(rst_frc[1], QIXIS_RST_FRCE_PRST);
+#else
 	QIXIS_WRITE(rst_ctl, QIXIS_RST_CTL_RESET);
+#endif
 }
 
 void qixis_bank_reset(void)
 {
+#ifdef CONFIG_FSL_QIXIS_V2
+	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_LOCK);
+#else
 	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_RECONFIG_IDLE);
 	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_RECONFIG_START);
+#endif
+
 }
 
 /* Set the boot bank to the power-on default bank */
 void clear_altbank(void)
 {
 	u8 reg;
-
+#if defined(CONFIG_FSL_QIXIS_V2)
+	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_UNLOCK);
+#endif
 	reg = QIXIS_READ(brdcfg[0]);
 	reg = (reg & ~QIXIS_LBMAP_MASK) | QIXIS_LBMAP_DFLTBANK;
 	QIXIS_WRITE(brdcfg[0], reg);
@@ -56,6 +68,9 @@ void set_altbank(void)
 {
 	u8 reg;
 
+#if defined(CONFIG_FSL_QIXIS_V2)
+	QIXIS_WRITE(rcfg_ctl, QIXIS_RCFG_CTL_UNLOCK);
+#endif
 	reg = QIXIS_READ(brdcfg[0]);
 	reg = (reg & ~QIXIS_LBMAP_MASK) | QIXIS_LBMAP_ALTBANK;
 	QIXIS_WRITE(brdcfg[0], reg);
