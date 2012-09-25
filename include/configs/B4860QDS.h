@@ -60,9 +60,11 @@
 #define CONFIG_FSL_PCI_INIT		/* Use common FSL init code */
 #define CONFIG_SYS_PCI_64BIT		/* enable 64-bit PCI resources */
 
+#ifndef CONFIG_PPC_B4420
 #define CONFIG_SYS_SRIO
 #define CONFIG_SRIO1			/* SRIO port 1 */
 #define CONFIG_SRIO2			/* SRIO port 2 */
+#endif
 
 #define CONFIG_FSL_LAW			/* Use common FSL init code */
 
@@ -463,6 +465,8 @@ unsigned long get_board_ddr_clk(void);
 /*
  * RapidIO
  */
+#ifdef CONFIG_SYS_SRIO
+#ifdef CONFIG_SRIO1
 #define CONFIG_SYS_SRIO1_MEM_VIRT	0xa0000000
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_SRIO1_MEM_PHYS	0xc20000000ull
@@ -470,7 +474,9 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_SRIO1_MEM_PHYS	0xa0000000
 #endif
 #define CONFIG_SYS_SRIO1_MEM_SIZE	0x10000000	/* 256M */
+#endif
 
+#ifdef CONFIG_SRIO2
 #define CONFIG_SYS_SRIO2_MEM_VIRT	0xb0000000
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_SRIO2_MEM_PHYS	0xc30000000ull
@@ -478,6 +484,8 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_SRIO2_MEM_PHYS	0xb0000000
 #endif
 #define CONFIG_SYS_SRIO2_MEM_SIZE	0x10000000	/* 256M */
+#endif
+#endif
 
 /*
  * for slave u-boot IMAGE instored in master memory space,
