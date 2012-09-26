@@ -132,7 +132,7 @@ void get_sys_info (sys_info_t * sysInfo)
 		sysInfo->freqProcessor[cpu] =
 			 freqCC_PLL[cplx_pll] / core_cplx_PLL_div[c_pll_sel];
 	}
-#ifdef CONFIG_PPC_B4860
+#if defined(CONFIG_PPC_B4860) || defined(CONFIG_PPC_B4420)
 #define FM1_CLK_SEL	0xe0000000
 #define FM1_CLK_SHIFT	29
 #else
