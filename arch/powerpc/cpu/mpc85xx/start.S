@@ -86,6 +86,59 @@ _start_e500:
 	li	r1,MSR_DE
 	mtmsr 	r1
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004809
+	msync
+	isync
+	mfspr	r3, SPRN_HDBCR0
+	oris	r3, r3, 0x0100
+	ori	r3, r3, 0x8000
+	mtspr	SPRN_HDBCR0, r3
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004792
+	msync
+	isync
+	mfspr	r3, SPRN_HDBCR0
+	ori	r3, r3, 0x4000
+	mtspr	SPRN_HDBCR0, r3
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004779
+	msync
+	isync
+	mfspr	r3, SPRN_HDBCR2
+	/*
+	 * Set HDBCR2[32]=1
+	 * Set HDBCR2[33:39]=3
+	 * Set HDBCR2[41:47]=3
+	 * So, create a mask of bits we want to set, and clear them,
+	 * then set them as specified
+	 */
+	lis	r4, 0xff7f
+	andc	r3, r3, r4
+	oris	r3, r3, 0x8303
+	mtspr	SPRN_HDBCR2, r3
+	isync
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004786
+	msync
+	isync
+	mfspr	r3, SPRN_HDBCR7
+	oris	r3, r3, 0x8000
+	mtspr	SPRN_HDBCR7, r3
+	isync
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004806
+	msync
+	isync
+	mfspr	r3, SPRN_HDBCR7
+	oris	r3, r3, 0x2000
+	mtspr	SPRN_HDBCR7, r3
+	isync
+#endif
+
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
 	mfspr	r3,SPRN_SVR
 	rlwinm	r3,r3,0,0xff

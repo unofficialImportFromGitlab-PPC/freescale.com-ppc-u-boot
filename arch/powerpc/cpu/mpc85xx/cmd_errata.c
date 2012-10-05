@@ -143,6 +143,21 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 	puts("Work-around for Erratum ELBC MULTIBIT ECC enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004809
+	puts("Work-around for Erratum A004809 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004792
+	puts("Work-around for Erratum A004792 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004779
+	puts("Work-around for Erratum A004779 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004786
+	puts("Work-around for Erratum A004786 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004806
+	puts("Work-around for Erratum A004806 enabled\n");
+#endif
 	return 0;
 }
 
