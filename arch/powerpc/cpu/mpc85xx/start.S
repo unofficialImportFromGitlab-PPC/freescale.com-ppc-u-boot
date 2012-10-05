@@ -577,9 +577,14 @@ nexti:	mflr	r1		/* R1 = our PC */
  * Clear out any other TLB entries that may exist, to avoid conflicts.
  * Our TLB entry is in r14.
  */
+#ifdef CONFIG_E500MC
+	/* Erratum A-004827 on some chips means tlbivax/tlbsync is unusable */
+	tlbilxlpid
+#else
 	li	r0, TLBIVAX_ALL | TLBIVAX_TLB0
 	tlbivax 0, r0
 	tlbsync
+#endif
 
 	mfspr	r4, SPRN_TLB1CFG
 	rlwinm	r4, r4, 0, TLBnCFG_NENTRY_MASK
@@ -1962,6 +1967,16 @@ unlock_ram_in_cache:
 	/* Invalidate the TLB entries for the cache */
 	lis	r3,CONFIG_SYS_INIT_RAM_ADDR@h
 	ori	r3,r3,CONFIG_SYS_INIT_RAM_ADDR@l
+#ifdef CONFIG_E500MC
+	/* Erratum A-004827 on some chips means tlbivax/tlbsync is unusable */
+	tlbilxva 0,r3
+	addi	r3,r3,0x1000
+	tlbilxva 0,r3
+	addi	r3,r3,0x1000
+	tlbilxva 0,r3
+	addi	r3,r3,0x1000
+	tlbilxva 0,r3
+#else
 	tlbivax	0,r3
 	addi	r3,r3,0x1000
 	tlbivax	0,r3
@@ -1969,6 +1984,7 @@ unlock_ram_in_cache:
 	tlbivax	0,r3
 	addi	r3,r3,0x1000
 	tlbivax	0,r3
+#endif
 	isync
 	blr
 
