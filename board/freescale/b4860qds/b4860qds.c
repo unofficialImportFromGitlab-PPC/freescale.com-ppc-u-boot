@@ -202,6 +202,7 @@ int configure_vsc3316_3308(void)
 	switch (serdes2_prtcl) {
 	case 0x9E:
 	case 0x9A:
+	case 0xb2:
 		num_vsc08_con = NUM_CON_VSC3308;
 		/* Configure VSC3308 crossbar switch */
 		ret = select_i2c_ch_pca(I2C_CH_VSC3308);
@@ -218,6 +219,7 @@ int configure_vsc3316_3308(void)
 			return ret;
 		}
 		break;
+	case 0x49:
 	case 0x4E:
 		num_vsc08_con = NUM_CON_VSC3308;
 		/* Configure VSC3308 crossbar switch */
