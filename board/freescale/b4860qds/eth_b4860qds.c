@@ -127,6 +127,14 @@ static void initialize_lane_to_slot(void)
 		 * Lanes: A,B,C,D: PCI
 		 * Lanes: E,F,G,H: XAUI2
 		 */
+	case 0xb2:
+		/*
+		 * Configuration:
+		 * SERDES: 2
+		 * Lanes: A,B,C,D: PCI
+		 * Lanes: E,F: SGMII 3&4
+		 * Lanes: G,H: XFI
+		 */
 	case 0xc2:
 		/*
 		 * Configuration:
@@ -235,7 +243,26 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC4,
 				CONFIG_SYS_FM1_DTSEC4_RISER_PHY_ADDR);
 		break;
-
+	case 0x49:
+		debug("Setting phy addresses on SGMII Riser card for"
+				"FM1_DTSEC1: %x\n",
+				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC1,
+				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC2,
+				CONFIG_SYS_FM1_DTSEC2_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC3,
+				CONFIG_SYS_FM1_DTSEC3_RISER_PHY_ADDR);
+		break;
+	case 0xb2:
+		debug("Setting phy addresses on SGMII Riser card for"
+				"FM1_DTSEC1: %x\n",
+				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC3,
+				CONFIG_SYS_FM1_DTSEC3_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC4,
+				CONFIG_SYS_FM1_DTSEC4_RISER_PHY_ADDR);
+		break;
 	default:
 		printf("Fman:  Unsupported SerDes2 Protocol 0x%02x\n",
 				serdes2_prtcl);
@@ -274,11 +301,14 @@ int board_eth_init(bd_t *bis)
 void fdt_fixup_board_enet(void *fdt)
 {
 	int i, idx;
+	char alias[32];
 
 	for (i = FM1_DTSEC1; i < FM1_DTSEC1 + CONFIG_SYS_NUM_FM1_DTSEC; i++) {
 		idx = i - FM1_DTSEC1;
 		switch (fm_info_get_enet_if(i)) {
-		case PHY_INTERFACE_MODE_SGMII:
+		case PHY_INTERFACE_MODE_NONE:
+			sprintf(alias, "ethernet%u", i);
+			fdt_status_disabled_by_alias(fdt, alias);
 			break;
 		default:
 			break;
