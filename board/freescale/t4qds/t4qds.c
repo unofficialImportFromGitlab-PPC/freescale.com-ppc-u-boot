@@ -91,7 +91,7 @@ int checkboard(void)
 	for (i = 0; i < MAX_SERDES; i++) {
 		static const char *freq[] = {
 			"100", "125", "156.25", "161.1328125"};
-		unsigned int clock = (sw >> (2 * i)) & 3;
+		unsigned int clock = (sw >> (6 - 2 * i)) & 3;
 
 		printf("SERDES%u=%sMHz ", i+1, freq[clock]);
 	}
