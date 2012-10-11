@@ -25,6 +25,7 @@
 #include <i2c.h>
 #include <netdev.h>
 #include <linux/compiler.h>
+#include <linux/time.h>
 #include <asm/mmu.h>
 #include <asm/processor.h>
 #include <asm/cache.h>
@@ -42,16 +43,62 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+static inline u16 qixis_read_minor(void)
+{
+	u16 minor;
+
+	/* this data is in little endian */
+	QIXIS_WRITE(tagdata, 5);
+	minor = QIXIS_READ(tagdata);
+	QIXIS_WRITE(tagdata, 6);
+	minor += QIXIS_READ(tagdata) << 8;
+
+	return minor;
+}
+
+static inline char *qixis_read_time(char *result)
+{
+	time_t time = 0;
+	int i;
+
+	/* timestamp is in 32-bit big endian */
+	for (i = 8; i <= 11; i++) {
+		QIXIS_WRITE(tagdata, i);
+		time =  (time << 8) + QIXIS_READ(tagdata);
+	}
+
+	return ctime_r(&time, result);
+}
+
+static inline char *qixis_read_tag(char *buf)
+{
+	int i;
+	char tag, *ptr = buf;
+
+	for (i = 16; i <= 63; i++) {
+		QIXIS_WRITE(tagdata, i);
+		tag = QIXIS_READ(tagdata);
+		*(ptr++) = tag;
+		if (!tag)
+			break;
+	}
+	if (i > 63)
+		*ptr = '\0';
+
+	return buf;
+}
+
 int checkboard(void)
 {
+	char buf[64];
 	u8 sw;
 	struct cpu_type *cpu = gd->cpu;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 	unsigned int i;
 
 	printf("Board: %sQDS, ", cpu->name);
-	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x, FPGA Ver: 0x%02x, ",
-		QIXIS_READ(id), QIXIS_READ(arch), QIXIS_READ(scver));
+	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x, ",
+		QIXIS_READ(id), QIXIS_READ(arch));
 
 	sw = QIXIS_READ(brdcfg[0]);
 	sw = (sw & QIXIS_LBMAP_MASK) >> QIXIS_LBMAP_SHIFT;
@@ -64,6 +111,12 @@ int checkboard(void)
 		puts("NAND\n");
 	else
 		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
+
+	printf("FPGA: v%d (%s), build %d",
+		(int)QIXIS_READ(scver), qixis_read_tag(buf),
+		(int)qixis_read_minor());
+	/* the timestamp string contains "\n" at the end */
+	printf(" on %s", qixis_read_time(buf));
 
 	/* Display the RCW, so that no one gets confused as to what RCW
 	 * we're actually using for this boot.
