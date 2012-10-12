@@ -71,11 +71,17 @@ phy_interface_t fman_port_enet_if(enum fm_port port)
 		return PHY_INTERFACE_MODE_NONE;
 
 	if ((port == FM1_10GEC1 || port == FM1_10GEC2)
-			&& (is_serdes_configured(XAUI_FM1)))
+			&& ((is_serdes_configured(XAUI_FM1_MAC9))
+		       || (is_serdes_configured(XAUI_FM1_MAC10))
+		       || (is_serdes_configured(XFI_FM1_MAC9))
+		       || (is_serdes_configured(XFI_FM1_MAC10))))
 		return PHY_INTERFACE_MODE_XGMII;
 
 	if ((port == FM2_10GEC1 || port == FM2_10GEC2)
-			&& (is_serdes_configured(XAUI_FM2)))
+			&& ((is_serdes_configured(XAUI_FM2_MAC9))
+		       || (is_serdes_configured(XAUI_FM2_MAC10))
+		       || (is_serdes_configured(XFI_FM2_MAC9))
+		       || (is_serdes_configured(XFI_FM2_MAC10))))
 		return PHY_INTERFACE_MODE_XGMII;
 
 #define FSL_CORENET_RCWSR13_EC1			0x60000000 /* bits 417..418 */
