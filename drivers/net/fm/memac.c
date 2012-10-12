@@ -51,7 +51,8 @@ static void memac_enable_mac(struct fsl_enet_mac *mac)
 {
 	struct memac *regs = mac->base;
 
-	setbits_be32(&regs->command_config, MEMAC_CMD_CFG_RXTX_EN);
+	setbits_be32(&regs->command_config, MEMAC_CMD_CFG_RXTX_EN
+					| MEMAC_CMD_CFG_NO_LEN_CHK);
 }
 
 static void memac_disable_mac(struct fsl_enet_mac *mac)
@@ -106,11 +107,16 @@ static void memac_set_interface_mode(struct fsl_enet_mac *mac,
 		if_mode &= ~IF_MODE_MASK;
 		if_mode |= (IF_MODE_GMII);
 		break;
+	case PHY_INTERFACE_MODE_XGMII:
+		if_mode &= ~IF_MODE_MASK;
+		if_mode |= IF_MODE_XGMII;
+		break;
 	default:
 		break;
 	}
-	/* Enable automatic speed selection */
-	if_mode |= IF_MODE_EN_AUTO;
+	/* Enable automatic speed selection for Non-XGMII */
+	if (type != PHY_INTERFACE_MODE_XGMII)
+		if_mode |= IF_MODE_EN_AUTO;
 
 	debug(" %s, if_mode = %x\n", __func__,  if_mode);
 	debug(" %s, if_status = %x\n", __func__,  if_status);
