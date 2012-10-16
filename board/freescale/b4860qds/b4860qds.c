@@ -48,6 +48,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int checkboard(void)
 {
+	char buf[64];
 	u8 sw;
 	struct cpu_type *cpu = gd->cpu;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
@@ -56,26 +57,25 @@ int checkboard(void)
 						"122.88", "122.88", "122.88"};
 	int clock;
 
-	printf("Board: %sDS, ", cpu->name);
-	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x\nFPGA Rev: 0x%02x, ",
-		QIXIS_READ(id), QIXIS_READ(arch), QIXIS_READ(scver));
-
-	printf("FPGA Ver: ");
-	for (i = 16; i < 34; i++) {
-		QIXIS_WRITE(tagdata, i);
-		printf("%c", QIXIS_READ(tagdata));
-	}
+	printf("Board: %sQDS, ", cpu->name);
+	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x, ",
+		QIXIS_READ(id), QIXIS_READ(arch));
 
 	sw = QIXIS_READ(brdcfg[0]);
 	sw = (sw & QIXIS_LBMAP_MASK) >> QIXIS_LBMAP_SHIFT;
 
-	printf(", ");
 	if (sw < 0x8)
 		printf("vBank: %d\n", sw);
 	else if (sw >= 0x8 && sw <= 0xE)
 		puts("NAND\n");
 	else
 		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
+
+	printf("FPGA: v%d (%s), build %d",
+		(int)QIXIS_READ(scver), qixis_read_tag(buf),
+		(int)qixis_read_minor());
+	/* the timestamp string contains "\n" at the end */
+	printf(" on %s", qixis_read_time(buf));
 
 	/* Display the RCW, so that no one gets confused as to what RCW
 	 * we're actually using for this boot.
