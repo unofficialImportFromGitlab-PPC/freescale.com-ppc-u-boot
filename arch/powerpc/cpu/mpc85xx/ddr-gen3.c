@@ -15,6 +15,10 @@
 #error Invalid setting for CONFIG_CHIP_SELECTS_PER_CTRL
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004390
+unsigned int picos_to_mclk(unsigned int picos);
+#endif
+
 void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 			     unsigned int ctrl_num)
 {
@@ -28,6 +32,9 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	volatile ccsr_local_ecm_t *ecm = (void *)CONFIG_SYS_MPC85xx_ECM_ADDR;
 	unsigned int csn_bnds_backup = 0, cs_sa, cs_ea, *csn_bnds_t;
 	int csn = -1;
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004390
+	unsigned int tRFC, tXPR;
 #endif
 
 	switch (ctrl_num) {
@@ -266,6 +273,26 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 
 #endif	/* part 1 of the workaound */
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004390
+	/* JEDEC specs require the DDR controller to wait a defined amount of
+	 * time (tXPR) before issuing any commands after asserting MCKE
+	 * following a RESET. This amount of time changes with density and
+	 * frequency. The DDRC has hard-coded this value to 300 cycles. The
+	 * workaround is to write SDRAM_MD_CNTL[CKE_CNTL] to force MCKE signal
+	 * high, Wait at least tXPR before setting DDR_SDRAM_CFG[MEM_EN].
+	 * In this implementation, we check if the tXPR is more than 300 cycles
+	 * and set MCKE high before the waiting of 500 microseconds required
+	 * for clock to setup. tXPR = max(5nCK, tRFC + 10ns)
+	 */
+	tRFC = (regs->timing_cfg_3 >> 12) & 0x1f0;
+	tRFC += (regs->timing_cfg_1 >> 12) & 0xf;
+	tXPR = tRFC + picos_to_mclk(10000);
+	if (tXPR > 300) {
+		out_be32(&ddr->sdram_md_cntl, MD_CNTL_CKE_CNTL_HIGH);
+		debug("Workaround for A004390: set MCKE high\n");
+	}
+#endif
+
 	/*
 	 * 500 painful micro-seconds must elapse between
 	 * the DDR clock setup and the DDR config enable.
@@ -279,6 +306,11 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	temp_sdram_cfg = in_be32(&ddr->sdram_cfg) & ~SDRAM_CFG_BI;
 	out_be32(&ddr->sdram_cfg, temp_sdram_cfg | SDRAM_CFG_MEM_EN);
 	asm volatile("sync;isync");
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004390
+	/* it is safe to write again even workaround wasn't activated */
+	out_be32(&ddr->sdram_md_cntl, regs->ddr_sdram_md_cntl);
+#endif /* second harlf of this workaround */
 
 	total_gb_size_per_controller = 0;
 	for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
