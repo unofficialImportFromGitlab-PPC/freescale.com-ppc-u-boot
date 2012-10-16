@@ -25,7 +25,6 @@
 #include <i2c.h>
 #include <netdev.h>
 #include <linux/compiler.h>
-#include <linux/time.h>
 #include <asm/mmu.h>
 #include <asm/processor.h>
 #include <asm/cache.h>
@@ -42,51 +41,6 @@
 #include "t4240qds_qixis.h"
 
 DECLARE_GLOBAL_DATA_PTR;
-
-static inline u16 qixis_read_minor(void)
-{
-	u16 minor;
-
-	/* this data is in little endian */
-	QIXIS_WRITE(tagdata, 5);
-	minor = QIXIS_READ(tagdata);
-	QIXIS_WRITE(tagdata, 6);
-	minor += QIXIS_READ(tagdata) << 8;
-
-	return minor;
-}
-
-static inline char *qixis_read_time(char *result)
-{
-	time_t time = 0;
-	int i;
-
-	/* timestamp is in 32-bit big endian */
-	for (i = 8; i <= 11; i++) {
-		QIXIS_WRITE(tagdata, i);
-		time =  (time << 8) + QIXIS_READ(tagdata);
-	}
-
-	return ctime_r(&time, result);
-}
-
-static inline char *qixis_read_tag(char *buf)
-{
-	int i;
-	char tag, *ptr = buf;
-
-	for (i = 16; i <= 63; i++) {
-		QIXIS_WRITE(tagdata, i);
-		tag = QIXIS_READ(tagdata);
-		*(ptr++) = tag;
-		if (!tag)
-			break;
-	}
-	if (i > 63)
-		*ptr = '\0';
-
-	return buf;
-}
 
 int checkboard(void)
 {
