@@ -224,6 +224,20 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC6,
 				CONFIG_SYS_FM1_DTSEC6_PHY_ADDR);
 		break;
+#ifdef CONFIG_PPC_B4420
+	case 0x18:
+		/* Serdes 1: A-D SGMII, Configuring on board dual SGMII Phy */
+		debug("Setting phy addresses for FM1_DTSEC3: %x and"
+			"FM1_DTSEC4: %x\n", CONFIG_SYS_FM1_DTSEC5_PHY_ADDR,
+			CONFIG_SYS_FM1_DTSEC6_PHY_ADDR);
+		/* Fixing Serdes clock by programming FPGA register */
+		QIXIS_WRITE(brdcfg[4], QIXIS_SRDS1CLK_125);
+		fm_info_set_phy_address(FM1_DTSEC3,
+				CONFIG_SYS_FM1_DTSEC5_PHY_ADDR);
+		fm_info_set_phy_address(FM1_DTSEC4,
+				CONFIG_SYS_FM1_DTSEC6_PHY_ADDR);
+		break;
+#endif
 	default:
 		printf("Fman:  Unsupported SerDes1 Protocol 0x%02x\n",
 				serdes1_prtcl);
