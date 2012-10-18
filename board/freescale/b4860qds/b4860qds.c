@@ -163,11 +163,11 @@ int configure_vsc3316_3308(void)
 		ret = select_i2c_ch_pca(I2C_CH_VSC3316);
 		if (!ret) {
 			ret = vsc3316_config(VSC3316_TX_ADDRESS,
-					vsc16_tx_sgmii, num_vsc16_con);
+					vsc16_tx_sgmii_lane_ab, num_vsc16_con);
 			if (ret)
 				return ret;
 			ret = vsc3316_config(VSC3316_RX_ADDRESS,
-					vsc16_rx_sgmii, num_vsc16_con);
+					vsc16_rx_sgmii_lane_ab, num_vsc16_con);
 			if (ret)
 				return ret;
 		} else {
@@ -175,6 +175,33 @@ int configure_vsc3316_3308(void)
 		}
 		break;
 
+#ifdef CONFIG_PPC_B4420
+	case 0x18:
+			/*
+			 * Configuration:
+			 * SERDES: 1
+			 * Lanes: A,B,C,D: SGMII
+			 * Lanes: E,F,G,H: CPRI
+			 */
+		debug("Configuring crossbar to use onboard SGMII PHYs:"
+				"srds_prctl:%x\n", serdes1_prtcl);
+		num_vsc16_con = NUM_CON_VSC3316;
+		/* Configure VSC3316 crossbar switch */
+		ret = select_i2c_ch_pca(I2C_CH_VSC3316);
+		if (!ret) {
+			ret = vsc3316_config(VSC3316_TX_ADDRESS,
+					vsc16_tx_sgmii_lane_cd, num_vsc16_con);
+			if (ret)
+				return ret;
+			ret = vsc3316_config(VSC3316_RX_ADDRESS,
+					vsc16_rx_sgmii_lane_cd, num_vsc16_con);
+			if (ret)
+				return ret;
+		} else {
+			return ret;
+		}
+		break;
+#endif
 
 	case 0x3E:      /* AMC */
 		num_vsc16_con = NUM_CON_VSC3316;
