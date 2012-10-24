@@ -296,7 +296,8 @@ unsigned long get_board_ddr_clk(void);
 
 
 /* I2C */
-#define CONFIG_SYS_I2C_SPEED		100000	/* I2C speed */
+#define CONFIG_SYS_FSL_I2C_SPEED	100000	/* I2C speed */
+#define CONFIG_SYS_FSL_I2C2_SPEED	100000
 #define I2C_MUX_PCA_ADDR_PRI		0x77 /* I2C bus multiplexer,primary */
 #define I2C_MUX_PCA_ADDR_SEC		0x76 /* I2C bus multiplexer,secondary */
 

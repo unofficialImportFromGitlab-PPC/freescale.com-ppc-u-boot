@@ -96,7 +96,8 @@
 
 
 /* I2C */
-#define CONFIG_SYS_I2C_SPEED		4000000	/* faster speed for emulator */
+#define CONFIG_SYS_FSL_I2C_SPEED	4000000	/* faster speed for emulator */
+#define CONFIG_SYS_FSL_I2C2_SPEED	4000000
 
 
 /* Qman/Bman */
