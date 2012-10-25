@@ -575,7 +575,7 @@ int misc_init_r(void)
 
 	sw = QIXIS_READ(brdcfg[2]);
 	for (i = 0; i < MAX_SERDES; i++) {
-		unsigned int clock = (sw >> (2 * i)) & 3;
+		unsigned int clock = (sw >> (6 - 2 * i)) & 3;
 		switch (clock) {
 		case 0:
 			actual[i] = SRDS_PLLCR0_RFCK_SEL_100;
