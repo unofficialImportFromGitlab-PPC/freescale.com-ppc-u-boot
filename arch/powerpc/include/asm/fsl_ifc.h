@@ -798,13 +798,15 @@ extern void init_early_memctl_regs(void);
 #define set_ifc_ftim(i, j, v) \
 			(out_be32(&(IFC_BASE_ADDR)->ftim_cs[i].ftim[j], v))
 
-#define FSL_IFC_BANK_COUNT	4
-
 enum ifc_chip_sel {
 	IFC_CS0,
 	IFC_CS1,
 	IFC_CS2,
 	IFC_CS3,
+	IFC_CS4,
+	IFC_CS5,
+	IFC_CS6,
+	IFC_CS7,
 };
 
 enum ifc_ftims {
@@ -907,6 +909,19 @@ struct fsl_ifc_gpcm {
 	u32 res4[0x1F3];
 };
 
+#if (CONFIG_SYS_FSL_IFC_BANK_COUNT == 8)
+#define CONFIG_SYS_FSL_IFC_CSPR_RES	0xd
+#define CONFIG_SYS_FSL_IFC_AMASK_RES	0xc
+#define CONFIG_SYS_FSL_IFC_CSOR_RES	0xc
+#define CONFIG_SYS_FSL_IFC_FTIM_RES	0x30
+#elif (CONFIG_SYS_FSL_IFC_BANK_COUNT == 4)
+#define CONFIG_SYS_FSL_IFC_CSPR_RES	0x19
+#define CONFIG_SYS_FSL_IFC_AMASK_RES	0x18
+#define CONFIG_SYS_FSL_IFC_CSOR_RES	0x18
+#define CONFIG_SYS_FSL_IFC_FTIM_RES	0x60
+#else
+#error IFC BANK count not defined
+#endif
 
 /*
  * IFC Controller Registers
@@ -918,24 +933,24 @@ struct fsl_ifc {
 		u32 cspr_ext;
 		u32 cspr;
 		u32 res2;
-	} cspr_cs[FSL_IFC_BANK_COUNT];
-	u32 res3[0x19];
+	} cspr_cs[CONFIG_SYS_FSL_IFC_BANK_COUNT];
+	u32 res3[CONFIG_SYS_FSL_IFC_CSPR_RES];
 	struct {
 		u32 amask;
 		u32 res4[0x2];
-	} amask_cs[FSL_IFC_BANK_COUNT];
-	u32 res5[0x17];
+	} amask_cs[CONFIG_SYS_FSL_IFC_BANK_COUNT];
+	u32 res5[CONFIG_SYS_FSL_IFC_AMASK_RES];
 	struct {
-		u32 csor_ext;
 		u32 csor;
+		u32 csor_ext;
 		u32 res6;
-	} csor_cs[FSL_IFC_BANK_COUNT];
-	u32 res7[0x19];
+	} csor_cs[CONFIG_SYS_FSL_IFC_BANK_COUNT];
+	u32 res7[CONFIG_SYS_FSL_IFC_CSOR_RES];
 	struct {
 		u32 ftim[4];
 		u32 res8[0x8];
-	} ftim_cs[FSL_IFC_BANK_COUNT];
-	u32 res9[0x60];
+	} ftim_cs[CONFIG_SYS_FSL_IFC_BANK_COUNT];
+	u32 res9[CONFIG_SYS_FSL_IFC_FTIM_RES];
 	u32 rb_stat;
 	u32 res10[0x2];
 	u32 ifc_gcr;
