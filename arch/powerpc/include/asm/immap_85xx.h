@@ -31,8 +31,11 @@
 #include <asm/types.h>
 #include <asm/fsl_dma.h>
 #include <asm/fsl_i2c.h>
+#ifdef CONFIG_FSL_IFC
 #include <asm/fsl_ifc.h>
+#else
 #include <asm/fsl_lbc.h>
+#endif
 #include <asm/fsl_fman.h>
 
 typedef struct ccsr_local {

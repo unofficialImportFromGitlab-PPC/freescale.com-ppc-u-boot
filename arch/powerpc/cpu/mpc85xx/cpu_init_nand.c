@@ -21,7 +21,6 @@
  */
 
 #include <common.h>
-#include <asm/fsl_ifc.h>
 #include <asm/io.h>
 
 void cpu_init_f(void)
