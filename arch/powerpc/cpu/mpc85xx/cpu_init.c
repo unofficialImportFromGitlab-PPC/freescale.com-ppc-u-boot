@@ -376,7 +376,7 @@ int cpu_init_r(void)
 #elif defined(CONFIG_SYS_FSL_QORIQ_CHASSIS2)
 	struct ccsr_cluster_l2 * l2cache = (void __iomem *)CONFIG_SYS_FSL_CLUSTER_1_L2;
 #endif
-#ifdef CONFIG_PPC_SPINTABLE_COMPATIBLE
+#if defined(CONFIG_PPC_SPINTABLE_COMPATIBLE) && defined(CONFIG_MP)
 	extern int spin_table_compat;
 	const char *spin;
 #endif
@@ -425,7 +425,7 @@ int cpu_init_r(void)
 	}
 #endif
 
-#ifdef CONFIG_PPC_SPINTABLE_COMPATIBLE
+#if defined(CONFIG_PPC_SPINTABLE_COMPATIBLE) && defined(CONFIG_MP)
 	spin = getenv("spin_table_compat");
 	if (spin && (*spin == 'n'))
 		spin_table_compat = 0;
