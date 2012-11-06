@@ -137,6 +137,14 @@ static void qixis_dump_regs(void)
 	printf("stat_alrm = %02x\n", QIXIS_READ(stat_alrm));
 }
 
+static void __qixis_dump_switch(void)
+{
+	puts("Reverse engineering switch is not implemented for this board\n");
+}
+
+void qixis_dump_switch(void)
+	__attribute__((weak, alias("__qixis_dump_switch")));
+
 int qixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int i;
@@ -169,6 +177,9 @@ int qixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	} else if (strcmp(argv[1], "dump") == 0) {
 		qixis_dump_regs();
 		return 0;
+	} else if (strcmp(argv[1], "switch") == 0) {
+		qixis_dump_switch();
+		return 0;
 	} else {
 		printf("Invalid option: %s\n", argv[1]);
 		return 1;
@@ -185,4 +196,5 @@ U_BOOT_CMD(
 	"qixis watchdog <watchdog_period> - set the watchdog period\n"
 	"	period: 1s 2s 4s 8s 16s 32s 1min 2min 4min 8min\n"
 	"qixis_reset dump - display the QIXIS registers\n"
+	"qixis_reset switch - display switch\n"
 	);
