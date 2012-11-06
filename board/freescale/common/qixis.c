@@ -107,7 +107,6 @@ void set_altbank(void)
 	QIXIS_WRITE(brdcfg[0], reg);
 }
 
-#ifdef DEBUG
 static void qixis_dump_regs(void)
 {
 	int i;
@@ -137,7 +136,6 @@ static void qixis_dump_regs(void)
 	printf("stat_sys = %02x\n", QIXIS_READ(stat_sys));
 	printf("stat_alrm = %02x\n", QIXIS_READ(stat_alrm));
 }
-#endif
 
 int qixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -168,16 +166,10 @@ int qixis_reset_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				return 0;
 			}
 		}
-	}
-
-#ifdef DEBUG
-	else if (strcmp(argv[1], "dump") == 0) {
+	} else if (strcmp(argv[1], "dump") == 0) {
 		qixis_dump_regs();
 		return 0;
-	}
-#endif
-
-	else {
+	} else {
 		printf("Invalid option: %s\n", argv[1]);
 		return 1;
 	}
@@ -192,7 +184,5 @@ U_BOOT_CMD(
 	"qixis_reset altbank - reset to alternate bank\n"
 	"qixis watchdog <watchdog_period> - set the watchdog period\n"
 	"	period: 1s 2s 4s 8s 16s 32s 1min 2min 4min 8min\n"
-#ifdef DEBUG
 	"qixis_reset dump - display the QIXIS registers\n"
-#endif
 	);
