@@ -152,7 +152,11 @@ void board_add_ram_info(int use_default)
 
 #if CONFIG_NUM_DDR_CONTROLLERS >= 2
 	if (!(sdram_cfg & SDRAM_CFG_MEM_EN)) {
+#ifdef CONFIG_MPC86xx
+		ddr = (void __iomem *)CONFIG_SYS_MPC86xx_DDR2_ADDR;
+#else
 		ddr = (void __iomem *)CONFIG_SYS_MPC85xx_DDR2_ADDR;
+#endif
 		sdram_cfg = in_be32(&ddr->sdram_cfg);
 	}
 #endif
