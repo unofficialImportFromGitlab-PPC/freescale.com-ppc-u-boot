@@ -64,14 +64,14 @@
  */
 #ifdef CONFIG_BOOTSCRIPT_KEY_HASH
 #define CONFIG_SECBOOT \
-	"setenv bs_hdraddr " MK_STR(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	   \
+	"setenv bs_hdraddr " __stringify(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	   \
 	"setenv bootargs \"root=/dev/ram rw console=ttyS0,115200 ramdisk_size=600000\";"	\
-	"esbc_validate $bs_hdraddr "  MK_STR(CONFIG_BOOTSCRIPT_KEY_HASH)";" \
+	"esbc_validate $bs_hdraddr "  __stringify(CONFIG_BOOTSCRIPT_KEY_HASH)";" \
 	"source $img_addr;"					\
 	"esbc_halt;"
 #else
 #define CONFIG_SECBOOT \
-	"setenv bs_hdraddr " MK_STR(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	 \
+	"setenv bs_hdraddr " __stringify(CONFIG_BOOTSCRIPT_HDR_ADDR)";"	 \
 	"setenv bootargs \"root=/dev/ram rw console=ttyS0,115200 ramdisk_size=600000\";"	\
 	"esbc_validate $bs_hdraddr;"			\
 	"source $img_addr;"				\
