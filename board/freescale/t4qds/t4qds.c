@@ -688,7 +688,10 @@ void board_detail(void)
 		puts("SDHC/eMMC\n");
 		break;
 	case 0x044:
-		puts("SPI\n");
+		puts("SPI 16-bit addressing\n");
+		break;
+	case 0x045:
+		puts("SPI 24-bit addressing\n");
 		break;
 	case 0x048:
 		puts("I2C normal addressing\n");
