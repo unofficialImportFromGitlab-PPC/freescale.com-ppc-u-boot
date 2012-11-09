@@ -150,6 +150,9 @@ int configure_vsc3316_3308(void)
 
 	switch (serdes1_prtcl) {
 	case 0x2a:
+	case 0x2C:
+	case 0x2D:
+	case 0x2E:
 			/*
 			 * Configuration:
 			 * SERDES: 1
@@ -203,17 +206,20 @@ int configure_vsc3316_3308(void)
 		break;
 #endif
 
-	case 0x3E:      /* AMC */
+	case 0x3E:
+	case 0x0D:
+	case 0x0E:
+	case 0x12:
 		num_vsc16_con = NUM_CON_VSC3316;
 		/* Configure VSC3316 crossbar switch */
 		ret = select_i2c_ch_pca(I2C_CH_VSC3316);
 		if (!ret) {
 			ret = vsc3316_config(VSC3316_TX_ADDRESS,
-					vsc16_tx_amc, num_vsc16_con);
+					vsc16_tx_sfp, num_vsc16_con);
 			if (ret)
 				return ret;
 			ret = vsc3316_config(VSC3316_RX_ADDRESS,
-					vsc16_rx_amc, num_vsc16_con);
+					vsc16_rx_sfp, num_vsc16_con);
 			if (ret)
 				return ret;
 		} else {
@@ -229,7 +235,10 @@ int configure_vsc3316_3308(void)
 	switch (serdes2_prtcl) {
 	case 0x9E:
 	case 0x9A:
+	case 0x98:
 	case 0xb2:
+	case 0x49:
+	case 0x4E:
 		num_vsc08_con = NUM_CON_VSC3308;
 		/* Configure VSC3308 crossbar switch */
 		ret = select_i2c_ch_pca(I2C_CH_VSC3308);
@@ -240,24 +249,6 @@ int configure_vsc3316_3308(void)
 				return ret;
 			ret = vsc3308_config(VSC3308_RX_ADDRESS,
 					vsc08_rx_amc, num_vsc08_con);
-			if (ret)
-				return ret;
-		} else {
-			return ret;
-		}
-		break;
-	case 0x49:
-	case 0x4E:
-		num_vsc08_con = NUM_CON_VSC3308;
-		/* Configure VSC3308 crossbar switch */
-		ret = select_i2c_ch_pca(I2C_CH_VSC3308);
-		if (!ret) {
-			ret = vsc3308_config(VSC3308_TX_ADDRESS,
-						vsc08_tx_sfp, num_vsc08_con);
-			if (ret)
-				return ret;
-			ret = vsc3308_config(VSC3308_RX_ADDRESS,
-						vsc08_rx_sfp, num_vsc08_con);
 			if (ret)
 				return ret;
 		} else {
