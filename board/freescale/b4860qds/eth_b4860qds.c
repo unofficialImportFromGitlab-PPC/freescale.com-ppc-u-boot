@@ -314,11 +314,10 @@ int board_eth_init(bd_t *bis)
 
 void fdt_fixup_board_enet(void *fdt)
 {
-	int i, idx;
+	int i;
 	char alias[32];
 
 	for (i = FM1_DTSEC1; i < FM1_DTSEC1 + CONFIG_SYS_NUM_FM1_DTSEC; i++) {
-		idx = i - FM1_DTSEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_NONE:
 			sprintf(alias, "ethernet%u", i);
