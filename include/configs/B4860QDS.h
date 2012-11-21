@@ -728,7 +728,7 @@ unsigned long get_board_ddr_clk(void);
 #define __USB_PHY_TYPE	ulpi
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
-	"hwconfig=fsl_ddr:ctlr_intlv=cacheline,"		\
+	"hwconfig=fsl_ddr:ctlr_intlv=null,"		\
 	"bank_intlv=cs0_cs1;"					\
 	"usb1:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
