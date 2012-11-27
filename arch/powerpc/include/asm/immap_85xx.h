@@ -3294,6 +3294,9 @@ struct ccsr_cluster_l2 {
 	u32 l2erreaddr;	/* 0xe50 L2 cache error extended address */
 	u32 l2erraddr;	/* 0xe54 L2 cache error address */
 	u32 l2errctl;	/* 0xe58 L2 cache error control */
+	u8  res_e5c[0xa4];	/* 0xe5c - 0xf00 */
+	u32 magic_f00;	/* Magic registers referred to by errata */
+	u32 magic_f04;
 };
 #define CONFIG_SYS_FSL_CLUSTER_1_L2 \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_CLUSTER_1_L2_OFFSET)

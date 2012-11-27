@@ -345,6 +345,15 @@ int enable_cluster_l2(void)
 
 			printf("enable l2 for cluster %d %p\n", i, l2cache);
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004857
+			clrsetbits_be32(&l2cache->magic_f04, 3UL << (63 - 41),
+					1UL << (63 - 41));
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005553
+			setbits_be32(&l2cache->magic_f04, 1UL << (63 - 54));
+			setbits_be32(&l2cache->magic_f00, 1UL << (63 - 41));
+#endif
+
 			out_be32(&l2cache->l2csr0, L2CSR0_L2FI|L2CSR0_L2LFC);
 			while ((in_be32(&l2cache->l2csr0)
 				& (L2CSR0_L2FI|L2CSR0_L2LFC)) != 0)
@@ -354,6 +363,17 @@ int enable_cluster_l2(void)
 		i++;
 	} while (!(cluster & TP_CLUSTER_EOC));
 
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004857
+	l2cache = (void __iomem *)(CONFIG_SYS_FSL_CLUSTER_1_L2);
+	clrsetbits_be32(&l2cache->magic_f04, 3UL << (63 - 41),
+			1UL << (63 - 41));
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005553
+	l2cache = (void __iomem *)(CONFIG_SYS_FSL_CLUSTER_1_L2);
+	setbits_be32(&l2cache->magic_f04, 1UL << (63 - 54));
+	setbits_be32(&l2cache->magic_f00, 1UL << (63 - 41));
+#endif
 	return 0;
 }
 #endif
