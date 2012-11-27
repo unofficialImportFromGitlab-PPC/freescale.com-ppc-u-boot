@@ -161,6 +161,12 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004806
 	puts("Work-around for Erratum A004806 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004857
+	puts("Work-around for Erratum A004857 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005553
+	puts("Work-around for Erratum A005553 enabled\n");
+#endif
 #ifdef CONFIG_SYS_P4080_ERRATUM_PCIE_A003
 	puts("Work-around for Erratum PCIe-A003 enabled\n");
 #endif
