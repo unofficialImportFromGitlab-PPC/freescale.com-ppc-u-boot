@@ -39,6 +39,7 @@
 #include <phy.h>
 #include <asm/fsl_dtsec.h>
 #include <asm/fsl_serdes.h>
+#include <hwconfig.h>
 #include "../common/qixis.h"
 #include "../common/fman.h"
 
@@ -189,6 +190,10 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 				enum fm_port port, int offset)
 {
 	int interface = fm_info_get_enet_if(port);
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u32 prtcl2 = in_be32(&gur->rcwsr[4]) & FSL_CORENET2_RCWSR4_SRDS2_PRTCL;
+
+	prtcl2 >>= FSL_CORENET2_RCWSR4_SRDS2_PRTCL_SHIFT;
 
 	if (interface == PHY_INTERFACE_MODE_SGMII ||
 	    interface == PHY_INTERFACE_MODE_QSGMII) {
@@ -278,6 +283,50 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 		default:
 			break;
 		}
+	} else if (interface == PHY_INTERFACE_MODE_XGMII &&
+		  ((prtcl2 == 56) || (prtcl2 == 57))) {
+		/*
+		 * if the 10G is XFI, check hwconfig to see what is the
+		 * media type, there are two types, fiber or copper,
+		 * fix the dtb accordingly.
+		 */
+		int media_type = 0;
+
+		switch (port) {
+		case FM1_10GEC1:
+			if (hwconfig_sub("fsl_10gkr_copper", "fm1_10g1")) {
+				media_type = 1;
+				fdt_set_phy_handle(blob, prop, pa,
+						"phy_xfi1");
+			}
+			break;
+		case FM1_10GEC2:
+			if (hwconfig_sub("fsl_10gkr_copper", "fm1_10g2")) {
+				media_type = 1;
+				fdt_set_phy_handle(blob, prop, pa,
+						"phy_xfi2");
+			}
+			break;
+		case FM2_10GEC1:
+			if (hwconfig_sub("fsl_10gkr_copper", "fm2_10g1")) {
+				media_type = 1;
+				fdt_set_phy_handle(blob, prop, pa,
+						"phy_xfi3");
+			}
+			break;
+		case FM2_10GEC2:
+			if (hwconfig_sub("fsl_10gkr_copper", "fm2_10g2")) {
+				media_type = 1;
+				fdt_set_phy_handle(blob, prop, pa,
+						"phy_xfi4");
+			}
+			break;
+		default:
+			break;
+		}
+
+		if (!media_type)
+			fdt_delprop(blob, offset, "phy-handle");
 	}
 }
 
@@ -312,7 +361,22 @@ void fdt_fixup_board_enet(void *fdt)
 		case PHY_INTERFACE_MODE_XGMII:
 			/* check if it's XFI interface for 10g */
 			if ((prtcl2 == 56) || (prtcl2 == 57)) {
-				fdt_status_okay_by_alias(fdt, "emi2_xfislot3");
+				if (i == FM1_10GEC1 && hwconfig_sub(
+					"fsl_10gkr_copper", "fm1_10g1"))
+					fdt_status_okay_by_alias(fdt,
+							"xfi_pcs_mdio1");
+				if (i == FM1_10GEC2 && hwconfig_sub(
+					"fsl_10gkr_copper", "fm1_10g2"))
+					fdt_status_okay_by_alias(fdt,
+							"xfi_pcs_mdio2");
+				if (i == FM2_10GEC1 && hwconfig_sub(
+					"fsl_10gkr_copper", "fm2_10g1"))
+					fdt_status_okay_by_alias(fdt,
+							"xfi_pcs_mdio3");
+				if (i == FM2_10GEC2 && hwconfig_sub(
+					"fsl_10gkr_copper", "fm2_10g2"))
+					fdt_status_okay_by_alias(fdt,
+							"xfi_pcs_mdio4");
 				break;
 			}
 			switch (i) {
@@ -577,6 +641,8 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM1_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
+			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57))
+				break;
 			lane = serdes_get_first_lane(FSL_SRDS_1,
 						XAUI_FM1_MAC9 + idx);
 			if (lane < 0)
@@ -739,6 +805,8 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM2_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
+			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57))
+				break;
 			lane = serdes_get_first_lane(FSL_SRDS_2,
 						XAUI_FM2_MAC9 + idx);
 			if (lane < 0)
