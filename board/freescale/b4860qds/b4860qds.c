@@ -239,6 +239,8 @@ int configure_vsc3316_3308(void)
 	case 0xb2:
 	case 0x49:
 	case 0x4E:
+	case 0x8D:
+	case 0x7A:
 		num_vsc08_con = NUM_CON_VSC3308;
 		/* Configure VSC3308 crossbar switch */
 		ret = select_i2c_ch_pca(I2C_CH_VSC3308);
