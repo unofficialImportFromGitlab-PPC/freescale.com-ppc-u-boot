@@ -33,11 +33,8 @@
 #include <asm/cache.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
-#ifdef CONFIG_FSL_IFC
 #include <asm/fsl_ifc.h>
-#else
 #include <asm/fsl_lbc.h>
-#endif
 #include <asm/fsl_law.h>
 #include <post.h>
 #include <asm/processor.h>

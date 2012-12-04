@@ -21,6 +21,7 @@
 #ifndef __ASM_PPC_FSL_IFC_H
 #define __ASM_PPC_FSL_IFC_H
 
+#ifdef CONFIG_FSL_IFC
 #include <config.h>
 #include <common.h>
 
@@ -976,6 +977,7 @@ struct fsl_ifc {
 #undef CSPR_MSEL_NOR
 #define CSPR_MSEL_NOR	CSPR_MSEL_GPCM
 #endif
+#endif /* CONFIG_FSL_IFC */
 
 #endif /* __ASSEMBLY__ */
 #endif /* __ASM_PPC_FSL_IFC_H */
