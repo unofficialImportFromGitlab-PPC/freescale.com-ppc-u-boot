@@ -732,27 +732,6 @@ void board_detail(void)
 }
 
 /*
- * return the string of binary of u8 in the format of
- * 1010 10_0. The masked bit is filled as underscore.
- */
-static const char *byte_to_binary_mask(u8 val, u8 mask, char *buf)
-{
-	char *ptr;
-	int i;
-
-	ptr = buf;
-	for (i = 0x80; i > 0x08 ; i >>= 1, ptr++)
-		*ptr = (val & i) ? '1' : ((mask & i) ? '_' : '0');
-	*(ptr++) = ' ';
-	for (i = 0x08; i > 0 ; i >>= 1, ptr++)
-		*ptr = (val & i) ? '1' : ((mask & i) ? '_' : '0');
-
-	*ptr = '\0';
-
-	return buf;
-}
-
-/*
  * Reverse engineering switch settings.
  * Some bits cannot be figured out. They will be displayed as
  * underscore in binary format. mask[] has those bits.

@@ -76,6 +76,27 @@ char *qixis_read_tag(char *buf)
 	return buf;
 }
 
+/*
+ * return the string of binary of u8 in the format of
+ * 1010 10_0. The masked bit is filled as underscore.
+ */
+const char *byte_to_binary_mask(u8 val, u8 mask, char *buf)
+{
+	char *ptr;
+	int i;
+
+	ptr = buf;
+	for (i = 0x80; i > 0x08 ; i >>= 1, ptr++)
+		*ptr = (val & i) ? '1' : ((mask & i) ? '_' : '0');
+	*(ptr++) = ' ';
+	for (i = 0x08; i > 0 ; i >>= 1, ptr++)
+		*ptr = (val & i) ? '1' : ((mask & i) ? '_' : '0');
+
+	*ptr = '\0';
+
+	return buf;
+}
+
 void qixis_reset(void)
 {
 	QIXIS_WRITE(rst_ctl, QIXIS_RST_CTL_RESET);
