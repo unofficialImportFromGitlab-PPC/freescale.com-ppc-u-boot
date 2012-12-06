@@ -38,6 +38,7 @@
 #define CONFIG_SYS_SRIO
 #define CONFIG_SRIO1			/* SRIO port 1 */
 #define CONFIG_SRIO2			/* SRIO port 2 */
+#define CONFIG_SRIO_PCIE_BOOT_MASTER
 #define CONFIG_SYS_FSL_RAID_ENGINE
 #define CONFIG_SYS_DPAA_RMAN
 #define CONFIG_SYS_DPAA_PME
