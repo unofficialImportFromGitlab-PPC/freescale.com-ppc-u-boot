@@ -806,7 +806,7 @@ enable_l2_cluster_l2:
 	oris	r0,r0,(1 << (63-41))@h		/* set 0xf00[41] to 1 */
 	stw	r0, 0xf00(r3)
 #endif
-	lis	r4, L2CSR0_L2E@h
+	lis	r4, (L2CSR0_L2E|L2CSR0_L2PE)@h
 	sync
 	stw	r4, 0(r3)	/* enable L2 */
 delete_ccsr_l2_tlb:
