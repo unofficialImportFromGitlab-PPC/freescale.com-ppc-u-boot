@@ -363,17 +363,6 @@ int enable_cluster_l2(void)
 		i++;
 	} while (!(cluster & TP_CLUSTER_EOC));
 
-
-#ifdef CONFIG_SYS_FSL_ERRATUM_A004857
-	l2cache = (void __iomem *)(CONFIG_SYS_FSL_CLUSTER_1_L2);
-	clrsetbits_be32(&l2cache->magic_f04, 3UL << (63 - 41),
-			1UL << (63 - 41));
-#endif
-#ifdef CONFIG_SYS_FSL_ERRATUM_A005553
-	l2cache = (void __iomem *)(CONFIG_SYS_FSL_CLUSTER_1_L2);
-	setbits_be32(&l2cache->magic_f04, 1UL << (63 - 54));
-	setbits_be32(&l2cache->magic_f00, 1UL << (63 - 41));
-#endif
 	return 0;
 }
 #endif

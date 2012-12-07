@@ -792,6 +792,20 @@ enable_l2_cluster_l2:
 	isync
 	and.	r1, r0, r4
 	bne	1b
+#ifdef CONFIG_SYS_FSL_ERRATUM_A004857
+	lwz	r0, 0xf04(r3)
+	li	r1,1
+	rlwimi	r0,r1,64-(40+2),40-32,(40+2)-33	/* set 0xf04[40:41] = 1 */
+	stw	r0, 0xf04(r3)
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005553
+	lwz	r0, 0xf04(r3)
+	ori	r0,r0,(1 << (63-54))		/* set 0xf04[54] to 1 */
+	stw	r0, 0xf04(r3)
+	lwz	r0, 0xf00(r3)
+	oris	r0,r0,(1 << (63-41))@h		/* set 0xf00[41] to 1 */
+	stw	r0, 0xf00(r3)
+#endif
 	lis	r4, L2CSR0_L2E@h
 	sync
 	stw	r4, 0(r3)	/* enable L2 */
