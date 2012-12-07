@@ -336,7 +336,7 @@ unsigned long get_board_ddr_clk(void)
 static int serdes_refclock(u8 sw, u8 sdclk)
 {
 	unsigned int clock;
-	u32 ret = -1;
+	int ret = -1;
 	u8 brdcfg4;
 
 	if (sdclk == 1) {
