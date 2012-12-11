@@ -96,16 +96,31 @@ int cpu_status(int nr)
 #ifdef CONFIG_FSL_CORENET
 int cpu_disable(int nr)
 {
-	volatile ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006208
+	ccsr_rcpm_t *rcpm = (void __iomem *)(CONFIG_SYS_FSL_CORENET_RCPM_ADDR);
+
+	setbits_be32(&rcpm->pcph30setr, 1 << nr);
+#else
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
 	setbits_be32(&gur->coredisrl, 1 << nr);
+#endif
 
 	return 0;
 }
 
-int is_core_disabled(int nr) {
-	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	u32 coredisrl = in_be32(&gur->coredisrl);
+int is_core_disabled(int nr)
+{
+	u32 coredisrl;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006208
+	ccsr_rcpm_t *rcpm = (void __iomem *)(CONFIG_SYS_FSL_CORENET_RCPM_ADDR);
+
+	coredisrl = in_be32(&rcpm->pcph30sr);
+#else
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+
+	coredisrl = in_be32(&gur->coredisrl);
+#endif
 
 	return (coredisrl & (1 << nr));
 }
