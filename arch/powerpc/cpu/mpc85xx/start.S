@@ -807,6 +807,7 @@ enable_l2_cluster_l2:
 	stw	r0, 0xf00(r3)
 #endif
 	lis	r4, (L2CSR0_L2E|L2CSR0_L2PE)@h
+	ori	r4, r4, (L2CSR0_L2REP_MODE)@l
 	sync
 	stw	r4, 0(r3)	/* enable L2 */
 delete_ccsr_l2_tlb:
