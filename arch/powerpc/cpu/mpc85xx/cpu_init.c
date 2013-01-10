@@ -675,6 +675,14 @@ skip_l2:
 	setbits_be32((void *)DCFG_ECC, 1 << (31 - 15));
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005977
+	if (IS_SVR_REV(svr, 1, 0)) {
+		void *p;
+		p = (void *)CONFIG_SYS_DCSRBAR + 0x20520;
+		setbits_be32(p, 0xf << (31 - 15));
+	}
+#endif
+
 #ifdef CONFIG_FMAN_ENET
 	fman_enet_init();
 #endif
