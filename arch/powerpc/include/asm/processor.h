@@ -1139,6 +1139,8 @@
 
 #define SVR_9130	0x860001
 #define SVR_9131	0x860000
+#define SVR_9132	0x861000
+#define SVR_9232	0x861400
 
 #define SVR_Unknown	0xFFFFFF
 
