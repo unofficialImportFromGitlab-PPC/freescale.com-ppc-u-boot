@@ -149,7 +149,8 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 		}
 	}
 #ifdef CONFIG_SYS_FSL_ERRATUM_A_004934
-	out_be32(&ddr->debug[28], 0x30003000);
+	if (SVR_MAJ(get_svr() == 1))
+		out_be32(&ddr->debug[28], 0x30003000);
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_DDR_A003474
@@ -283,15 +284,20 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	 * In this implementation, we check if the tXPR is more than 300 cycles
 	 * and set MCKE high before the waiting of 500 microseconds required
 	 * for clock to setup. tXPR = max(5nCK, tRFC + 10ns)
+	 *
+	 * Applied to T4240 rev 1.0 and B4860 rev 1.0.
+	 * To be fixed in rev 2.0.
 	 */
-	tRFC = (regs->timing_cfg_3 >> 12) & 0x1f0;
-	tRFC += (regs->timing_cfg_1 >> 12) & 0xf;
-	tXPR = tRFC + picos_to_mclk(10000);
-	if (tXPR > 300) {
-		out_be32(&ddr->sdram_md_cntl, MD_CNTL_CKE_CNTL_HIGH);
-		debug("Workaround for A004390: set MCKE high\n");
+	if (SVR_MAJ(get_svr() == 1)) {
+		tRFC = (regs->timing_cfg_3 >> 12) & 0x1f0;
+		tRFC += (regs->timing_cfg_1 >> 12) & 0xf;
+		tXPR = tRFC + picos_to_mclk(10000);
+		if (tXPR > 300) {
+			out_be32(&ddr->sdram_md_cntl, MD_CNTL_CKE_CNTL_HIGH);
+			debug("Workaround for A004390: set MCKE high\n");
+		}
 	}
-#endif
+	#endif
 
 	/*
 	 * 500 painful micro-seconds must elapse between

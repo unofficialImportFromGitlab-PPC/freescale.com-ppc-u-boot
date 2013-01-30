@@ -232,7 +232,8 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		puts("Work-around for Erratum NMG ETSEC129 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004390
-	puts("Work-around for Erratum A004390 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004390 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
 	puts("Work-around for Erratum A004510 enabled\n");
@@ -241,7 +242,8 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	puts("Work-around for Erratum SRIO-A004034 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A_004934
-	puts("Work-around for Erratum A004934 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004934 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_USB138
 	puts("Work-around for Erratum USB138 enabled\n");
@@ -250,25 +252,32 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	puts("Work-around for Erratum ELBC MULTIBIT ECC enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004809
-	puts("Work-around for Erratum A004809 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004809 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004792
-	puts("Work-around for Erratum A004792 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004792 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004779
-	puts("Work-around for Erratum A004779 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004779 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004786
-	puts("Work-around for Erratum A004786 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004786 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004806
-	puts("Work-around for Erratum A004806 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004806 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004857
-	puts("Work-around for Erratum A004857 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A004857 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005553
-	puts("Work-around for Erratum A005553 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A005553 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005871
 	if (IS_SVR_REV(svr, 1, 0))
@@ -290,7 +299,8 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	puts("Work-around for Erratum PCIe-A003 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006208
-	puts("Work-around for Erratum A006208 enabled\n");
+	if (SVR_MAJ(svr) == 1)
+		puts("Work-around for Erratum A006208 enabled\n");
 #endif
 	return 0;
 }
