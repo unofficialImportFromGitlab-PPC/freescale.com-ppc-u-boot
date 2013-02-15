@@ -49,7 +49,8 @@
 #define MINIMAL_SPL
 #endif
 
-#if !defined(CONFIG_SPL) && !defined(CONFIG_SYS_RAMBOOT) && !defined(CONFIG_SECURE_BOOT)
+#if !defined(CONFIG_SPL) && !defined(CONFIG_SYS_RAMBOOT) && \
+					!defined(CONFIG_SECURE_BOOT)
 #define NOR_BOOT
 #endif
 
@@ -177,7 +178,8 @@ _start_e500:
 2:
 #endif
 
-#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC)
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC) && \
+						!defined(CONFIG_E6500)
 	/* ISBC uses L2 as stack.
 	 * Disable L2 cache here so that u-boot can enable it later
 	 * as part of it's normal flow

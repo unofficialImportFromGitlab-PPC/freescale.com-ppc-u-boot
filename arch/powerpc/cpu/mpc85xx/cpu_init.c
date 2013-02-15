@@ -161,7 +161,7 @@ static void enable_cpc(void)
 	for (i = 0; i < CONFIG_SYS_NUM_CPC; i++, cpc++) {
 		u32 cpccfg0 = in_be32(&cpc->cpccfg0);
 		size += CPC_CFG0_SZ_K(cpccfg0);
-#ifdef CONFIG_RAMBOOT_PBL
+#if defined(CONFIG_RAMBOOT_PBL) || defined(CONFIG_SECURE_HKAREA_CPC)
 		if (in_be32(&cpc->cpcsrcr0) & CPC_SRCR0_SRAMEN) {
 			/* find and disable LAW of SRAM */
 			struct law_entry law = find_law(CONFIG_SYS_INIT_L3_ADDR);

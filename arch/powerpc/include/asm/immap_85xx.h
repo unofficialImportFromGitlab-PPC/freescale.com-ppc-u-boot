@@ -2981,8 +2981,18 @@ struct ccsr_pman {
 	u8	res_f4[0xf0c];
 };
 #endif
-
-#ifdef CONFIG_SECURE_BOOT
+#ifdef CONFIG_SFP_v3_0
+typedef struct ccsr_sfp_regs {
+	u32 ospr;		/* 0x200 */
+	u32 reserved0[14];
+	u32 srk_hash[8];	/* 0x23c Super Root Key Hash */
+	u32 oem_uid;		/* 0x9c OEM Unique ID */
+	u8 reserved2[0x04];
+	u32 ovpr;			/* 0xA4  Intent To Secure */
+	u8 reserved4[0x08];
+	u32 fsl_uid;		/* 0xB0  FSL Unique ID */
+} ccsr_sfp_regs_t;
+#else
 typedef struct ccsr_sfp_regs {
 	u8 reserved0[0x40];
 	u32 ospr;	/* 0x40  OEM Security Policy Register */
@@ -2994,6 +3004,7 @@ typedef struct ccsr_sfp_regs {
 	u8 reserved8[0x8];
 	u32 fsl_uid;	/* 0xB0  FSL Unique ID */
 } ccsr_sfp_regs_t;
+#endif
 
 typedef struct ccsr_snvs_regs {
 	u8 reserved0[0x04];
@@ -3010,7 +3021,6 @@ typedef struct ccsr_snvs_regs {
 #define HPSR_SSM_ST_TRUST	0xd00	/* SNVS is in trusted state */
 #define HPSR_SSM_ST_SOFT_FAIL	0x300	/* SNVS is in soft fail state */
 #define HPSR_SSM_ST_MASK	0xf00	/* Mask for SSM_ST field */
-#endif
 
 #ifdef CONFIG_FSL_CORENET
 #define CONFIG_SYS_FSL_CORENET_CCM_OFFSET	0x0000
@@ -3024,7 +3034,12 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC8xxx_DDR3_OFFSET		0xA000
 #define CONFIG_SYS_FSL_CORENET_CLK_OFFSET	0xE1000
 #define CONFIG_SYS_FSL_CORENET_RCPM_OFFSET	0xE2000
-#ifdef	CONFIG_SECURE_BOOT
+#ifdef CONFIG_SFP_v3_0
+/* In SFPv3, OSPR register is now at offset 0x200.
+ * So directly mapping sfp register map to this address */
+#define CONFIG_SYS_OSPR_OFFSET			0x200
+#define CONFIG_SYS_SFP_OFFSET		 (0xE8000 + CONFIG_SYS_OSPR_OFFSET)
+#else
 #define CONFIG_SYS_SFP_OFFSET			0xE8000
 #endif
 #define CONFIG_SYS_FSL_CORENET_SERDES_OFFSET	0xEA000
@@ -3061,9 +3076,7 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC85xx_SATA2_OFFSET		0x221000
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x300000
 #define CONFIG_SYS_FSL_JR0_OFFSET		0x301000
-#ifdef	CONFIG_SECURE_BOOT
 #define CONFIG_SYS_SNVS_OFFSET			0x314000
-#endif
 #define CONFIG_SYS_FSL_CORENET_PME_OFFSET	0x316000
 #define CONFIG_SYS_FSL_QMAN_OFFSET		0x318000
 #define CONFIG_SYS_FSL_BMAN_OFFSET		0x31a000
@@ -3094,8 +3107,6 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC85xx_LBC_OFFSET		0x5000
 #define CONFIG_SYS_MPC8xxx_DDR2_OFFSET		0x6000
 #define CONFIG_SYS_MPC85xx_ESPI_OFFSET		0x7000
-#define CONFIG_SYS_FSL_SEC_OFFSET		0x30000
-#define CONFIG_SYS_FSL_JR0_OFFSET		0x31000
 #define CONFIG_SYS_MPC85xx_PCI1_OFFSET		0x8000
 #define CONFIG_SYS_MPC85xx_PCIX_OFFSET		0x8000
 #define CONFIG_SYS_MPC85xx_PCI2_OFFSET		0x9000
@@ -3122,6 +3133,8 @@ typedef struct ccsr_snvs_regs {
 #endif
 #define CONFIG_SYS_MDIO1_OFFSET			0x24000
 #define CONFIG_SYS_MPC85xx_ESDHC_OFFSET		0x2e000
+#define CONFIG_SYS_FSL_SEC_OFFSET		0x30000
+#define CONFIG_SYS_FSL_JR0_OFFSET		0x31000
 #define CONFIG_SYS_MPC85xx_SERDES2_OFFSET	0xE3100
 #define CONFIG_SYS_MPC85xx_SERDES1_OFFSET	0xE3000
 #define CONFIG_SYS_SNVS_OFFSET			0xE6000
@@ -3235,12 +3248,10 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_PCIE4_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_MPC85xx_PCIE4_OFFSET)
 
-#ifdef CONFIG_SECURE_BOOT
 #define CONFIG_SYS_SFP_ADDR  \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_SFP_OFFSET)
 #define CONFIG_SYS_SNVS_ADDR  \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_SNVS_OFFSET)
-#endif
 
 #define TSEC_BASE_ADDR		(CONFIG_SYS_IMMR + CONFIG_SYS_TSEC1_OFFSET)
 #define MDIO_BASE_ADDR		(CONFIG_SYS_IMMR + CONFIG_SYS_MDIO1_OFFSET)
