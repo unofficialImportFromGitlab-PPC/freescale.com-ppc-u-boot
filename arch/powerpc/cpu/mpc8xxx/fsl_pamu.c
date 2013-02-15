@@ -21,7 +21,7 @@
 #include <malloc.h>
 #include <asm/fsl_pamu.h>
 
-paace_t *primary;
+paace_t *ppaact;
 paace_t *sec;
 
 static inline int count_msb_zeroes(unsigned long val)
@@ -99,7 +99,12 @@ static int pamu_config_ppaace(uint32_t liodn, uint64_t win_addr,
 	if (win_addr & (win_size - 1))
 		return -2;
 
-	ppaace = &primary[liodn];
+	if (liodn > NUM_PPAACT_ENTRIES) {
+		printf("Entries in PPACT not sufficient\n");
+		return -3;
+	}
+
+	ppaace = &ppaact[liodn];
 
 	/* window size is 2^(WSE+1) bytes */
 	set_bf(ppaace->addr_bitfields, PPAACE_AF_WSE,
@@ -175,7 +180,7 @@ static int pamu_config_spaace(uint32_t liodn,
 		printf("sec_addr < end_addr is %llx < %llx\n", sec_addr,
 			end_addr);
 #endif
-		paace = &primary[liodn];
+		paace = &ppaact[liodn];
 		if (!paace)
 			return -1;
 
@@ -242,81 +247,106 @@ static int pamu_config_spaace(uint32_t liodn,
 
 int pamu_init(void)
 {
-	ccsr_pamu_t *regs = (ccsr_pamu_t *)CONFIG_SYS_PAMU_ADDR;
+	u32 base_addr = CONFIG_SYS_PAMU_ADDR;
+	ccsr_pamu_t *regs;
+	u32 i = 0;
+	u64 ppaact_phys, ppaact_lim, ppaact_size;
+	u64 spaact_phys, spaact_lim, spaact_size;
 
-	primary = memalign(PAMU_TABLE_ALIGNMENT,
-				 sizeof(paace_t) * NUM_PPAACT_ENTRIES);
-	if (!primary)
+	ppaact_size = sizeof(paace_t) * NUM_PPAACT_ENTRIES;
+	spaact_size = sizeof(paace_t) * NUM_SPAACT_ENTRIES;
+
+	/* Allocate space for Primary PAACT Table */
+	ppaact = memalign(PAMU_TABLE_ALIGNMENT, ppaact_size);
+	if (!ppaact)
 		return -1;
-	memset(primary, 0,  sizeof(paace_t) * NUM_PPAACT_ENTRIES);
+	memset(ppaact, 0, ppaact_size);
 
-	sec = memalign(PAMU_TABLE_ALIGNMENT,
-			 sizeof(paace_t) * NUM_SPAACT_ENTRIES);
+	/* Allocate space for Secondary PAACT Table */
+	sec = memalign(PAMU_TABLE_ALIGNMENT, spaact_size);
 	if (!sec)
 		return -1;
-	memset(sec, 0,  sizeof(paace_t) * NUM_SPAACT_ENTRIES);
+	memset(sec, 0, spaact_size);
 
-	uint64_t pamu = virt_to_phys((void *)primary);
-#ifdef DEBUG
-	printf("PAACT on address location  %llx\n", pamu);
-#endif
+	ppaact_phys = virt_to_phys((void *)ppaact);
+	ppaact_lim = ppaact_phys + ppaact_size;
 
-	out_be32(&regs->ppbah, pamu >> 32);
-	out_be32(&regs->ppbal, (uint32_t)pamu);
+	spaact_phys = (uint64_t)virt_to_phys((void *)sec);
+	spaact_lim = spaact_phys + spaact_size;
 
-	pamu = (uint64_t)virt_to_phys((void *)(primary + NUM_PPAACT_ENTRIES));
-	out_be32(&regs->pplah, pamu >> 32);
-	out_be32(&regs->pplal, (uint32_t)pamu);
+	/* Configure all PAMU's */
+	for (i = 0; i < CONFIG_NUM_PAMU; i++) {
+		regs = (ccsr_pamu_t *)base_addr;
 
-	pamu = 0;
+		out_be32(&regs->ppbah, ppaact_phys >> 32);
+		out_be32(&regs->ppbal, (uint32_t)ppaact_phys);
 
-	if (sec != NULL) {
-		pamu = (uint64_t)virt_to_phys((void *)sec);
-#ifdef DEBUG
-		printf("SPAACT on location  %llx\n", pamu);
-#endif
-		out_be32(&regs->spbah, pamu << 32);
-		out_be32(&regs->spbal, (uint32_t)pamu);
-		pamu = (uint64_t)virt_to_phys((void *)(sec +
-			NUM_SPAACT_ENTRIES));
-		out_be32(&regs->splah, pamu >> 32);
-		out_be32(&regs->splal, (uint32_t)pamu);
+		out_be32(&regs->pplah, (ppaact_lim) >> 32);
+		out_be32(&regs->pplal, (uint32_t)ppaact_lim);
+
+		if (sec != NULL) {
+			out_be32(&regs->spbah, spaact_phys >> 32);
+			out_be32(&regs->spbal, (uint32_t)spaact_phys);
+			out_be32(&regs->splah, spaact_lim >> 32);
+			out_be32(&regs->splal, (uint32_t)spaact_lim);
+		}
+		asm volatile("sync" : : : "memory");
+
+		base_addr += PAMU_OFFSET;
 	}
-	asm volatile("sync" : : : "memory");
+
 	return 0;
 }
 
 void pamu_enable(void)
 {
-	setbits_be32((void *)CONFIG_SYS_PAMU_ADDR + PAMU_PCR_OFFSET,
+	u32 i = 0;
+	u32 base_addr = CONFIG_SYS_PAMU_ADDR;
+	for (i = 0; i < CONFIG_NUM_PAMU; i++) {
+		setbits_be32((void *)base_addr + PAMU_PCR_OFFSET,
 			PAMU_PCR_PE);
-	asm volatile("sync" : : : "memory");
+		asm volatile("sync" : : : "memory");
+		base_addr += PAMU_OFFSET;
+	}
 }
 
 void pamu_reset(void)
 {
-	ccsr_pamu_t *regs = (ccsr_pamu_t *)CONFIG_SYS_PAMU_ADDR;
+	u32 i  = 0;
+	u32 base_addr = CONFIG_SYS_PAMU_ADDR;
+	ccsr_pamu_t *regs;
 
+	for (i = 0; i < CONFIG_NUM_PAMU; i++) {
+		regs = (ccsr_pamu_t *)base_addr;
 	/* Clear PPAACT Base register */
-	out_be32(&regs->ppbah, 0);
-	out_be32(&regs->ppbal, 0);
-	out_be32(&regs->pplah, 0);
-	out_be32(&regs->pplal, 0);
-	out_be32(&regs->spbah, 0);
-	out_be32(&regs->spbal, 0);
-	out_be32(&regs->splah, 0);
-	out_be32(&regs->splal, 0);
-	clrbits_be32((void *)CONFIG_SYS_PAMU_ADDR + PAMU_PCR_OFFSET,
-			PAMU_PCR_PE);
-	asm volatile("sync" : : : "memory");
+		out_be32(&regs->ppbah, 0);
+		out_be32(&regs->ppbal, 0);
+		out_be32(&regs->pplah, 0);
+		out_be32(&regs->pplal, 0);
+		out_be32(&regs->spbah, 0);
+		out_be32(&regs->spbal, 0);
+		out_be32(&regs->splah, 0);
+		out_be32(&regs->splal, 0);
+
+		clrbits_be32((void *)regs + PAMU_PCR_OFFSET, PAMU_PCR_PE);
+		asm volatile("sync" : : : "memory");
+		base_addr += PAMU_OFFSET;
+	}
 }
 
 void pamu_disable(void)
 {
-	clrbits_be32((void *)CONFIG_SYS_PAMU_ADDR + PAMU_PCR_OFFSET,
-			PAMU_PCR_PE);
-	asm volatile("sync" : : : "memory");
+	u32 i  = 0;
+	u32 base_addr = CONFIG_SYS_PAMU_ADDR;
+
+
+	for (i = 0; i < CONFIG_NUM_PAMU; i++) {
+		clrbits_be32((void *)base_addr + PAMU_PCR_OFFSET, PAMU_PCR_PE);
+		asm volatile("sync" : : : "memory");
+		base_addr += PAMU_OFFSET;
+	}
 }
+
 
 static uint64_t find_max(uint64_t arr[], int num)
 {

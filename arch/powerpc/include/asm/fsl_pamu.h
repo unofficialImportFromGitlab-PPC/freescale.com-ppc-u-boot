@@ -20,8 +20,12 @@
 #ifndef __PAMU_H
 #define __PAMU_H
 
-#define NUM_PPAACT_ENTRIES	256
+#define CONFIG_NUM_PAMU		16
+#define NUM_PPAACT_ENTRIES	512
 #define NUM_SPAACT_ENTRIES	128
+
+/* PAMU_OFFSET to the next pamu space in ccsr */
+#define PAMU_OFFSET 0x1000
 
 #define PAMU_TABLE_ALIGNMENT 0x00001000
 

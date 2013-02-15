@@ -20,17 +20,20 @@
 #include <common.h>
 #include <asm/fsl_pamu.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 void construct_pamu_addr_table(struct pamu_addr_tbl *tbl, int *num_entries)
 {
 	int i  = 0;
 
-	tbl->start_addr[i] = (uint64_t)CONFIG_SYS_SDRAM_BASE ;
-	tbl->size[i] = (phys_size_t)(CONFIG_SYS_SDRAM_SIZE / 2) * 1024 * 1024;
-								/* 2GB DDR */
+	tbl->start_addr[i] =
+			(uint64_t)virt_to_phys((void *)CONFIG_SYS_SDRAM_BASE);
+	tbl->size[i] = (phys_size_t)(min(gd->ram_size, CONFIG_MAX_MEM_MAPPED));
 	tbl->end_addr[i] = tbl->start_addr[i] +  tbl->size[i] - 1;
 
 	i++;
-	tbl->start_addr[i] = (uint64_t)CONFIG_SYS_FLASH_BASE_PHYS;
+	tbl->start_addr[i] =
+		(uint64_t)virt_to_phys((void *)CONFIG_SYS_FLASH_BASE_PHYS);
 	tbl->size[i] = 256 * 1024 * 1024; /* 256MB flash */
 	tbl->end_addr[i] = tbl->start_addr[i] +  tbl->size[i] - 1;
 
