@@ -34,20 +34,27 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
 #endif
 
-#ifndef CONFIG_DIU
 #define CONFIG_NAND_FSL_ELBC
-#endif
-#if defined(CONFIG_NAND) && defined(CONFIG_NAND_FSL_ELBC)
-#define CONFIG_NAND_U_BOOT
-#define CONFIG_RAMBOOT_NAND
-#define CONFIG_SYS_EXTRA_ENV_RELOC
-#define CONFIG_SYS_RAMBOOT
-#define CONFIG_SYS_TEXT_BASE_SPL	0xff800000
-#ifdef CONFIG_NAND_SPL
-#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE_SPL
-#else
-#define CONFIG_SYS_TEXT_BASE		0x11001000
-#endif /* CONFIG_NAND_SPL */
+
+#ifdef CONFIG_NAND
+#define CONFIG_SPL
+#define CONFIG_SPL_INIT_MINIMAL
+#define CONFIG_SPL_SERIAL_SUPPORT
+#define CONFIG_SPL_NAND_SUPPORT
+#define CONFIG_SPL_NAND_MINIMAL
+#define CONFIG_SPL_FLUSH_IMAGE
+#define CONFIG_SPL_TARGET              "u-boot-with-spl.bin"
+
+#define CONFIG_SYS_TEXT_BASE           0x00201000
+#define CONFIG_SPL_TEXT_BASE           0xfffff000
+#define CONFIG_SPL_MAX_SIZE            (4 * 1024)
+#define CONFIG_SPL_RELOC_TEXT_BASE     0x00100000
+#define CONFIG_SPL_RELOC_STACK         0x00100000
+#define CONFIG_SYS_NAND_U_BOOT_SIZE    ((512 << 10) + CONFIG_SPL_MAX_SIZE)
+#define CONFIG_SYS_NAND_U_BOOT_DST     (0x00200000 - CONFIG_SPL_MAX_SIZE)
+#define CONFIG_SYS_NAND_U_BOOT_START   0x00200000
+#define CONFIG_SYS_NAND_U_BOOT_OFFS    0
+#define CONFIG_SYS_LDSCRIPT            "arch/powerpc/cpu/mpc85xx/u-boot-nand.lds"
 #endif
 
 /* High Level Configuration Options */
@@ -102,9 +109,10 @@
 
 /* IN case of NAND bootloader relocate CCSRBAR in RAMboot code not in the 4k
        SPL code*/
-#if defined(CONFIG_NAND_U_BOOT) && defined(CONFIG_NAND_SPL)
+#ifdef CONFIG_SPL_BUILD
 #define CONFIG_SYS_CCSR_DO_NOT_RELOCATE
 #endif
+
 
 /* DDR Setup */
 #define CONFIG_DDR_SPD
@@ -164,7 +172,7 @@
  * Localbus non-cacheable
  * 0xe000_0000	0xe80f_ffff	Promjet/free		128M non-cacheable
  * 0xe800_0000	0xefff_ffff	FLASH			128M non-cacheable
- * 0xff80_0000	0xff8f_ffff	NAND			1M non-cacheable
+ * 0xff80_0000	0xff80_7fff	NAND			32K non-cacheable
  * 0xffdf_0000	0xffdf_7fff	PIXIS			32K non-cacheable TLB0
  * 0xffd0_0000	0xffd0_3fff	L1 for stack		16K Cacheable TLB0
  * 0xffe0_0000	0xffef_ffff	CCSR			1M non-cacheable
@@ -184,7 +192,7 @@
 	(BR_PHYS_ADDR(CONFIG_SYS_FLASH_BASE_PHYS) | BR_PS_16 | BR_V)
 #define CONFIG_FLASH_OR_PRELIM	(OR_AM_128MB | 0xff7)
 
-#ifdef CONFIG_NAND_U_BOOT
+#ifdef CONFIG_NAND
 #define CONFIG_SYS_BR1_PRELIM	CONFIG_FLASH_BR_PRELIM	/* NOR Base Address */
 #define CONFIG_SYS_OR1_PRELIM	CONFIG_FLASH_OR_PRELIM	/* NOR Options */
 #else
@@ -200,7 +208,11 @@
 #define CONFIG_SYS_MAX_FLASH_SECT	1024
 
 #ifndef CONFIG_SYS_MONITOR_BASE
+#ifdef CONFIG_SPL_BUILD
+#define CONFIG_SYS_MONITOR_BASE		CONFIG_SPL_TEXT_BASE
+#else
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE	/* start of monitor */
+#endif
 #endif
 
 #define CONFIG_FLASH_CFI_DRIVER
@@ -208,7 +220,7 @@
 #define CONFIG_SYS_FLASH_EMPTY_INFO
 
 /* Nand Flash */
-#if defined(CONFIG_NAND_FSL_ELBC) && !defined(CONFIG_DIU)
+#if defined(CONFIG_NAND_FSL_ELBC)
 #define CONFIG_SYS_NAND_BASE		0xff800000
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_NAND_BASE_PHYS	0xfff800000ull
@@ -223,22 +235,13 @@
 #define CONFIG_SYS_NAND_BLOCK_SIZE    (256 * 1024)
 #define CONFIG_ELBC_NAND_SPL_STATIC_PGSIZE
 
-/* NAND boot: 4K NAND loader config */
-#define CONFIG_SYS_NAND_SPL_SIZE	0x1000
-#define CONFIG_SYS_NAND_U_BOOT_SIZE	((512 << 10) + CONFIG_SYS_NAND_SPL_SIZE)
-#define CONFIG_SYS_NAND_U_BOOT_DST	(0x11000000 - CONFIG_SYS_NAND_SPL_SIZE)
-#define CONFIG_SYS_NAND_U_BOOT_START	0x11000000
-#define CONFIG_SYS_NAND_U_BOOT_OFFS	(0)
-#define CONFIG_SYS_NAND_U_BOOT_RELOC	0x00010000
-#define CONFIG_SYS_NAND_U_BOOT_RELOC_SP	(CONFIG_SYS_NAND_U_BOOT_RELOC + 0x10000)
-
 /* NAND flash config */
 #define CONFIG_SYS_NAND_BR_PRELIM  (BR_PHYS_ADDR(CONFIG_SYS_NAND_BASE_PHYS) \
 			       | (2<<BR_DECC_SHIFT)    /* Use HW ECC */ \
 			       | BR_PS_8	       /* Port Size = 8 bit */ \
 			       | BR_MS_FCM	       /* MSEL = FCM */ \
 			       | BR_V)		       /* valid */
-#define CONFIG_SYS_NAND_OR_PRELIM  ( OR_AM_256KB	       /* length 256K */ \
+#define CONFIG_SYS_NAND_OR_PRELIM  (OR_AM_32KB	       /* length 256K */ \
 			       | OR_FCM_PGS	       /* Large Page*/ \
 			       | OR_FCM_CSCT \
 			       | OR_FCM_CST \
@@ -246,7 +249,7 @@
 			       | OR_FCM_SCY_1 \
 			       | OR_FCM_TRLX \
 			       | OR_FCM_EHTR)
-#ifdef CONFIG_NAND_U_BOOT
+#ifdef CONFIG_NAND
 #define CONFIG_SYS_BR0_PRELIM	CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
 #define CONFIG_SYS_OR0_PRELIM	CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
 #else
@@ -255,12 +258,6 @@
 #endif
 
 #endif /* CONFIG_NAND_FSL_ELBC */
-
-#ifdef CONFIG_DIU
-#define CONFIG_SYS_BR1_PRELIM \
-	(BR_PHYS_ADDR(0xe0000000) | BR_PS_16 | BR_V)
-#define CONFIG_SYS_OR1_PRELIM	(OR_AM_128MB | 0xff7)
-#endif
 
 #define CONFIG_BOARD_EARLY_INIT_F
 #define CONFIG_BOARD_EARLY_INIT_R
@@ -305,7 +302,7 @@
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_REG_SIZE	1
 #define CONFIG_SYS_NS16550_CLK		get_bus_freq(0)
-#ifdef CONFIG_NAND_SPL
+#ifdef CONFIG_SPL_BUILD
 #define CONFIG_NS16550_MIN_FUNCTIONS
 #endif
 
@@ -528,7 +525,6 @@
 /*
  * Environment
  */
-#ifdef CONFIG_SYS_RAMBOOT
 #ifdef CONFIG_RAMBOOT_SPIFLASH
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 #define CONFIG_ENV_SPI_BUS	0
@@ -542,16 +538,15 @@
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_ENV_SIZE		0x2000
 #define CONFIG_SYS_MMC_ENV_DEV	0
-#elif defined(CONFIG_NAND_U_BOOT)
+#elif defined(CONFIG_NAND)
 #define CONFIG_ENV_IS_IN_NAND
 #define CONFIG_ENV_SIZE		CONFIG_SYS_NAND_BLOCK_SIZE
 #define CONFIG_ENV_OFFSET	((512 * 1024) + CONFIG_SYS_NAND_BLOCK_SIZE)
 #define CONFIG_ENV_RANGE	(3 * CONFIG_ENV_SIZE)
-#else
+#elif defined(CONFIG_SYS_RAMBOOT)
 #define CONFIG_ENV_IS_NOWHERE	/* Store ENV in memory only */
 #define CONFIG_ENV_ADDR		(CONFIG_SYS_MONITOR_BASE - 0x1000)
 #define CONFIG_ENV_SIZE		0x2000
-#endif
 #else
 #define CONFIG_ENV_IS_IN_FLASH
 #if CONFIG_SYS_MONITOR_BASE > 0xfff80000

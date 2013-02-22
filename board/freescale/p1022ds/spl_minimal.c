@@ -26,52 +26,53 @@
 #include <asm/fsl_law.h>
 #include <asm/fsl_ddr_sdram.h>
 
-#define udelay(x) {int i, j; for (i = 0; i < x; i++) for (j = 0; j < 10000; j++); }
 
 /*
  * Fixed sdram init -- doesn't use serial presence detect.
  */
 void sdram_init(void)
 {
-	volatile ccsr_ddr_t *ddr = (ccsr_ddr_t *)CONFIG_SYS_MPC85xx_DDR_ADDR;
+	volatile ccsr_ddr_t *ddr = (ccsr_ddr_t *)CONFIG_SYS_MPC8xxx_DDR_ADDR;
 
-	out_be32(&ddr->cs0_bnds, CONFIG_SYS_DDR_CS0_BNDS);
-	out_be32(&ddr->cs0_config, CONFIG_SYS_DDR_CS0_CONFIG);
+	__raw_writel(CONFIG_SYS_DDR_CS0_BNDS, &ddr->cs0_bnds);
+	__raw_writel(CONFIG_SYS_DDR_CS0_CONFIG, &ddr->cs0_config);
 #if CONFIG_CHIP_SELECTS_PER_CTRL > 1
-	out_be32(&ddr->cs1_bnds, CONFIG_SYS_DDR_CS1_BNDS);
-	out_be32(&ddr->cs1_config, CONFIG_SYS_DDR_CS1_CONFIG);
+	__raw_writel(CONFIG_SYS_DDR_CS1_BNDS, &ddr->cs1_bnds);
+	__raw_writel(CONFIG_SYS_DDR_CS1_CONFIG, &ddr->cs1_config);
 #endif
-	out_be32(&ddr->timing_cfg_3, CONFIG_SYS_DDR_TIMING_3);
-	out_be32(&ddr->timing_cfg_0, CONFIG_SYS_DDR_TIMING_0);
-	out_be32(&ddr->timing_cfg_1, CONFIG_SYS_DDR_TIMING_1);
-	out_be32(&ddr->timing_cfg_2, CONFIG_SYS_DDR_TIMING_2);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_3, &ddr->timing_cfg_3);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_0, &ddr->timing_cfg_0);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_1, &ddr->timing_cfg_1);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_2, &ddr->timing_cfg_2);
 
-	out_be32(&ddr->sdram_cfg_2, CONFIG_SYS_DDR_CONTROL_2);
-	out_be32(&ddr->sdram_mode, CONFIG_SYS_DDR_MODE_1);
-	out_be32(&ddr->sdram_mode_2, CONFIG_SYS_DDR_MODE_2);
+	__raw_writel(CONFIG_SYS_DDR_CONTROL_2, &ddr->sdram_cfg_2);
+	__raw_writel(CONFIG_SYS_DDR_MODE_1, &ddr->sdram_mode);
+	__raw_writel(CONFIG_SYS_DDR_MODE_2, &ddr->sdram_mode_2);
 
-	out_be32(&ddr->sdram_interval, CONFIG_SYS_DDR_INTERVAL);
-	out_be32(&ddr->sdram_data_init, CONFIG_SYS_DDR_DATA_INIT);
-	out_be32(&ddr->sdram_clk_cntl, CONFIG_SYS_DDR_CLK_CTRL);
+	__raw_writel(CONFIG_SYS_DDR_INTERVAL, &ddr->sdram_interval);
+	__raw_writel(CONFIG_SYS_DDR_DATA_INIT, &ddr->sdram_data_init);
+	__raw_writel(CONFIG_SYS_DDR_CLK_CTRL, &ddr->sdram_clk_cntl);
 
-	out_be32(&ddr->timing_cfg_4, CONFIG_SYS_DDR_TIMING_4);
-	out_be32(&ddr->timing_cfg_5, CONFIG_SYS_DDR_TIMING_5);
-	out_be32(&ddr->ddr_zq_cntl, CONFIG_SYS_DDR_ZQ_CONTROL);
-	out_be32(&ddr->ddr_wrlvl_cntl, CONFIG_SYS_DDR_WRLVL_CONTROL);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_4, &ddr->timing_cfg_4);
+	__raw_writel(CONFIG_SYS_DDR_TIMING_5, &ddr->timing_cfg_5);
+	__raw_writel(CONFIG_SYS_DDR_ZQ_CONTROL, &ddr->ddr_zq_cntl);
+	__raw_writel(CONFIG_SYS_DDR_WRLVL_CONTROL, &ddr->ddr_wrlvl_cntl);
 
 	/* Set, but do not enable the memory */
-	out_be32(&ddr->sdram_cfg, CONFIG_SYS_DDR_CONTROL & ~SDRAM_CFG_MEM_EN);
+	__raw_writel(CONFIG_SYS_DDR_CONTROL & ~SDRAM_CFG_MEM_EN,
+			&ddr->sdram_cfg);
 
-	asm volatile("sync;isync");
+	in_be32(&ddr->sdram_cfg);
 	udelay(500);
 
 	/* Let the controller go */
 	out_be32(&ddr->sdram_cfg, in_be32(&ddr->sdram_cfg) | SDRAM_CFG_MEM_EN);
+	in_be32(&ddr->sdram_cfg);
 
 	set_next_law(0, CONFIG_SYS_SDRAM_SIZE_LAW, LAW_TRGT_IF_DDR_1);
 }
 
-u32 sysclk_tbl[] = {
+const static u32 sysclk_tbl[] = {
 	66666000, 7499900, 83332500, 8999900,
 	99999000, 11111000, 12499800, 13333200
 };
@@ -79,16 +80,12 @@ u32 sysclk_tbl[] = {
 void board_init_f(ulong bootflag)
 {
 	int px_spd;
-	u32 plat_ratio, bus_clk, sys_clk;
+	u32 plat_ratio, sys_clk, bus_clk;
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
-#if defined(CONFIG_SYS_BR2_PRELIM) && defined(CONFIG_SYS_OR2_PRELIM)
 	/* for FPGA */
 	set_lbc_br(2, CONFIG_SYS_BR2_PRELIM);
 	set_lbc_or(2, CONFIG_SYS_OR2_PRELIM);
-#else
-#error CONFIG_SYS_BR2_PRELIM, CONFIG_SYS_OR2_PRELIM must be defined
-#endif
 
 	/* initialize selected port with appropriate baud rate */
 	px_spd = in_8((unsigned char *)(PIXIS_BASE + PIXIS_SPD));
@@ -108,8 +105,8 @@ void board_init_f(ulong bootflag)
 	/* NOTE - code has to be copied out of NAND buffer before
 	 * other blocks can be read.
 	 */
-	relocate_code(CONFIG_SYS_NAND_U_BOOT_RELOC_SP, 0,
-			CONFIG_SYS_NAND_U_BOOT_RELOC);
+	relocate_code(CONFIG_SPL_RELOC_STACK, 0,
+			CONFIG_SPL_RELOC_TEXT_BASE);
 }
 
 void board_init_r(gd_t *gd, ulong dest_addr)
