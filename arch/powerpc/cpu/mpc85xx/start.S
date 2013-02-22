@@ -96,40 +96,23 @@ _start_e500:
 	mtmsr 	r1
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004809
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR0
 	oris	r3, r3, 0x0100
 	ori	r3, r3, 0x8000
 	mtspr	SPRN_HDBCR0, r3
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004792
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR0
 	ori	r3, r3, 0x4000
 	mtspr	SPRN_HDBCR0, r3
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004779
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR2
@@ -145,37 +128,24 @@ _start_e500:
 	oris	r3, r3, 0x8303
 	mtspr	SPRN_HDBCR2, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004786
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR7
 	oris	r3, r3, 0x8000
 	mtspr	SPRN_HDBCR7, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004806
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR7
 	oris	r3, r3, 0x2000
 	mtspr	SPRN_HDBCR7, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
@@ -823,30 +793,18 @@ enable_l2_cluster_l2:
 	and.	r1, r0, r4
 	bne	1b
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004857
-	mfspr	r4,SPRN_SVR
-	rlwinm	r4,r4,28,0xf	/* major_rev */
-	cmpwi	r4,0x1		/* is rev 1? */
-	bne	1f
-
 	lwz	r0, 0xf04(r3)
 	li	r1,1
 	rlwimi	r0,r1,64-(40+2),40-32,(40+2)-33	/* set 0xf04[40:41] = 1 */
 	stw	r0, 0xf04(r3)
-1:
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005553
-	mfspr	r4,SPRN_SVR
-	rlwinm	r4,r4,28,0xf	/* major_rev */
-	cmpwi	r4,0x1		/* is rev 1? */
-	bne	1f
-
 	lwz	r0, 0xf04(r3)
 	ori	r0,r0,(1 << (63-54))		/* set 0xf04[54] to 1 */
 	stw	r0, 0xf04(r3)
 	lwz	r0, 0xf00(r3)
 	oris	r0,r0,(1 << (63-41))@h		/* set 0xf00[41] to 1 */
 	stw	r0, 0xf00(r3)
-1:
 #endif
 	lis	r4, (L2CSR0_L2E|L2CSR0_L2PE)@h
 	ori	r4, r4, (L2CSR0_L2REP_MODE)@l

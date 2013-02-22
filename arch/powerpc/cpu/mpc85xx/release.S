@@ -69,40 +69,23 @@ __secondary_start_page:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004809
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR0
 	oris	r3, r3, 0x0100
 	ori	r3, r3, 0x8000
 	mtspr	SPRN_HDBCR0, r3
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004792
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR0
 	ori	r3, r3, 0x4000
 	mtspr	SPRN_HDBCR0, r3
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004779
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR2
@@ -118,37 +101,24 @@ __secondary_start_page:
 	oris	r3, r3, 0x8303
 	mtspr	SPRN_HDBCR2, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004786
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR7
 	oris	r3, r3, 0x8000
 	mtspr	SPRN_HDBCR7, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004806
-	mfspr	r3,SPRN_SVR
-	rlwinm	r3,r3,28,0xf	/* major_rev */
-	cmpwi	r3,0x1		/* is rev 1? */
-	bne	1f
-
 	msync
 	isync
 	mfspr	r3, SPRN_HDBCR7
 	oris	r3, r3, 0x2000
 	mtspr	SPRN_HDBCR7, r3
 	isync
-1:
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_CPU_A003999

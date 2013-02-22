@@ -98,16 +98,15 @@ int cpu_status(int nr)
 #ifdef CONFIG_FSL_CORENET
 int cpu_disable(int nr)
 {
-	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006208
 	ccsr_rcpm_t *rcpm = (void __iomem *)(CONFIG_SYS_FSL_CORENET_RCPM_ADDR);
 
-	if (SVR_MAJ(get_svr()) == 1) {
-		setbits_be32(&rcpm->pcph30setr, 1 << nr);
-		return 0;
-	}
-#endif
+	setbits_be32(&rcpm->pcph30setr, 1 << nr);
+#else
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+
 	setbits_be32(&gur->coredisrl, 1 << nr);
+#endif
 
 	return 0;
 }
@@ -115,18 +114,17 @@ int cpu_disable(int nr)
 int is_core_disabled(int nr)
 {
 	u32 coredisrl;
-	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006208
 	ccsr_rcpm_t *rcpm = (void __iomem *)(CONFIG_SYS_FSL_CORENET_RCPM_ADDR);
 
-	if (SVR_MAJ(get_svr()) == 1) {
-		coredisrl = in_be32(&rcpm->pcph30sr);
-		return coredisrl & (1 << nr);
-	}
-#endif
-	coredisrl = in_be32(&gur->coredisrl);
+	coredisrl = in_be32(&rcpm->pcph30sr);
+#else
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
-	return coredisrl & (1 << nr);
+	coredisrl = in_be32(&gur->coredisrl);
+#endif
+
+	return (coredisrl & (1 << nr));
 }
 #else
 int cpu_disable(int nr)
