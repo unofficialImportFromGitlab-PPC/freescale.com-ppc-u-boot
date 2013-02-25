@@ -124,8 +124,10 @@ static void memac_set_interface_mode(struct fsl_enet_mac *mac,
 		switch (speed) {
 		case SPEED_1000:
 			if_mode |= IF_MODE_SETSP_1000M;
+			break;
 		case SPEED_100:
 			if_mode |= IF_MODE_SETSP_100M;
+			break;
 		case SPEED_10:
 			if_mode |= IF_MODE_SETSP_10M;
 		default:
