@@ -154,6 +154,10 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
 #endif
 
+#if (defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L2_ADDR))
+#undef CONFIG_SYS_INIT_L2_ADDR
+#endif
+
 #ifdef CONFIG_NAND
 #define CONFIG_SPL
 #define CONFIG_SPL_INIT_MINIMAL
