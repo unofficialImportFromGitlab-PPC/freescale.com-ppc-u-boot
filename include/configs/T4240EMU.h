@@ -52,10 +52,12 @@
 #define CONFIG_SYS_SPD_BUS_NUM	1
 #define SPD_EEPROM_ADDRESS1	0x51
 #define SPD_EEPROM_ADDRESS2	0x52
+#ifndef CONFIG_SYS_FSL_EMU_AP1
 #define SPD_EEPROM_ADDRESS3	0x53
 #define SPD_EEPROM_ADDRESS4	0x54
 #define SPD_EEPROM_ADDRESS5	0x55
 #define SPD_EEPROM_ADDRESS6	0x56
+#endif
 #define SPD_EEPROM_ADDRESS	SPD_EEPROM_ADDRESS1	/* for p3041/p5010 */
 #define CONFIG_SYS_SDRAM_SIZE	4096	/* for fixed parameter use */
 
@@ -128,10 +130,14 @@
  * interleaving. It can be cacheline, page, bank, superbank.
  * See doc/README.fsl-ddr for details.
  */
+#ifdef CONFIG_SYS_FSL_EMU_AP1
+#define CTRL_INTLV_PREFERED null
+#else
 #ifdef CONFIG_PPC_T4240
 #define CTRL_INTLV_PREFERED 3way_4KB
 #else
 #define CTRL_INTLV_PREFERED cacheline
+#endif
 #endif
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
