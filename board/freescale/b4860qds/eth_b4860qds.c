@@ -276,6 +276,10 @@ int board_eth_init(bd_t *bis)
 				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
 		fm_info_set_phy_address(FM1_DTSEC4,
 				CONFIG_SYS_FM1_DTSEC2_RISER_PHY_ADDR);
+		fm_info_set_phy_address(FM1_10GEC1,
+				CONFIG_SYS_FM1_10GEC1_PHY_ADDR);
+		fm_info_set_phy_address(FM1_10GEC2,
+				CONFIG_SYS_FM1_10GEC2_PHY_ADDR);
 		break;
 	case 0x98:
 		/* XAUI in Slot1 and Slot2 */
@@ -393,10 +397,33 @@ void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
 {
 	int phy;
 	char alias[16];
+	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u32 prtcl2 = in_be32(&gur->rcwsr[4]) & FSL_CORENET2_RCWSR4_SRDS2_PRTCL;
+
+	prtcl2 >>= FSL_CORENET2_RCWSR4_SRDS2_PRTCL_SHIFT;
 
 	if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_SGMII) {
 		phy = fm_info_get_phy_address(port);
 		sprintf(alias, "phy_sgmii_%x", phy);
 		fdt_set_phy_handle(fdt, compat, addr, alias);
+	} else if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_XGMII) {
+		/* check if it's XFI interface for 10g */
+		switch (prtcl2) {
+		case 0x81:
+		case 0x82:
+		case 0x84:
+		case 0x85:
+		case 0x87:
+		case 0x88:
+		case 0x8a:
+		case 0x8b:
+		case 0x8d:
+		case 0x8e:
+		case 0xb2:
+			fdt_set_phy_handle(fdt, compat, addr, "xfi_phy");
+			break;
+		default:
+			break;
+		}
 	}
 }
