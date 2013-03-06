@@ -160,7 +160,7 @@ __secondary_start_page:
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
 	mfspr	r3,SPRN_SVR
 	rlwinm	r3,r3,0,0xff
-	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A00451x_SVR_REV
 	cmpw	r3,r4
 	beq	1f
 

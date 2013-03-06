@@ -179,10 +179,11 @@ _start_e500:
 1:
 #endif
 
-#ifdef CONFIG_SYS_FSL_ERRATUM_A004510
+#if defined(CONFIG_SYS_FSL_ERRATUM_A004510) || \
+		defined(CONFIG_SYS_FSL_ERRATUM_A004511)
 	mfspr	r3,SPRN_SVR
 	rlwinm	r3,r3,0,0xff
-	li	r4,CONFIG_SYS_FSL_ERRATUM_A004510_SVR_REV
+	li	r4,CONFIG_SYS_FSL_ERRATUM_A00451x_SVR_REV
 	cmpw	r3,r4
 	beq	1f
 
@@ -197,6 +198,7 @@ _start_e500:
 	b	2f
 
 1:	li	r27,1	/* Remember for later that we have the erratum */
+#if defined(CONFIG_SYS_FSL_ERRATUM_A004510)
 	/* Erratum says set bits 55:60 to 001001 */
 	msync
 	isync
@@ -205,6 +207,7 @@ _start_e500:
 	rlwimi	r3,r4,0,0x1f8
 	mtspr	SPRN_HDBCR0,r3
 	isync
+#endif
 2:
 #endif
 
@@ -506,7 +509,8 @@ nexti:	mflr	r1		/* R1 = our PC */
 	mfspr	r2, MAS2
 	andc	r2, r2, r3
 	or	r2, r2, r1
-#ifdef CONFIG_SYS_FSL_ERRATUM_A004510
+#if defined(CONFIG_SYS_FSL_ERRATUM_A004510) || \
+		defined(CONFIG_SYS_FSL_ERRATUM_A004511)
 	cmpwi	r27,0
 	beq	1f
 	andi.	r15, r2, MAS2_I|MAS2_G /* save the old I/G for later */
@@ -904,7 +908,8 @@ delete_ccsr_l2_tlb:
 	mfspr	r3,SPRN_L1CSR0
 	andi.	r1,r3,L1CSR0_DCE@l
 	beq	2b
-#ifdef CONFIG_SYS_FSL_ERRATUM_A004510
+#if defined(CONFIG_SYS_FSL_ERRATUM_A004510) || \
+		defined(CONFIG_SYS_FSL_ERRATUM_A004511)
 #define DCSR_LAWBARH0	(CONFIG_SYS_CCSRBAR + 0x1000)
 #define LAW_SIZE_1M	0x13
 #define DCSRBAR_LAWAR	(LAW_EN | (0x1d << 20) | LAW_SIZE_1M)
@@ -979,7 +984,11 @@ delete_ccsr_l2_tlb:
 	msync
 
 	/* enable the timebase */
+#ifdef CONFIG_SYS_FSL_QORIQ_CHASSIS2
+#define CTBENR	0xe21a0
+#else
 #define CTBENR	0xe2084
+#endif
 	li	r3, 1
 	addis	r4, r7, CTBENR@ha
 	stw	r3, CTBENR@l(r4)
@@ -1003,6 +1012,17 @@ delete_ccsr_l2_tlb:
 	bl	erratum_set_value
 	.endm
 
+	.macro	erratum_clr_dcsr offset value
+	addis	r3, r6, \offset@ha
+	lis	r0, \value@h
+	addi	r3, r3, \offset@l
+	ori	r0, r0, \value@l
+	lwz	r4, 0(r3)
+	andc	r4, r4, r0
+	bl	erratum_set_value
+	.endm
+
+#if defined(CONFIG_SYS_FSL_ERRATUM_A004510)
 	erratum_set_dcsr 0xb0e08 0xe0201800
 	erratum_set_dcsr 0xb0e18 0xe0201800
 	erratum_set_dcsr 0xb0e38 0xe0400000
@@ -1011,6 +1031,9 @@ delete_ccsr_l2_tlb:
 	erratum_set_ccsr 0x18600 CONFIG_SYS_FSL_CORENET_SNOOPVEC_COREONLY
 	erratum_set_ccsr 0x10f00 0x415e5000
 	erratum_set_ccsr 0x11f00 0x415e5000
+#elif defined(CONFIG_SYS_FSL_ERRATUM_A004511)
+	erratum_clr_dcsr 0xb0008 0x01000000
+#endif
 
 	/* Make temp mapping uncacheable again, if it was initially */
 	bl	2f
