@@ -419,6 +419,11 @@ The following options need to be configured:
 		This is the value to write into CCSR offset 0x18600
 		according to the A004510 workaround.
 
+		CONFIG_SYS_FSL_DDR_EMU
+
+		Specify emulator support for DDR. Some DDR features such as deskew training
+		are not available.
+
 - Generic CPU options:
 		CONFIG_SYS_BIG_ENDIAN, CONFIG_SYS_LITTLE_ENDIAN
 
