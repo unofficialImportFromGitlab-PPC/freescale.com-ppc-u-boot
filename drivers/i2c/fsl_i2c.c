@@ -222,9 +222,50 @@ static unsigned int get_i2c_clock(int bus)
 		return gd->i2c1_clk;	/* I2C1 clock */
 }
 
+static int i2c_fixup(const struct fsl_i2c *dev)
+{
+	const unsigned long long timeout = usec2ticks(CONFIG_I2C_MBB_TIMEOUT);
+	unsigned long long timeval = 0;
+	int ret = -1;
+
+	writeb(I2C_CR_MEN | I2C_CR_MSTA, &dev->cr);
+
+	timeval = get_ticks();
+	while (!(readb(&dev->sr) & I2C_SR_MBB)) {
+		if ((get_ticks() - timeval) > timeout)
+			goto err;
+	}
+
+	if (readb(&dev->sr) & I2C_SR_MAL) {
+		/* SDA is stuck low */
+		writeb(0, &dev->cr);
+		udelay(100);
+		writeb(I2C_CR_MSTA, &dev->cr);
+		writeb(I2C_CR_MEN | I2C_CR_MSTA, &dev->cr);
+	}
+
+	readb(&dev->dr);
+
+	timeval = get_ticks();
+	while (!(readb(&dev->sr) & I2C_SR_MIF)) {
+		if ((get_ticks() - timeval) > timeout)
+			goto err;
+	}
+	ret = 0;
+
+err:
+	writeb(I2C_CR_MEN, &dev->cr);
+	writeb(0, &dev->sr);
+	udelay(100);
+
+	return ret;
+}
+
 void
 i2c_init(int speed, int slaveadd)
 {
+	const unsigned long long timeout = usec2ticks(CONFIG_I2C_MBB_TIMEOUT);
+	unsigned long long timeval;
 	const struct fsl_i2c *dev;
 	unsigned int temp;
 	int bus_num, i;
@@ -252,6 +293,17 @@ i2c_init(int speed, int slaveadd)
 		writeb(slaveadd << 1, &dev->adr);/* write slave address */
 		writeb(0x0, &dev->sr);		/* clear status register */
 		writeb(I2C_CR_MEN, &dev->cr);	/* start I2C controller */
+
+		timeval = get_ticks();
+		while (readb(&dev->sr) & I2C_SR_MBB) {
+			if ((get_ticks() - timeval) < timeout)
+				continue;
+
+			if (i2c_fixup(dev))
+				debug("i2c_init: BUS#%d failed to init\n", i);
+
+			break;
+		}
 	}
 
 #ifdef CONFIG_SYS_I2C_BOARD_LATE_INIT
@@ -383,8 +435,10 @@ i2c_read(u8 dev, uint addr, int alen, u8 *data, int length)
 	int i = -1; /* signal error */
 	u8 *a = (u8*)&addr;
 
-	if (i2c_wait4bus() >= 0
-	    && i2c_write_addr(dev, I2C_WRITE_BIT, 0) != 0
+	if (i2c_wait4bus())
+		return -1;
+
+	if (i2c_write_addr(dev, I2C_WRITE_BIT, 0) != 0
 	    && __i2c_write(&a[4 - alen], alen) == alen)
 		i = 0; /* No error so far */
 
@@ -409,8 +463,10 @@ i2c_write(u8 dev, uint addr, int alen, u8 *data, int length)
 	int i = -1; /* signal error */
 	u8 *a = (u8*)&addr;
 
-	if (i2c_wait4bus() >= 0
-	    && i2c_write_addr(dev, I2C_WRITE_BIT, 0) != 0
+	if (i2c_wait4bus())
+		return -1;
+
+	if (i2c_write_addr(dev, I2C_WRITE_BIT, 0) != 0
 	    && __i2c_write(&a[4 - alen], alen) == alen) {
 		i = __i2c_write(data, length);
 	}
