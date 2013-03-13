@@ -2835,6 +2835,16 @@ typedef struct ccsr_pme {
 	u8	res4[0x400];
 } ccsr_pme_t;
 
+typedef struct ccsr_dce {
+	u8      res0[0x100];
+	u32     liodnbr;        /* LIODN Base Register */
+	u32     srcidr;         /* Source ID Register */
+	u8      res1[0x2f0];
+	u32     dce_ip_rev_1;   /* DCE IP Block Revision Reg 1*/
+	u32     dce_ip_rev_2;   /* DCE IP Block Revision Reg 2*/
+	u8      res4[0xc00];
+} ccsr_dce_t;
+
 typedef struct ccsr_pamu {
 	u32 ppbah;
 	u32 ppbal;
@@ -3076,6 +3086,7 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC85xx_SATA2_OFFSET		0x221000
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x300000
 #define CONFIG_SYS_FSL_JR0_OFFSET		0x301000
+#define CONFIG_SYS_FSL_CORENET_DCE_OFFSET	0x312000
 #define CONFIG_SYS_SNVS_OFFSET			0x314000
 #define CONFIG_SYS_FSL_CORENET_PME_OFFSET	0x316000
 #define CONFIG_SYS_FSL_QMAN_OFFSET		0x318000
@@ -3160,6 +3171,8 @@ typedef struct ccsr_snvs_regs {
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_BMAN_OFFSET)
 #define CONFIG_SYS_FSL_CORENET_PME_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_CORENET_PME_OFFSET)
+#define CONFIG_SYS_FSL_CORENET_DCE_ADDR \
+	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_CORENET_DCE_OFFSET)
 #define CONFIG_SYS_FSL_RAID_ENGINE_ADDR \
 	(CONFIG_SYS_IMMR + CONFIG_SYS_FSL_RAID_ENGINE_OFFSET)
 #define CONFIG_SYS_FSL_CORENET_RMAN_ADDR \

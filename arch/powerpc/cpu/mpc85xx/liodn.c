@@ -137,6 +137,17 @@ static void setup_pme_liodn_base(void)
 #endif
 }
 
+static void setup_dce_liodn_base(void)
+{
+#ifdef CONFIG_SYS_DPAA_DCE
+	ccsr_dce_t *dce = (void *)CONFIG_SYS_FSL_CORENET_DCE_ADDR;
+	u32 base = (liodn_bases[FSL_HW_PORTAL_DCE].id[0] << 16) |
+			liodn_bases[FSL_HW_PORTAL_DCE].id[1];
+
+	out_be32(&dce->liodnbr, base);
+#endif
+}
+
 #ifdef CONFIG_SYS_FSL_RAID_ENGINE
 static void setup_raide_liodn_base(void)
 {
@@ -208,6 +219,8 @@ void set_liodns(void)
 #endif
 	/* setup PME liodn base */
 	setup_pme_liodn_base();
+	/* setup DCE liodn base */
+	setup_dce_liodn_base();
 
 #ifdef CONFIG_SYS_FSL_RAID_ENGINE
 	/* raid engine ccr addr code for liodn */

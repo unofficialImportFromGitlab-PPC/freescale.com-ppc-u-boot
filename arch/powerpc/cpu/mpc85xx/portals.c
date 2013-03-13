@@ -185,6 +185,19 @@ static int fdt_qportal(void *blob, int off, int id, char *name,
 					return ret;
 				ret = fdt_setprop(blob, childoff,
 					"fsl,pme-rev2", &pme_rev2, sizeof(u32));
+			} else if (!strncmp(name, "dce", 3)) {
+				u32 dce_rev1, dce_rev2;
+				ccsr_dce_t *dce_regs =
+					(void *)CONFIG_SYS_FSL_CORENET_DCE_ADDR;
+
+				dce_rev1 = in_be32(&dce_regs->dce_ip_rev_1);
+				dce_rev2 = in_be32(&dce_regs->dce_ip_rev_2);
+				ret = fdt_setprop(blob, childoff,
+					"fsl,dce-rev1", &dce_rev1, sizeof(u32));
+				if (ret < 0)
+					return ret;
+				ret = fdt_setprop(blob, childoff,
+					"fsl,dce-rev2", &dce_rev2, sizeof(u32));
 			}
 #endif
 		} else {
@@ -251,6 +264,12 @@ void fdt_fixup_qportals(void *blob)
 
 #ifdef CONFIG_SYS_DPAA_PME
 		err = fdt_qportal(blob, off, i, "pme@0", FSL_HW_PORTAL_PME, 1);
+		if (err < 0)
+			goto err;
+#endif
+
+#ifdef CONFIG_SYS_DPAA_DCE
+		err = fdt_qportal(blob, off, i, "dce@0", FSL_HW_PORTAL_DCE, 1);
 		if (err < 0)
 			goto err;
 #endif
