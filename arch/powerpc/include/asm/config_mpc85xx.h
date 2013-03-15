@@ -322,6 +322,7 @@
 
 #elif defined(CONFIG_PPC_P2041) /* also supports P2040 */
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
+#define CONFIG_FSL_CORENET		/* Freescale CoreNet platform */
 #define CONFIG_MAX_CPUS			4
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	2
 #define CONFIG_SYS_FSL_NUM_LAWS		32
@@ -355,6 +356,7 @@
 
 #elif defined(CONFIG_PPC_P3041)
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
+#define CONFIG_FSL_CORENET		/* Freescale CoreNet platform */
 #define CONFIG_MAX_CPUS			4
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	2
 #define CONFIG_SYS_FSL_NUM_LAWS		32
@@ -391,6 +393,7 @@
 
 #elif defined(CONFIG_PPC_P4080) /* also supports P4040 */
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
+#define CONFIG_FSL_CORENET		/* Freescale CoreNet platform */
 #define CONFIG_MAX_CPUS			8
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	4
 #define CONFIG_SYS_FSL_NUM_LAWS		32
@@ -437,6 +440,7 @@
 #elif defined(CONFIG_PPC_P5020) /* also supports P5010 */
 #define CONFIG_SYS_PPC64		/* 64-bit core */
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
+#define CONFIG_FSL_CORENET		/* Freescale CoreNet platform */
 #define CONFIG_MAX_CPUS			2
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	2
 #define CONFIG_SYS_FSL_NUM_LAWS		32
@@ -469,6 +473,7 @@
 #elif defined(CONFIG_PPC_P5040)
 #define CONFIG_SYS_PPC64
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
+#define CONFIG_FSL_CORENET		/* Freescale CoreNet platform */
 #define CONFIG_MAX_CPUS			4
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	3
 #define CONFIG_SYS_FSL_NUM_LAWS		32
