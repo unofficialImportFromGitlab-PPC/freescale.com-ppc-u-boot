@@ -672,6 +672,26 @@
 #define CONFIG_SYS_FSL_USB_INTERNAL_UTMI_PHY
 #define CONFIG_SYS_CCSRBAR_DEFAULT	0xfe000000
 
+#elif defined(CONFIG_C29X)
+#define CONFIG_MAX_CPUS			1
+#define CONFIG_FSL_SDHC_V2_3
+#define CONFIG_SYS_FSL_NUM_LAWS		12
+#define CONFIG_SYS_PPC_E500_DEBUG_TLB	3
+#define CONFIG_TSECV2_1
+#define CONFIG_SYS_FSL_SEC_COMPAT	6
+#define CONFIG_SYS_FSL_ERRATUM_ESDHC111
+#define CONFIG_NUM_DDR_CONTROLLERS	1
+#define CONFIG_SYS_FSL_IFC_BANK_COUNT	8
+#define CONFIG_SYS_CCSRBAR_DEFAULT	0xff700000
+
+#if defined(CONFIG_C293)
+#define CONFIG_SYS_FSL_SEC_NUM		3
+#elif defined(CONFIG_C292)
+#define CONFIG_SYS_FSL_SEC_NUM		2
+#elif defined(CONFIG_C291)
+#define CONFIG_SYS_FSL_SEC_NUM		1
+#endif
+
 #else
 #error Processor type not defined for this platform
 #endif
