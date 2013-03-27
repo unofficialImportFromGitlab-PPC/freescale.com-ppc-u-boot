@@ -180,7 +180,8 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	puts("Work-around for Erratum ESDHC111 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004468
-	puts("Work-around for Erratum A004468 enabled\n");
+	if (SVR_SOC_VER(svr) == SVR_T4240 && SVR_MAJ(svr) < 2)
+		puts("Work-around for Erratum A004468 enabled\n");
 #endif
 #if defined(CONFIG_SYS_FSL_ERRATUM_ESDHC135)
 	puts("Work-around for Erratum ESDHC135 enabled\n");
