@@ -176,7 +176,9 @@
 	"setenv bootargs config-addr=0x60000000; "	\
 	"bootm 0x01000000 - 0x00f00000"
 
-#define CONFIG_LINUX				\
+#define CONFIG_LINUX					\
+	"errata;"					\
+	"setenv othbootargs ignore_loglevel;"		\
 	"setenv bootargs root=/dev/ram rw "		\
 	"console=$consoledev,$baudrate $othbootargs;"	\
 	"setenv ramdiskaddr 0x02000000;"		\
