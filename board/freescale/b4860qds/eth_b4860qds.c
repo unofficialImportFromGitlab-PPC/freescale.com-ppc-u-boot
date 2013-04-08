@@ -397,6 +397,7 @@ void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
 {
 	int phy;
 	char alias[16];
+	struct fixed_link f_link;
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 	u32 prtcl2 = in_be32(&gur->rcwsr[4]) & FSL_CORENET2_RCWSR4_SRDS2_PRTCL;
 
@@ -420,7 +421,15 @@ void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
 		case 0x8d:
 		case 0x8e:
 		case 0xb2:
-			fdt_set_phy_handle(fdt, compat, addr, "xfi_phy");
+			f_link.phy_id = port;
+			f_link.duplex = 1;
+			f_link.link_speed = 10000;
+			f_link.pause = 0;
+			f_link.asym_pause = 0;
+
+			fdt_delprop(fdt, offset, "phy-handle");
+			fdt_setprop(fdt, offset, "fixed-link", &f_link,
+					sizeof(f_link));
 			break;
 		default:
 			break;

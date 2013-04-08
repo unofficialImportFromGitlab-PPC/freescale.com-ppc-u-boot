@@ -151,6 +151,14 @@ struct memac_mdio_info {
 	char *name;
 };
 
+struct fixed_link {
+	int phy_id;
+	int duplex;
+	int link_speed;
+	int pause;
+	int asym_pause;
+};
+
 int fm_tgec_mdio_init(bd_t *bis, struct tgec_mdio_info *info);
 int fm_memac_mdio_init(bd_t *bis, struct memac_mdio_info *info);
 
