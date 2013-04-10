@@ -47,7 +47,6 @@ int checkboard(void)
 	char buf[64];
 	u8 sw;
 	struct cpu_type *cpu = gd->cpu;
-	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 	unsigned int i;
 
 	printf("Board: %sQDS, ", cpu->name);
@@ -71,19 +70,6 @@ int checkboard(void)
 		(int)qixis_read_minor());
 	/* the timestamp string contains "\n" at the end */
 	printf(" on %s", qixis_read_time(buf));
-
-	/* Display the RCW, so that no one gets confused as to what RCW
-	 * we're actually using for this boot.
-	 */
-	puts("Reset Configuration Word (RCW):");
-	for (i = 0; i < ARRAY_SIZE(gur->rcwsr); i++) {
-		u32 rcw = in_be32(&gur->rcwsr[i]);
-
-		if ((i % 4) == 0)
-			printf("\n       %08x:", i * 4);
-		printf(" %08x", rcw);
-	}
-	puts("\n");
 
 	/*
 	 * Display the actual SERDES reference clocks as configured by the
