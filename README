@@ -428,6 +428,13 @@ The following options need to be configured:
 		Specify emulator support for DDR. Some DDR features such as deskew training
 		are not available.
 
+		CONFIG_SYS_FSL_DSP_M2_RAM_ADDR
+		This value denotes start offset of M2 memory which is directly
+		connected to the DSP core.
+
+		CONFIG_SYS_FSL_DSP_CCSRBAR_DEFAULT
+		This value denotes start offset of DSP CCSR space.
+
 - Generic CPU options:
 		CONFIG_SYS_BIG_ENDIAN, CONFIG_SYS_LITTLE_ENDIAN
 
