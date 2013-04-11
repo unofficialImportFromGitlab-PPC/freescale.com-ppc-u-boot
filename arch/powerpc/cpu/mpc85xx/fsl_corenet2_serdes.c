@@ -163,6 +163,42 @@ u64 serdes_init(u32 sd, u32 sd_addr, u32 sd_prctl_mask, u32 sd_prctl_shift)
 		return 0;
 	}
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005475
+	/*
+	 * Use SRDSxPLLnCR0[PLL_LCK] to determine if the SerDes PLL has
+	 * locked. If not, a SerDes reset request should occur.
+	 */
+	if (SVR_MAJ(get_svr()) == 1) {
+		int pll;
+		u32 pll_status;
+		serdes_corenet_t *srds_regs = (void __iomem *)sd_addr;
+		unsigned long long end_tick;
+		u32 rstctl;
+
+		for (pll = 0; pll < SRDS_MAX_BANK; pll++) {
+			pll_status = in_be32(&srds_regs->bank[pll].pllcr0);
+
+			if (pll_status &
+				(SRDS_PLLCR0_POFF | SRDS_PLLCR0_PLL_LCK))
+				continue;
+			/* need to reset the PLL */
+			setbits_be32(&srds_regs->bank[pll].rstctl,
+					SRDS_RSTCTL_RST);
+
+			/* wait for reset complete or 1-second timeout */
+			end_tick = usec2ticks(1000000) + get_ticks();
+			do {
+				rstctl = in_be32(&srds_regs->bank[pll].rstctl);
+				if (rstctl & SRDS_RSTCTL_RSTDONE)
+					break;
+			} while (end_tick > get_ticks());
+
+			if (!(rstctl & SRDS_RSTCTL_RSTDONE))
+				printf("SERDES%d: timeout resetting PLL%d\n",
+						sd, pll + 1);
+		}
+	}
+#endif
 	cfg >>= sd_prctl_shift;
 	printf("Using SERDES%d Protocol: %d (0x%x)\n", sd + 1, cfg, cfg);
 	if (!is_serdes_prtcl_valid(sd, cfg))
