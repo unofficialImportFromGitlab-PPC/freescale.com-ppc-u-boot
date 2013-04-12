@@ -40,7 +40,7 @@ int checkboard(void)
 {
 	struct cpu_type *cpu = gd->cpu;
 
-	printf("Board: %sEMU, ", cpu->name);
+	printf("Board: %sEMU\n", cpu->name);
 
 	return 0;
 }
