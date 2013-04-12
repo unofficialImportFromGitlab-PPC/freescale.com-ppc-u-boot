@@ -51,6 +51,7 @@
 #endif
 
 #define CONFIG_SRIO_PCIE_BOOT_MASTER
+#define CONFIG_DDR_ECC
 
 #include "t4qds.h"
 
