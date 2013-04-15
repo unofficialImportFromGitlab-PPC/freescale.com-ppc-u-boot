@@ -30,6 +30,8 @@
 
 #include "ehci.h"
 
+static bool has_erratum_a005275(void);
+
 /* Check USB PHY clock valid */
 static int usb_phy_clk_valid(struct usb_ehci *ehci)
 {
@@ -50,6 +52,8 @@ static int usb_phy_clk_valid(struct usb_ehci *ehci)
  */
 int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
+	struct ehci_ctrl *ehci_ctrl = container_of(hccr,
+					struct ehci_ctrl, hccr);
 	struct usb_ehci *ehci;
 	const char *phy_type = NULL;
 	size_t len;
@@ -110,6 +114,17 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 
 	in_le32(&ehci->usbmode);
 
+	/* enable/disable USB Erratum USB A-005275 workaround;
+	* workaround can be disabled by mentioning "no_usb_hs_errata"
+	* in hwconfig string
+	*/
+	if (!hwconfig("no_erratum_a005275")) {
+		if (has_erratum_a005275())
+			ehci_ctrl->has_fsl_erratum_a005275 = 1;
+	} else {
+		ehci_ctrl->has_fsl_erratum_a005275 = 0;
+	}
+
 	return 0;
 }
 
@@ -120,4 +135,31 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 int ehci_hcd_stop(int index)
 {
 	return 0;
+}
+
+/* Deal with USB Erratum USB A-005275
+ *	* Packet corruption in HS mode, default to
+ *	* FS mode for the following
+ *	* P3041 and P2041 rev 1.0 and 1.1
+ *	* P5020 and P5010 rev 1.0 and 2.0
+ *	* P5040 and P1010 rev 1.0
+ */
+static bool has_erratum_a005275(void)
+{
+	u32 svr = get_svr();
+	u32 soc = SVR_SOC_VER(svr);
+
+	switch (soc) {
+	case SVR_P3041:
+	case SVR_P2041:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
+	case SVR_P5020:
+	case SVR_P5010:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0);
+	case SVR_P5040:
+	case SVR_P1010:
+		return IS_SVR_REV(svr, 1, 0);
+	}
+
+	return false;
 }

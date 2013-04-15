@@ -34,13 +34,7 @@
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 1
 #endif
 
-static struct ehci_ctrl {
-	struct ehci_hccr *hccr;	/* R/O registers, not need for volatile */
-	struct ehci_hcor *hcor;
-	int rootdev;
-	uint16_t portreset;
-	struct QH qh_list __attribute__((aligned(USB_DMA_MINALIGN)));
-} ehcic[CONFIG_USB_MAX_CONTROLLER_COUNT];
+static struct ehci_ctrl ehcic[CONFIG_USB_MAX_CONTROLLER_COUNT];
 
 #define ALIGN_END_ADDR(type, ptr, size)			\
 	((uint32_t)(ptr) + roundup((size) * sizeof(type), USB_DMA_MINALIGN))
@@ -335,9 +329,15 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	endpt = QH_ENDPT1_RL(8) | QH_ENDPT1_C(c) |
 		QH_ENDPT1_MAXPKTLEN(maxpacket) | QH_ENDPT1_H(0) |
 		QH_ENDPT1_DTC(QH_ENDPT1_DTC_DT_FROM_QTD) |
-		QH_ENDPT1_EPS(ehci_encode_speed(dev->speed)) |
 		QH_ENDPT1_ENDPT(usb_pipeendpoint(pipe)) | QH_ENDPT1_I(0) |
 		QH_ENDPT1_DEVADDR(usb_pipedevice(pipe));
+
+	/* Force FS for fsl HS quirk */
+	if (!ctrl->has_fsl_erratum_a005275)
+		endpt |= QH_ENDPT1_EPS(ehci_encode_speed(dev->speed));
+	else
+		endpt |= QH_ENDPT1_EPS(ehci_encode_speed(QH_FULL_SPEED));
+
 	qh->qh_endpt1 = cpu_to_hc32(endpt);
 	endpt = QH_ENDPT2_MULT(1) | QH_ENDPT2_PORTNUM(dev->portnr) |
 		QH_ENDPT2_HUBADDR(dev->parent->devnum) |
@@ -759,6 +759,10 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				break;
 			} else {
 				int ret;
+
+				/* Disable chirp for HS erratum */
+				if (ctrl->has_fsl_erratum_a005275)
+					reg |= PORTSC_FSL_PFSC;
 
 				reg |= EHCI_PS_PR;
 				reg &= ~EHCI_PS_PE;
