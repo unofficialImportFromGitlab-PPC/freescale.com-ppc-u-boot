@@ -37,6 +37,75 @@
 #include <desc_constr.h>
 #include <jobdesc.h>
 
+#define KEY_BLOB_SIZE			32
+#define MAC_SIZE			16
+
+void inline_cnstr_jobdesc_blob_encap(uint32_t *desc, uint8_t *key_idnfr,
+				     uint8_t *plain_txt, uint8_t *enc_blob,
+				     uint32_t in_sz)
+{
+
+	dma_addr_t dma_addr_key_idnfr, dma_addr_in, dma_addr_out;
+	uint32_t key_sz = KEY_IDNFR_SZ_BYTES;
+	/* output blob will have 32 bytes key blob in beginning and
+	 * 16 byte HMAC identifier at end of data blob */
+	uint32_t out_sz = in_sz + KEY_BLOB_SIZE + MAC_SIZE;
+
+	dma_addr_key_idnfr = virt_to_phys((void *)key_idnfr);
+	dma_addr_in	= virt_to_phys((void *)plain_txt);
+	dma_addr_out	= virt_to_phys((void *)enc_blob);
+
+	init_job_desc(desc, 0);
+	append_key(desc, dma_addr_key_idnfr, key_sz, CLASS_2);
+
+	if (in_sz > 0xffff) {
+		append_seq_in_ptr(desc, dma_addr_in, 0, SQIN_EXT);
+		append_cmd(desc, in_sz);
+	} else {
+		append_seq_in_ptr(desc, dma_addr_in, in_sz, 0);
+	}
+
+	if (out_sz > 0xffff) {
+		append_seq_out_ptr(desc, dma_addr_out, 0, SQOUT_EXT);
+		append_cmd(desc, out_sz);
+	} else {
+		append_seq_out_ptr(desc, dma_addr_out, out_sz, 0);
+	}
+	append_operation(desc, OP_TYPE_ENCAP_PROTOCOL | OP_PCLID_BLOB);
+}
+
+void inline_cnstr_jobdesc_blob_decap(uint32_t *desc, uint8_t *key_idnfr,
+				     uint8_t *enc_blob, uint8_t *plain_txt,
+				     uint32_t out_sz)
+{
+	dma_addr_t dma_addr_key_idnfr, dma_addr_in, dma_addr_out;
+	uint32_t key_sz = KEY_IDNFR_SZ_BYTES;
+	uint32_t in_sz = out_sz + KEY_BLOB_SIZE + MAC_SIZE;
+
+	dma_addr_key_idnfr = virt_to_phys((void *)key_idnfr);
+	dma_addr_in	= virt_to_phys((void *)enc_blob);
+	dma_addr_out	= virt_to_phys((void *)plain_txt);
+
+	init_job_desc(desc, 0);
+	append_key(desc, dma_addr_key_idnfr, key_sz, CLASS_2);
+	if (in_sz > 0xffff) {
+		append_seq_in_ptr(desc, dma_addr_in, 0, SQIN_EXT);
+		append_cmd(desc, in_sz);
+	} else {
+		append_seq_in_ptr(desc, dma_addr_in, in_sz, 0);
+	}
+
+	if (out_sz > 0xffff) {
+		append_seq_out_ptr(desc, dma_addr_out, 0, SQOUT_EXT);
+		append_cmd(desc, out_sz);
+	} else {
+		append_seq_out_ptr(desc, dma_addr_out, out_sz, 0);
+	}
+
+	append_operation(desc, OP_TYPE_DECAP_PROTOCOL | OP_PCLID_BLOB);
+}
+
+
 /* Change key size to bytes form bits in calling function*/
 void inline_cnstr_jobdesc_pkha_rsaexp(uint32_t *desc,
 				      struct pk_in_params *pkin, uint8_t *out,
