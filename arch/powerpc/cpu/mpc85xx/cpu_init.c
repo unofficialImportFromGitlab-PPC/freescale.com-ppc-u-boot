@@ -740,6 +740,10 @@ skip_l2:
 #ifdef CONFIG_SECURE_BOOT
 	if (sec_init(&jr) < 0)
 		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
+	if (get_rng_vid() >= 4) {
+		if (rng_init(&jr) < 0)
+			printf("CAAM:RNG init failed\n");
+	}
 #endif
 
 	return 0;

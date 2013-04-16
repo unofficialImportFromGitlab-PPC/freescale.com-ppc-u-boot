@@ -106,6 +106,8 @@ struct result {
 };
 
 int sec_init(struct jobring *jr);
+u8 get_rng_vid(void);
+int rng_init(struct jobring *jr);
 int jr_enqueue(struct jobring *jr, uint32_t *desc_addr,
 		void (*callback)(uint32_t desc, uint32_t status, void *arg),
 		void *arg);

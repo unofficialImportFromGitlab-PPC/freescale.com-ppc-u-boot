@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	:= $(obj)libsec.o
 
-COBJS-$(CONFIG_SECURE_BOOT) += jr.o sha.o rsa_sec.o jobdesc.o error.o
+COBJS-$(CONFIG_SECURE_BOOT) += jr.o sha.o rsa_sec.o jobdesc.o error.o rng.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)
