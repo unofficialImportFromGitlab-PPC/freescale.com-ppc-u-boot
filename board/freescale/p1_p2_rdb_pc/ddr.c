@@ -80,7 +80,7 @@ dimm_params_t ddr_raw_timing = {
 	.refresh_rate_ps = 7800000,
 	.tFAW_ps = 30000,
 };
-#elif defined(CONFIG_P1020MBG)
+#elif (defined(CONFIG_P1020MBG) || defined(CONFIG_P1020RDB_PD))
 /* Micron MT41J512M8_187E */
 dimm_params_t ddr_raw_timing = {
 	.n_ranks = 2,

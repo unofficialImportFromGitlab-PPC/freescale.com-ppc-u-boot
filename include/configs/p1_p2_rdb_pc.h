@@ -50,8 +50,12 @@
 #define CONFIG_SYS_L2_SIZE	(256 << 10)
 #endif
 
+#if (defined(CONFIG_P1020RDB) || defined(CONFIG_P1020RDB_PD))
 #if defined(CONFIG_P1020RDB)
 #define CONFIG_BOARDNAME "P1020RDB-PC"
+#elif defined(CONFIG_P1020RDB_PD)
+#define CONFIG_BOARDNAME "P1020RDB-PD"
+#endif
 #define CONFIG_NAND_FSL_ELBC
 #define CONFIG_P1020
 #define CONFIG_SPI_FLASH
@@ -278,7 +282,7 @@
 #define SPD_EEPROM_ADDRESS 0x52
 #undef CONFIG_FSL_DDR_INTERACTIVE
 
-#ifdef CONFIG_P1020MBG
+#if (defined(CONFIG_P1020MBG) || defined(CONFIG_P1020RDB_PD))
 #define CONFIG_SYS_SDRAM_SIZE_LAW	LAW_SIZE_2G
 #define CONFIG_CHIP_SELECTS_PER_CTRL	2
 #else
@@ -349,7 +353,7 @@
 /*
  * Local Bus Definitions
  */
-#if defined(CONFIG_P1020MBG)
+#if (defined(CONFIG_P1020MBG) || defined(CONFIG_P1020RDB_PD))
 #define CONFIG_SYS_MAX_FLASH_SECT	512	/* 64M */
 #define CONFIG_SYS_FLASH_BASE		0xec000000
 #elif defined(CONFIG_P1020UTM)
@@ -407,6 +411,16 @@
 	| BR_PS_8	/* Port Size = 8 bit */ \
 	| BR_MS_FCM	/* MSEL = FCM */ \
 	| BR_V)	/* valid */
+#if defined(CONFIG_P1020RDB_PD)
+#define CONFIG_SYS_NAND_OR_PRELIM	(OR_AM_32KB \
+	| OR_FCM_PGS	/* Large Page*/ \
+	| OR_FCM_CSCT \
+	| OR_FCM_CST \
+	| OR_FCM_CHT \
+	| OR_FCM_SCY_1 \
+	| OR_FCM_TRLX \
+	| OR_FCM_EHTR)
+#else
 #define CONFIG_SYS_NAND_OR_PRELIM	(OR_AM_32KB	/* small page */ \
 	| OR_FCM_CSCT \
 	| OR_FCM_CST \
@@ -414,6 +428,7 @@
 	| OR_FCM_SCY_1 \
 	| OR_FCM_TRLX \
 	| OR_FCM_EHTR)
+#endif
 #endif /* CONFIG_NAND_FSL_ELBC */
 
 #define CONFIG_BOARD_EARLY_INIT_R	/* call board_early_init_r function */
