@@ -88,46 +88,84 @@ void ft_fixup_num_cores(void *blob) {
 #endif /* defined(CONFIG_MPC85xx) || defined(CONFIG_MPC86xx) */
 
 #if defined(CONFIG_HAS_FSL_DR_USB) || defined(CONFIG_HAS_FSL_MPH_USB)
-static int fdt_fixup_usb_mode_phy_type(void *blob, const char *mode,
-				const char *phy_type, int start_offset)
+
+static const char *fdt_usb_get_node_type(void *blob, int start_offset,
+						int *node_offset)
 {
 	const char *compat_dr = "fsl-usb2-dr";
 	const char *compat_mph = "fsl-usb2-mph";
+	const char *node_type = NULL;
+
+	*node_offset = fdt_node_offset_by_compatible(blob,
+			start_offset, compat_mph);
+	if (*node_offset < 0) {
+		*node_offset = fdt_node_offset_by_compatible(blob,
+			start_offset, compat_dr);
+		if (*node_offset < 0) {
+			printf("ERROR: could not find compatible"
+				" node %s or %s: %s.\n", compat_mph,
+				compat_dr, fdt_strerror(*node_offset));
+		} else {
+			node_type = compat_dr;
+		}
+	} else {
+		node_type = compat_mph;
+	}
+
+	return node_type;
+}
+
+static int fdt_fixup_usb_mode_phy_type(void *blob, const char *mode,
+				const char *phy_type, int start_offset)
+{
 	const char *prop_mode = "dr_mode";
 	const char *prop_type = "phy_type";
 	const char *node_type = NULL;
 	int node_offset;
 	int err;
 
-	node_offset = fdt_node_offset_by_compatible(blob,
-			start_offset, compat_mph);
-	if (node_offset < 0) {
-		node_offset = fdt_node_offset_by_compatible(blob,
-			start_offset, compat_dr);
-		if (node_offset < 0) {
-			printf("WARNING: could not find compatible"
-				" node %s or %s: %s.\n", compat_mph,
-				compat_dr, fdt_strerror(node_offset));
-			return -1;
-		} else
-			node_type = compat_dr;
-	} else
-		node_type = compat_mph;
+	node_type = fdt_usb_get_node_type(blob, start_offset, &node_offset);
+	if (node_offset < 0)
+		return -1;
 
 	if (mode) {
 		err = fdt_setprop(blob, node_offset, prop_mode, mode,
 				  strlen(mode) + 1);
-		if (err < 0)
-			printf("WARNING: could not set %s for %s: %s.\n",
+		if (err < 0) {
+			printf("ERROR: could not set %s for %s: %s.\n",
 			       prop_mode, node_type, fdt_strerror(err));
+		}
 	}
 
 	if (phy_type) {
 		err = fdt_setprop(blob, node_offset, prop_type, phy_type,
 				  strlen(phy_type) + 1);
-		if (err < 0)
-			printf("WARNING: could not set %s for %s: %s.\n",
+		if (err < 0) {
+			printf("ERROR: could not set %s for %s: %s.\n",
 			       prop_type, node_type, fdt_strerror(err));
+		}
+	}
+
+	return node_offset;
+}
+
+static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
+					int start_offset)
+{
+	const char *prop_erratum = "fsl,no-erratum-a005275";
+	int node_offset, err;
+	const char *node_type = NULL;
+
+	node_type = fdt_usb_get_node_type(blob, start_offset, &node_offset);
+	if (!node_type)
+		return -1;
+
+	if (!strcmp(erratum, "erratum_a005275")) {
+		err = fdt_appendprop(blob, node_offset, prop_erratum, NULL, 0);
+		if (err < 0) {
+			printf("ERROR: could not add %s for %s: %s.\n",
+				prop_erratum, node_type, fdt_strerror(err));
+		}
 	}
 
 	return node_offset;
@@ -137,11 +175,9 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 {
 	const char *modes[] = { "host", "peripheral", "otg" };
 	const char *phys[] = { "ulpi", "utmi" };
-	const char *mode = NULL;
-	const char *phy_type = NULL;
 	const char *dr_mode_type = NULL;
 	const char *dr_phy_type = NULL;
-	char usb1_defined = 0;
+	int usb_erratum_off = -1;
 	int usb_mode_off = -1;
 	int usb_phy_off = -1;
 	char str[5];
@@ -176,12 +212,6 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 			dr_mode_type = modes[mode_idx];
 			dr_phy_type = phys[phy_idx];
 
-			/* use usb_dr_mode and usb_phy_type if
-			   usb1_defined = 0; these variables are to
-			   be deprecated */
-			if (!strcmp(str, "usb1"))
-				usb1_defined = 1;
-
 			if (mode_idx < 0 && phy_idx < 0) {
 				printf("WARNING: invalid phy or mode\n");
 				return;
@@ -190,27 +220,19 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 
 		usb_mode_off = fdt_fixup_usb_mode_phy_type(blob,
 			dr_mode_type, NULL, usb_mode_off);
-
 		if (usb_mode_off < 0)
 			return;
 
 		usb_phy_off = fdt_fixup_usb_mode_phy_type(blob,
 			NULL, dr_phy_type, usb_phy_off);
-
 		if (usb_phy_off < 0)
 			return;
-	}
 
-	if (!usb1_defined) {
-		int usb_off = -1;
-		mode = getenv("usb_dr_mode");
-		phy_type = getenv("usb_phy_type");
-		if (mode || phy_type) {
-			printf("WARNING: usb_dr_mode and usb_phy_type "
-				"are to be deprecated soon. Use "
-				"hwconfig to set these values instead!!\n");
-			fdt_fixup_usb_mode_phy_type(blob, mode,
-				phy_type, usb_off);
+		if (hwconfig("no_erratum_a005275")) {
+			usb_erratum_off = fdt_fixup_usb_erratum(blob,
+				"erratum_a005275", usb_erratum_off);
+			if (usb_erratum_off < 0)
+				return;
 		}
 	}
 }
