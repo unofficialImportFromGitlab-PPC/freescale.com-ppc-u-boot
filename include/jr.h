@@ -39,6 +39,8 @@
 #define JRINT_ERR_HALT_MASK         0xc
 #define JRNSLIODN_SHIFT		16
 #define JRNSLIODN_MASK		0x0fff0000
+#define JRSLIODN_SHIFT		0
+#define JRSLIODN_MASK		0x00000fff
 
 #define JQ_DEQ_ERR		-1
 #define JQ_DEQ_TO_ERR		-2

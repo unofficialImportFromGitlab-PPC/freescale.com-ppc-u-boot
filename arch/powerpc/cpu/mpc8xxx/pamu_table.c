@@ -48,14 +48,21 @@ void construct_pamu_addr_table(struct pamu_addr_tbl *tbl, int *num_entries)
 	*num_entries = i;
 }
 
-int sec_config_pamu_table(uint32_t liodn)
+int sec_config_pamu_table(uint32_t liodn_ns, uint32_t liodn_s)
 {
 	struct pamu_addr_tbl tbl;
 	int num_entries = 0;
 	int ret = 0;
 
 	construct_pamu_addr_table(&tbl, &num_entries);
-	ret = config_pamu(&tbl, num_entries, liodn);
+
+	ret = config_pamu(&tbl, num_entries, liodn_ns);
+	if (ret)
+		return ret;
+
+	ret = config_pamu(&tbl, num_entries, liodn_s);
+	if (ret)
+		return ret;
 
 	return ret;
 }

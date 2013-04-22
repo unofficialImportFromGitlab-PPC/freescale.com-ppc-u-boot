@@ -22,7 +22,7 @@
 
 #define CONFIG_NUM_PAMU		16
 #define NUM_PPAACT_ENTRIES	512
-#define NUM_SPAACT_ENTRIES	128
+#define NUM_SPAACT_ENTRIES	256
 
 /* PAMU_OFFSET to the next pamu space in ccsr */
 #define PAMU_OFFSET 0x1000
@@ -177,6 +177,6 @@ int pamu_init(void);
 void pamu_enable(void);
 void pamu_disable(void);
 int config_pamu(struct pamu_addr_tbl *tbl, int num_entries, uint32_t liodn);
-int sec_config_pamu_table(uint32_t liodn);
+int sec_config_pamu_table(uint32_t liodn_ns, uint32_t liodn_s);
 
 #endif

@@ -1,4 +1,6 @@
 /*
+ * FSL PAMU driver
+ *
  * Copyright 2012 Freescale Semiconductor, Inc.
  *
  * This program is free software; you can redistribute it and/or
@@ -23,24 +25,21 @@
 
 paace_t *ppaact;
 paace_t *sec;
-
-static inline int count_msb_zeroes(unsigned long val)
-{
-	return __builtin_clzl(val);
-}
+unsigned long fspi;
 
 static inline int __ilog2_roundup_64(uint64_t val)
 {
-	if ((val - 1) >> 32)
-		return 64 - (count_msb_zeroes((val - 1) >> 32));
+
+	if ((val & (val - 1)) == 0)
+		return __ilog2_u64(val);
 	else
-		return 32 - count_msb_zeroes((uint32_t)(val - 1));
+		return  __ilog2_u64(val) + 1;
 }
 
 
 static inline int count_lsb_zeroes(unsigned long val)
 {
-	return __builtin_ctzl(val);
+	return ffs(val) - 1;
 }
 
 static unsigned int map_addrspace_size_to_wse(uint64_t addrspace_size)
@@ -90,7 +89,6 @@ static int pamu_config_ppaace(uint32_t liodn, uint64_t win_addr,
 	uint32_t snoopid, uint32_t stashid,
 	uint32_t subwin_cnt)
 {
-	unsigned long fspi;
 	paace_t *ppaace;
 
 	if ((win_size & (win_size - 1)) || win_size < PAMU_PAGE_SIZE)
@@ -136,15 +134,12 @@ static int pamu_config_ppaace(uint32_t liodn, uint64_t win_addr,
 		ppaace->domain_attr.to_host.snpid = snoopid;
 
 	if (subwin_cnt) {
-		/* We have a single SPAACE for 1 LIODN. So index would
-			be always 0 */
-		fspi = 0;
-
 		/* window count is 2^(WCE+1) bytes */
 		set_bf(ppaace->impl_attr, PAACE_IA_WCE,
 		       map_subwindow_cnt_to_wce(subwin_cnt));
 		set_bf(ppaace->addr_bitfields, PPAACE_AF_MW, 0x1);
 		ppaace->fspi = fspi;
+		fspi = fspi + DEFAULT_NUM_SUBWINDOWS - 1;
 	} else
 		set_bf(ppaace->addr_bitfields, PAACE_AF_AP, PAACE_AP_PERMS_ALL);
 
@@ -161,19 +156,25 @@ static int pamu_config_spaace(uint32_t liodn,
 	uint32_t omi, uint32_t snoopid, uint32_t stashid)
 {
 	paace_t *paace;
-	unsigned long fspi;
 	/* Align start addr of subwin to subwindoe size */
 	uint64_t sec_addr = subwin_addr & ~(subwin_size - 1);
 	uint64_t end_addr = subwin_addr + size;
 	int size_shift = __ilog2_u64(subwin_size);
 	uint64_t win_size = 0;
 	uint32_t index, swse;
+	unsigned long fspi_idx;
 
 	/* Recalculate the size */
 	size = end_addr - sec_addr;
 
 	if (!subwin_size)
 		return -1;
+
+	if (liodn > NUM_PPAACT_ENTRIES) {
+		printf("LIODN No programmed %d > no. of PPAACT entries %d\n",
+						liodn, NUM_PPAACT_ENTRIES);
+		return -1;
+	}
 
 	while (sec_addr < end_addr) {
 #ifdef DEBUG
@@ -183,8 +184,7 @@ static int pamu_config_spaace(uint32_t liodn,
 		paace = &ppaact[liodn];
 		if (!paace)
 			return -1;
-
-		fspi = paace->fspi;
+		fspi_idx = paace->fspi;
 
 		/* Calculating the win_size here as if we map in index 0,
 			paace entry woudl need to  be programmed for SWSE */
@@ -201,7 +201,7 @@ static int pamu_config_spaace(uint32_t liodn,
 #endif
 
 		swse = map_addrspace_size_to_wse(win_size);
-		index = fspi +  (sec_addr >> size_shift);
+		index = sec_addr >> size_shift;
 
 		if (index == 0) {
 			set_bf(paace->win_bitfields, PAACE_WIN_SWSE, swse);
@@ -211,7 +211,7 @@ static int pamu_config_spaace(uint32_t liodn,
 			continue;
 		}
 
-		paace = sec + index - 1;
+		paace = sec + fspi_idx + index - 1;
 
 #ifdef DEBUG
 		printf("SPAACT:Writing at location %p, index %d\n", paace,
@@ -454,5 +454,6 @@ int config_pamu(struct pamu_addr_tbl *tbl, int num_entries, uint32_t liodn)
 				return ret;
 		}
 	}
+
 	return ret;
 }

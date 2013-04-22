@@ -117,7 +117,9 @@ int sec_init(struct jobring *jr)
 	int ret = 0;
 
 #ifdef CONFIG_FSL_CORENET
-	uint32_t liodn;
+	uint32_t liodnr;
+	uint32_t liodn_ns;
+	uint32_t liodn_s;
 #endif
 
 #ifdef CONFIG_PHYS_64BIT
@@ -128,17 +130,23 @@ int sec_init(struct jobring *jr)
 #endif
 
 #ifdef CONFIG_FSL_CORENET
-	liodn = in_be32(&sec->jrliodnr[0].ls);
-	liodn = liodn >> JRNSLIODN_SHIFT;
+	liodnr = in_be32(&sec->jrliodnr[0].ls);
+	liodn_ns = (liodnr & JRNSLIODN_MASK) >> JRNSLIODN_SHIFT;
+	liodn_s = (liodnr & JRSLIODN_MASK) >> JRSLIODN_SHIFT;
 #endif
 	ret = jr_init(jr);
 	if (ret < 0)
 		return -1;
 
 #ifdef CONFIG_FSL_CORENET
-	ret = sec_config_pamu_table(liodn);
+	ret = sec_config_pamu_table(liodn_ns, liodn_s);
 	if (ret < 0)
 		return -1;
+
+#ifdef CONFIG_FSL_CORENET
+	pamu_enable();
+#endif
+
 #endif
 
 	return ret;
