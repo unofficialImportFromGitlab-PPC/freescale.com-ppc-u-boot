@@ -87,7 +87,7 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 #endif
 	}
 
-	if (!strcmp(phy_type, "utmi")) {
+	if (!strncmp(phy_type, "utmi", 4)) {
 #if defined(CONFIG_SYS_FSL_USB_INTERNAL_UTMI_PHY)
 		setbits_be32(&ehci->control, PHY_CLK_SEL_UTMI);
 		setbits_be32(&ehci->control, UTMI_PHY_EN);
