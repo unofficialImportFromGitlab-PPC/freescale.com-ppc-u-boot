@@ -120,5 +120,9 @@ struct fsl_secboot_img_priv {
 
 int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[]);
+int fsl_secboot_blob_encap(cmd_tbl_t *cmdtp, int flag, int argc,
+	char * const argv[]);
+int fsl_secboot_blob_decap(cmd_tbl_t *cmdtp, int flag, int argc,
+	char * const argv[]);
 
 #endif

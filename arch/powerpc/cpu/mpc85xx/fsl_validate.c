@@ -26,6 +26,7 @@
 #include <rsa_sec.h>
 #include <sha.h>
 #include <jr.h>
+#include <jobdesc.h>
 #include <asm/fsl_pamu.h>
 
 #define SHA256_BITS	256
@@ -102,8 +103,7 @@ static void fsl_secboot_image_verification_failure(void)
 	ccsr_sfp_regs_t *sfp_regs = (void *)(CONFIG_SYS_SFP_ADDR);
 	u32 sts = in_be32(&snvs_regs->hp_stat);
 
-	/* 31st bit of OVPR is ITF */
-	u32 itf = in_be32(&sfp_regs->ovpr);
+	u32 its = in_be32(&sfp_regs->ospr) & ITS_MASK >> ITS_BIT;
 
 	/*
 	 * Read the SNVS status register
@@ -111,7 +111,7 @@ static void fsl_secboot_image_verification_failure(void)
 	 */
 	sts = in_be32(&snvs_regs->hp_stat);
 	if ((sts & HPSR_SSM_ST_MASK) == HPSR_SSM_ST_TRUST) {
-		if (itf == 1) {
+		if (its == 1) {
 			change_sec_mon_state(HPSR_SSM_ST_TRUST,
 				HPSR_SSM_ST_SOFT_FAIL);
 
@@ -401,6 +401,233 @@ static inline int str2long(const char *p, ulong *num)
 	return *p != '\0' && *endptr == '\0';
 }
 
+void done(uint32_t desc, uint32_t status, void *arg)
+{
+	struct result *x = arg;
+	x->status = status;
+	x->err = caam_jr_strstatus(x->outstr, status);
+	x->done = 1;
+}
+
+int fsl_secboot_blob_decap(cmd_tbl_t *cmdtp, int flag, int argc,
+		char * const argv[])
+{
+	ulong enc_addr = simple_strtoul(argv[1], NULL, 16);
+	ulong blob_decap_addr = simple_strtoul(argv[2], NULL, 16);
+	ulong out_sz = simple_strtoul(argv[3], NULL, 16);
+
+	int ret;
+	uint32_t desc[64];
+	struct result op;
+	unsigned long long timeval;
+	unsigned long long timeout;
+	char key_str[NUM_HEX_CHARS + 1];
+	ulong key_id[16/sizeof(ulong)];
+
+#ifdef CONFIG_FSL_CORENET
+	pamu_enable();
+#endif
+	memset(&op, 0, sizeof(struct result));
+
+	if (argc == 5) {
+		char *cp = argv[4];
+		int i = 0;
+
+		if (*cp == '0' && *(cp + 1) == 'x')
+			cp += 2;
+
+		/* The input string expected is in hex, where
+		 * each 4 bits would be represented by a hex
+		 * sha256 hash is 256 bits long, which would mean
+		 * num of characters = 256 / 4
+		 */
+		if (strlen(cp) != 32) {
+			printf("%s is not a 16 byte hex string as expected\n",
+				argv[4]);
+			return -1;
+		}
+
+		for (i = 0; i < sizeof(key_id)/sizeof(ulong); i++) {
+			strncpy(key_str, cp + (i * NUM_HEX_CHARS),
+				NUM_HEX_CHARS);
+			key_str[NUM_HEX_CHARS] = '\0';
+			if (!str2long(key_str, &key_id[i])) {
+				printf("%s is not a 128 bit hex string\n",
+					argv[4]);
+				return -1;
+			}
+		}
+	}
+
+#ifdef DEBUG
+	printf("enc text at addr %lx" , enc_addr);
+	printf("blob_decap text at addr %lx" , blob_decap_addr);
+	printf("size %lx" , out_sz);
+#endif
+	printf("Decapsulating\n");
+
+	inline_cnstr_jobdesc_blob_decap(desc, (uint8_t *)key_id,
+		(uint8_t *)enc_addr, (uint8_t *)blob_decap_addr, out_sz);
+
+	ret = jr_enqueue(&jr, desc, done, &op);
+	if (ret) {
+		printf("enq failed with ret %d\n", ret);
+		fsl_secblk_handle_error(ret);
+		goto out;
+	}
+
+#ifdef DEBUG
+	printf("Descriptor\n");
+	for (i = 0; i < 16; i++)
+		printf("0x%x\n", desc[i]);
+#endif
+
+	timeval = get_ticks();
+	timeout = usec2ticks(CONFIG_SEC_DEQ_TIMEOUT);
+
+	while (op.done != 1) {
+		if (jr_dequeue(&jr)) {
+			printf("Deq error ERROR_ESBC_SEC_DEQ\n");
+			fsl_secblk_handle_error(ERROR_ESBC_SEC_DEQ);
+			goto out;
+		}
+
+		if ((get_ticks() - timeval) > timeout) {
+			printf("SEC Dequeue timed out\n");
+			fsl_secblk_handle_error(ERROR_ESBC_SEC_DEQ_TO);
+			goto out;
+		}
+	}
+
+	if (op.err < 0) {
+		fsl_secblk_handle_error(op.status);
+		goto out;
+	}
+
+	printf("Decapsulation successful\n");
+
+out:
+#ifdef CONFIG_FSL_CORENET
+	pamu_disable();
+#endif
+	if (jr_reset(&jr) < 0) {
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_RESET);
+		return 0;
+	}
+	return 0;
+}
+
+int fsl_secboot_blob_encap(cmd_tbl_t *cmdtp, int flag, int argc,
+		char * const argv[])
+{
+	ulong plain_addr = simple_strtoul(argv[1], NULL, 16);
+	ulong enc_addr = simple_strtoul(argv[2], NULL, 16);
+	ulong in_sz = simple_strtoul(argv[3], NULL, 16);
+	int ret;
+	uint32_t desc[64];
+	struct result op;
+	unsigned long long timeval;
+	unsigned long long timeout;
+	int i = 0;
+#ifdef CONFIG_FSL_CORENET
+	pamu_enable();
+#endif
+	char key_str[NUM_HEX_CHARS + 1];
+	ulong key_id[KEY_IDNFR_SZ_BYTES/sizeof(ulong)];
+
+	memset(&op, 0, sizeof(struct result));
+
+	if (argc == 5) {
+		char *cp = argv[4];
+		int i = 0;
+
+		if (*cp == '0' && *(cp + 1) == 'x')
+			cp += 2;
+
+		/* The input string expected is in hex, where
+		 * each 4 bits would be represented by a hex
+		 * sha256 hash is 256 bits long, which would mean
+		 * num of characters = 256 / 4
+		 */
+		if (strlen(cp) != 32) {
+			printf("%s is not a 16 byte hex string as expected\n",
+				argv[4]);
+			return -1;
+		}
+
+		for (i = 0; i < sizeof(key_id)/sizeof(ulong); i++) {
+			strncpy(key_str, cp + (i * NUM_HEX_CHARS),
+				NUM_HEX_CHARS);
+			key_str[NUM_HEX_CHARS] = '\0';
+			if (!str2long(key_str, &key_id[i])) {
+				printf("%s is not a 128 bit hex string\n"
+					, argv[4]);
+				return -1;
+			}
+		}
+	}
+
+	printf("\nEncapsulating data\n");
+
+#ifdef DEBUG
+	printf("plain text at addr %lx\n" , plain_addr);
+	printf("enc text at addr %lx\n" , enc_addr);
+	printf("size %lx\n" , in_sz);
+	for (i = 0; i < 4; i++)
+		printf("%x\t", key_id[i]);
+#endif
+
+	inline_cnstr_jobdesc_blob_encap(desc, (uint8_t *)key_id,
+		(uint8_t *)plain_addr, (uint8_t *)enc_addr, in_sz);
+	ret = jr_enqueue(&jr, desc, done, &op);
+	if (ret) {
+		printf("enq failed with ret %d\n", ret);
+		fsl_secblk_handle_error(ret);
+		goto out;
+	}
+
+#ifdef DEBUG
+#endif
+
+	timeval = get_ticks();
+	timeout = usec2ticks(CONFIG_SEC_DEQ_TIMEOUT);
+
+	while (op.done != 1) {
+		if (jr_dequeue(&jr)) {
+			printf("deq error ERROR_ESBC_SEC_DEQ\n");
+			fsl_secblk_handle_error(ERROR_ESBC_SEC_DEQ);
+			goto out;
+		}
+
+		if ((get_ticks() - timeval) > timeout) {
+			printf("SEC Dequeue timed out\n");
+			fsl_secblk_handle_error(ERROR_ESBC_SEC_DEQ_TO);
+			goto out;
+		}
+	}
+
+	if (op.err < 0) {
+		fsl_secblk_handle_error(op.status);
+		printf("Descriptor\n");
+		for (i = 0; i < 16; i++)
+			printf("0x%x\n", desc[i]);
+		goto out;
+	}
+
+	printf("Encapsulation succesful\n");
+
+out:
+#ifdef CONFIG_FSL_CORENET
+	pamu_disable();
+#endif
+	if (jr_reset(&jr) < 0) {
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_RESET);
+		return 0;
+	}
+	return 0;
+
+}
+
 int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[])
 {
@@ -470,10 +697,7 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	if (ret != ESBC_VALID_HDR) {
 		fsl_secboot_handle_error(ret);
-#ifdef CONFIG_FSL_CORENET
-		pamu_disable();
-#endif
-		return 0;
+		goto exit1;
 	}
 
 	/* SRKH present in SFP */
@@ -485,8 +709,10 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 	 * ESBC uboot client hdr
 	 */
 	ret = calc_img_key_hash(&ctx, img);
-	if (ret)
+	if (ret) {
 		fsl_secblk_handle_error(ret);
+		goto exit;
+	}
 
 	/* Compare hash obtained above with SRK hash present in SFP */
 	if (hash_srk)
@@ -496,25 +722,24 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	if (ret != 0) {
 		fsl_secboot_handle_error(ERROR_ESBC_CLIENT_HASH_COMPARE_KEY);
-#ifdef CONFIG_FSL_CORENET
-		pamu_disable();
-#endif
-		if (jr_reset(&jr) < 0)
-			fsl_secboot_handle_error(ERROR_ESBC_SEC_RESET);
-		return 0;
+		goto exit;
 	}
 
 	ret = calc_esbchdr_esbc_hash(&ctx, img);
-	if (ret)
+	if (ret) {
 		fsl_secblk_handle_error(ret);
+		goto exit;
+	}
 
 	/* Construct encoded hash EM' wrt PKCSv1.5 */
 	construct_img_encoded_hash_second(img);
 
 	ret = rsa_public_verif_sec(img->img_sign, img->img_encoded_hash,
 		img->img_key, img->hdr.key_len / 2, &rsa_ctx, &jr);
-	if (ret)
+	if (ret) {
 		fsl_secblk_handle_error(ret);
+		goto exit;
+	}
 
 	/*
 	 * compare the encoded messages EM' and EM wrt RSA PKCSv1.5
@@ -526,23 +751,19 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	if (ret) {
 		fsl_secboot_handle_error(ERROR_ESBC_CLIENT_HASH_COMPARE_EM);
-#ifdef CONFIG_FSL_CORENET
-		pamu_disable();
-#endif
-		if (jr_reset(&jr) < 0)
-			fsl_secboot_handle_error(ERROR_ESBC_SEC_RESET);
-		return 0;
+		goto exit;
 	}
 
 	printf("esbc_validate command successful\n");
 
-#ifdef CONFIG_FSL_CORENET
-	pamu_disable();
-#endif
+exit:
 	if (jr_reset(&jr) < 0) {
 		fsl_secboot_handle_error(ERROR_ESBC_SEC_RESET);
 		return 0;
 	}
-
+exit1:
+#ifdef CONFIG_FSL_CORENET
+	pamu_disable();
+#endif
 	return 0;
 }

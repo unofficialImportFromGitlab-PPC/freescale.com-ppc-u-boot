@@ -3091,6 +3091,8 @@ typedef struct ccsr_sfp_regs {
 	u32 fsl_uid;	/* 0xB0  FSL Unique ID */
 } ccsr_sfp_regs_t;
 #endif
+#define ITS_MASK	0x00000004
+#define ITS_BIT		2
 
 typedef struct ccsr_snvs_regs {
 	u8 reserved0[0x04];

@@ -30,10 +30,26 @@ static int do_esbc_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 	return fsl_secboot_validate(cmdtp, flag, argc, argv);
 }
 
+static int do_esbc_blob_encap(cmd_tbl_t *cmdtp, int flag, int argc,
+				char * const argv[])
+{
+	if (argc < 5)
+		return cmd_usage(cmdtp);
+	return fsl_secboot_blob_encap(cmdtp, flag, argc, argv);
+}
+
+static int do_esbc_blob_decap(cmd_tbl_t *cmdtp, int flag, int argc,
+				char * const argv[])
+{
+	if (argc < 5)
+		return cmd_usage(cmdtp);
+	return fsl_secboot_blob_decap(cmdtp, flag, argc, argv);
+}
+
 U_BOOT_CMD(
 	esbc_validate,	3,	0,	do_esbc_validate,
-	"Validates signature of a given image using RSA verification\
-	algorithm as part of Freescale Secure Boot Process",
+	"Validates signature of a given image using RSA verification"
+	"algorithm as part of Freescale Secure Boot Process",
 	"<hdr_addr> <hash_val>"
 );
 
@@ -48,7 +64,22 @@ static int do_esbc_halt(cmd_tbl_t *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	esbc_halt,	1,	0,	do_esbc_halt,
-	"Put the core in spin loop if control reaches to uboot\
-	from bootscript",
+	"Put the core in spin loop if control reaches to uboot"
+	"from bootscript",
 	""
+);
+
+U_BOOT_CMD(
+	esbc_blob_encap,	5,	0,	do_esbc_blob_encap,
+	"Creates a Cryptographic blob using a Blob Key , which is a"
+	" random number used as an AES-CCM key",
+	"<src addr of data to be encapsulated> <dest addr of blob> "
+	"<size of data> <128 bit key idnfr>"
+);
+
+U_BOOT_CMD(
+	esbc_blob_decap,	5,	0,	do_esbc_blob_decap,
+	"Decapsulates the cryptgraphic blob",
+	"<blob pointer> <dest addr of decapsulated blob> "
+	"<size of decapsulated blob> <128 bit key idnfr>"
 );
