@@ -568,6 +568,11 @@ unsigned long get_board_ddr_clk(void);
 
 #ifdef CONFIG_SECURE_BOOT
 #include <asm/fsl_secure_boot.h>
+/* Secure Boot target was not getting build for T4240 because of
+ * increased binary size. So the size is being reduced by removing USB
+ * which is anyways not used in Secure Environment.
+ */
+#undef CONFIG_CMD_USB
 #endif
 
 #endif	/* __CONFIG_H */
