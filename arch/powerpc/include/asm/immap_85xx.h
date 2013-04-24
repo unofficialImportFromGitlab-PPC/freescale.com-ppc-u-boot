@@ -3033,7 +3033,7 @@ struct ccsr_pman {
 	u8	res_f4[0xf0c];
 };
 #endif
-#ifdef CONFIG_SFP_v3_0
+#ifdef CONFIG_SYS_FSL_SFP_VER_3_0
 typedef struct ccsr_sfp_regs {
 	u32 ospr;		/* 0x200 */
 	u32 reserved0[14];
@@ -3086,7 +3086,7 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC8xxx_DDR3_OFFSET		0xA000
 #define CONFIG_SYS_FSL_CORENET_CLK_OFFSET	0xE1000
 #define CONFIG_SYS_FSL_CORENET_RCPM_OFFSET	0xE2000
-#ifdef CONFIG_SFP_v3_0
+#ifdef CONFIG_SYS_FSL_SFP_VER_3_0
 /* In SFPv3, OSPR register is now at offset 0x200.
  * So directly mapping sfp register map to this address */
 #define CONFIG_SYS_OSPR_OFFSET			0x200

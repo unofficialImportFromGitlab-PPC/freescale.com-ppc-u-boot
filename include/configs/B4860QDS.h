@@ -858,7 +858,6 @@ unsigned long get_board_ddr_clk(void);
 
 #ifdef CONFIG_SECURE_BOOT
 #include <asm/fsl_secure_boot.h>
-#define CONFIG_SFP_v3_0
 #endif
 
 #endif	/* __CONFIG_H */

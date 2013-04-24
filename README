@@ -443,6 +443,12 @@ The following options need to be configured:
 		CONFIG_SYS_FSL_DSP_CCSRBAR_DEFAULT
 		This value denotes start offset of DSP CCSR space.
 
+		CONFIG_SYS_FSL_SFP_VER_3_0
+		This indicates that the version of SFP block on the platform is 3.0
+
+		CONFIG_SYS_FSL_ISBC_VER
+		This value indicates the major ISBC version on the platform.
+
 - Generic CPU options:
 		CONFIG_SYS_BIG_ENDIAN, CONFIG_SYS_LITTLE_ENDIAN
 
