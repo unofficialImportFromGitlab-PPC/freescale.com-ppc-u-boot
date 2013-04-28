@@ -63,39 +63,6 @@ int checkboard(void)
 	return 0;
 }
 
-/* Fixed sdram init -- doesn't use serial presence detect. */
-phys_size_t fixed_sdram(void)
-{
-#ifndef CONFIG_SYS_RAMBOOT
-	ccsr_ddr_t *ddr = (ccsr_ddr_t *)CONFIG_SYS_MPC8xxx_DDR_ADDR;
-
-	set_next_law(0, LAW_SIZE_512M, LAW_TRGT_IF_DDR_1);
-
-	out_be32(&ddr->cs0_bnds, CONFIG_SYS_DDR_CS0_BNDS);
-	out_be32(&ddr->cs0_config, CONFIG_SYS_DDR_CS0_CONFIG);
-	out_be32(&ddr->cs1_bnds, CONFIG_SYS_DDR_CS1_BNDS);
-	out_be32(&ddr->cs1_config, CONFIG_SYS_DDR_CS1_CONFIG);
-	out_be32(&ddr->timing_cfg_3, CONFIG_SYS_DDR_TIMING_3);
-	out_be32(&ddr->timing_cfg_0, CONFIG_SYS_DDR_TIMING_0);
-	out_be32(&ddr->timing_cfg_1, CONFIG_SYS_DDR_TIMING_1);
-	out_be32(&ddr->timing_cfg_2, CONFIG_SYS_DDR_TIMING_2);
-	out_be32(&ddr->sdram_cfg_2, CONFIG_SYS_DDR_CONTROL2);
-	out_be32(&ddr->sdram_mode, CONFIG_SYS_DDR_MODE_1);
-	out_be32(&ddr->sdram_mode_2, CONFIG_SYS_DDR_MODE_2);
-	out_be32(&ddr->sdram_interval, CONFIG_SYS_DDR_INTERVAL);
-	out_be32(&ddr->sdram_data_init, CONFIG_SYS_DDR_DATA_INIT);
-	out_be32(&ddr->sdram_clk_cntl, CONFIG_SYS_DDR_CLK_CTRL);
-	out_be32(&ddr->timing_cfg_4, CONFIG_SYS_DDR_TIMING_4);
-	out_be32(&ddr->timing_cfg_5, CONFIG_SYS_DDR_TIMING_5);
-	out_be32(&ddr->ddr_zq_cntl, CONFIG_SYS_DDR_ZQ_CNTL);
-	out_be32(&ddr->ddr_wrlvl_cntl, CONFIG_SYS_DDR_WRLVL_CNTL);
-	out_be32(&ddr->ddr_cdr1, CONFIG_SYS_DDR_CDR_1);
-	out_be32(&ddr->ddr_cdr2, CONFIG_SYS_DDR_CDR_2);
-	out_be32(&ddr->sdram_cfg, CONFIG_SYS_DDR_CONTROL);
-#endif
-	return CONFIG_SYS_SDRAM_SIZE * 1024 * 1024ul;
-}
-
 #ifdef CONFIG_PCI
 void pci_init_board(void)
 {
