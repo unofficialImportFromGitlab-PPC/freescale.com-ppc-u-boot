@@ -19,8 +19,17 @@
 unsigned int picos_to_mclk(unsigned int picos);
 #endif
 
+/*
+ * regs has the to-be-set values for DDR controller registers
+ * ctrl_num is the DDR controller number
+ * step: 0 goes through the initialization in one pass
+ *       1 sets registers and returns before enabling controller
+ *       2 resumes from step 1 and continues to initialize
+ * Dividing the initialization to two steps to deassert DDR reset signal
+ * to comply with JEDEC specs for RDIMMs.
+ */
 void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
-			     unsigned int ctrl_num)
+			     unsigned int ctrl_num, int step)
 {
 	unsigned int i, bus_width;
 	volatile ccsr_ddr_t *ddr;
@@ -60,6 +69,9 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 		printf("%s unexpected ctrl_num = %u\n", __FUNCTION__, ctrl_num);
 		return;
 	}
+
+	if (step == 2)
+		goto step2;
 
 	if (regs->ddr_eor)
 		out_be32(&ddr->eor, regs->ddr_eor);
@@ -165,6 +177,20 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	out_be32(&ddr->debug[21], 0x24000000);
 #endif /* CONFIG_SYS_FSL_ERRATUM_DDR_A003474 */
 
+	/*
+	 * For RDIMMs, JEDEC spec requires clocks to be stable before reset is
+	 * deasserted. Clocks start when any chip select is enabled and clock
+	 * control register is set. Because all DDR components are connected to
+	 * one reset signal, this needs to be done in two steps. Step 1 is to
+	 * get the clocks started. Step 2 resumes after reset signal is
+	 * deasserted.
+	 */
+	if (step == 1) {
+		udelay(200);
+		return;
+	}
+
+step2:
 	/* Set, but do not enable the memory */
 	temp_sdram_cfg = regs->ddr_sdram_cfg;
 	temp_sdram_cfg &= ~(SDRAM_CFG_MEM_EN);
@@ -304,7 +330,7 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 			debug("Workaround for A004390: set MCKE high\n");
 		}
 	}
-	#endif
+#endif
 
 	/*
 	 * 500 painful micro-seconds must elapse between
