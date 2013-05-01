@@ -221,8 +221,6 @@ void fdt_fixup_qportals(void *blob)
 	u32 rev_2 = in_be32(&qman->ip_rev_2);
 	char compat[64];
 	int compat_len;
-	int portal_max;
-	int next_off;
 
 	maj = (rev_1 >> 8) & 0xff;
 	min = rev_1 & 0xff;
@@ -231,16 +229,6 @@ void fdt_fixup_qportals(void *blob)
 	compat_len = sprintf(compat, "fsl,qman-portal-%u.%u.%u",
 					maj, min, ip_cfg) + 1;
 	compat_len += sprintf(compat + compat_len, "fsl,qman-portal") + 1;
-
-	portal_max = 10; /* P204x, P3041, P4080, P5020, P5040, T1040 */
-	if (maj == 2)  /* P1023 */
-		portal_max = 3;
-	else if ((maj == 3) && (ip_cfg == 0))	/* T4240 */
-		portal_max = 50;
-	else if ((maj == 3) && (ip_cfg == 1))	/* B4860 */
-		portal_max = 25;
-	else if ((maj == 3) && (ip_cfg == 2))	/* T2080 */
-		portal_max = 18;
 
 	off = fdt_node_offset_by_compatible(blob, -1, "fsl,qman-portal");
 	while (off != -FDT_ERR_NOTFOUND) {
@@ -252,15 +240,6 @@ void fdt_fixup_qportals(void *blob)
 #ifdef CONFIG_SYS_DPAA_FMAN
 		int j;
 #endif
-		if (i >= portal_max) {
-			next_off = fdt_node_offset_by_compatible(blob, off,
-							 "fsl,qman-portal");
-			fdt_del_node(blob, off);
-			if (next_off != -FDT_ERR_NOTFOUND)
-				continue;
-			else
-				break;
-		}
 
 		err = fdt_setprop(blob, off, "compatible", compat, compat_len);
 		if (err < 0)
@@ -334,8 +313,6 @@ void fdt_fixup_bportals(void *blob)
 	u32 rev_2 = in_be32(&bman->ip_rev_2);
 	char compat[64];
 	int compat_len;
-	int portal_max;
-	int next_off;
 
 	maj = (rev_1 >> 8) & 0xff;
 	min = rev_1 & 0xff;
@@ -346,29 +323,8 @@ void fdt_fixup_bportals(void *blob)
 				 maj, min, ip_cfg) + 1;
 	compat_len += sprintf(compat + compat_len, "fsl,bman-portal") + 1;
 
-	portal_max = 10; /* P204x, P3041, P4080, P5020, P5040, T1040 */
-	if ((maj == 2) && (min == 0))	/* P1023 */
-		portal_max = 3;
-	else if ((maj == 2) && (min == 1) && (ip_cfg == 0)) /* T4240 */
-		portal_max = 50;
-	else if ((maj == 2) && (min == 1) && (ip_cfg == 1)) /* B4860 */
-		portal_max = 25;
-	else if ((maj == 2) && (min == 1) && (ip_cfg == 3)) /* T2080 */
-		portal_max = 18;
-
 	off = fdt_node_offset_by_compatible(blob, -1, "fsl,bman-portal");
 	while (off != -FDT_ERR_NOTFOUND) {
-		const int *ci = fdt_getprop(blob, off, "cell-index", NULL);
-		int i = *ci;
-		if (i >= portal_max) {
-			next_off = fdt_node_offset_by_compatible(blob, off,
-							"fsl,bman-portal");
-			fdt_del_node(blob, off);
-			if (next_off != -FDT_ERR_NOTFOUND)
-				continue;
-			else
-				break;
-		}
 		err = fdt_setprop(blob, off, "compatible", compat, compat_len);
 		if (err < 0) {
 			printf("ERROR: unable to create props for %s: %s\n",
