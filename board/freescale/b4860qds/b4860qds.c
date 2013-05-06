@@ -45,7 +45,6 @@
 
 #define CLK_MUX_SEL_MASK	0x4
 #define ETH_PHY_CLK_OUT		0x4
-#define PLL_NUM			2
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -422,7 +421,7 @@ int config_serdes1_refclks(void)
 		/* Steps For SerDes PLLs reset and reconfiguration after
 		 * changing SerDes's refclks
 		 */
-		for (i = 0; i < PLL_NUM; i++) {
+		for (i = 0; i < CONFIG_SYS_FSL_SRDS_NUM_PLLS; i++) {
 			debug("For PLL%d reset and reconfiguration after"
 			       " changing refclks\n", i+1);
 			clrbits_be32(&srds_regs->bank[i].rstctl,
@@ -489,7 +488,7 @@ int config_serdes2_refclks(void)
 		if (!ret) {
 			ret = set_serdes_refclk(IDT_SERDES2_ADDRESS, 2,
 					SERDES_REFCLK_100,
-					SERDES_REFCLK_100, 0);
+					SERDES_REFCLK_156_25, 0);
 			if (ret) {
 				printf("IDT8T49N222A configuration failed.\n");
 				goto out;
@@ -503,7 +502,7 @@ int config_serdes2_refclks(void)
 		/* Steps For SerDes PLLs reset and reconfiguration after
 		 * changing SerDes's refclks
 		 */
-		for (i = 0; i < PLL_NUM; i++) {
+		for (i = 0; i < CONFIG_SYS_FSL_SRDS_NUM_PLLS; i++) {
 			clrbits_be32(&srds2_regs->bank[i].rstctl,
 					SRDS_RSTCTL_SDRST_B);
 			udelay(10);
