@@ -48,6 +48,13 @@
 #define CONFIG_SYS_TEXT_BASE		0x11000000
 #define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
 #endif
+#ifdef CONFIG_NAND_SECBOOT
+#define CONFIG_RAMBOOT_NAND
+#define CONFIG_SYS_RAMBOOT
+#define CONFIG_SYS_EXTRA_ENV_RELOC
+#define CONFIG_SYS_TEXT_BASE		0x11000000
+#define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
+#endif
 
 #ifdef CONFIG_NAND
 #define CONFIG_SPL
@@ -369,7 +376,7 @@ combinations. this should be removed later
 #endif
 
 /* Set up IFC registers for boot location NOR/NAND */
-#if defined(CONFIG_NAND)
+#if defined(CONFIG_NAND) || defined(CONFIG_NAND_SECBOOT)
 #define CONFIG_SYS_CSPR0		CONFIG_SYS_NAND_CSPR
 #define CONFIG_SYS_AMASK0		CONFIG_SYS_NAND_AMASK
 #define CONFIG_SYS_CSOR0		CONFIG_SYS_NAND_CSOR
@@ -718,5 +725,9 @@ combinations. this should be removed later
 	"bootm $loadaddr $ramdiskaddr $fdtaddr"
 
 #define CONFIG_BOOTCOMMAND CONFIG_RAMBOOTCOMMAND
+
+#ifdef CONFIG_SECURE_BOOT
+#include <asm/fsl_secure_boot.h>
+#endif
 
 #endif	/* __CONFIG_H */

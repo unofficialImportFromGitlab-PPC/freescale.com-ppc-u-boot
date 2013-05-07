@@ -211,6 +211,22 @@ _start_e500:
 2:
 #endif
 
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500) && \
+						!defined(CONFIG_E500MC)
+	/* ISBC creates a LAW 0 entry for non PBL platforms,
+	 * which is not disabled before transferring the control to uboot.
+	 * Disable the LAW 0 entry here.
+	 * TLB entry for CONFIG_SYS_CCSRBAR_DEFAULT is already created
+	 * by the BOOT ROM code.
+	 */
+	lis     r3, CONFIG_SYS_CCSRBAR_DEFAULT@h
+	ori     r3, r3, CONFIG_SYS_CCSRBAR_DEFAULT@l
+	li	r4, 0x0
+
+	stw     r4, 0xc10(r3)	/* LAWAR0 */
+	sync
+#endif
+
 #if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC) && \
 						!defined(CONFIG_E6500)
 	/* ISBC uses L2 as stack.
@@ -563,7 +579,8 @@ nexti:	mflr	r1		/* R1 = our PC */
 2:	cmpw	r3, r4
 	blt	1b
 
-#if defined(CONFIG_SYS_PPC_E500_DEBUG_TLB) && !defined(MINIMAL_SPL)
+#if defined(CONFIG_SYS_PPC_E500_DEBUG_TLB) && !defined(MINIMAL_SPL) && \
+					!defined(CONFIG_SECURE_BOOT)
 /*
  * TLB entry for debuggging in AS1
  * Create temporary TLB entry in AS0 to handle debug exception
@@ -584,12 +601,6 @@ nexti:	mflr	r1		/* R1 = our PC */
 		0xffc00000, MAS3_SX|MAS3_SW|MAS3_SR, \
 		0, r6
 
-#elif !defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SECURE_BOOT)
-	create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
-		0, BOOKE_PAGESZ_1M, \
-		CONFIG_SYS_MONITOR_BASE, MAS2_I|MAS2_G, \
-		CONFIG_SYS_PBI_FLASH_WINDOW, MAS3_SX|MAS3_SW|MAS3_SR, \
-		0, r6
 #else
 /*
  * TLB entry is created for IVPR + IVOR15 to map on valid OP code address
