@@ -665,7 +665,13 @@ void fsl_pci_config_unlock(struct pci_controller *hose)
 	pci_hose_read_config_byte(hose, dev, FSL_PCIE_CAP_ID, &pcie_cap);
 	if (pcie_cap != 0x0) {
 		/* PCIe - set CFG_READY bit of Configuration Ready Register */
-		pci_hose_write_config_byte(hose, dev, FSL_PCIE_CFG_RDY, 0x1);
+#ifdef CONFIG_SYS_FSL_PCI_VER_3_X
+		ccsr_fsl_pci_t *pci = (ccsr_fsl_pci_t *)hose->cfg_addr;
+		setbits_be32(&pci->config, FSL_PCI_CFG_READY);
+#else
+		pci_hose_write_config_byte(hose, dev, FSL_PCIE_CFG_RDY,
+					   FSL_PCI_CFG_READY);
+#endif
 	} else {
 		/* PCI - clear ACL bit of PBFR */
 		pci_hose_read_config_word(hose, dev, FSL_PCI_PBFR, &pbfr);

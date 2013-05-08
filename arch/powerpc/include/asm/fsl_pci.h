@@ -48,9 +48,9 @@
 #define PCI_DSR		0x56    /* PCIe Device Status Register */
 #define PCI_LSR		0x5e    /* PCIe Link Status Register */
 #define PCI_LCR		0x5c    /* PCIe Link Control Register */
-#endif
-
 #define FSL_PCIE_CFG_RDY	0x4b0
+#endif
+#define FSL_PCI_CFG_READY	1 /* Endpoint: allow inbound configuration */
 #define FSL_PROG_IF_AGENT	0x1
 
 #define PCI_LTSSM	0x404   /* PCIe Link Training, Status State Machine */
