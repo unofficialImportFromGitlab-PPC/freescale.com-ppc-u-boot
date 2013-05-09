@@ -321,6 +321,9 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	    (SVR_SOC_VER(svr) == SVR_9131 && (svr & 0xff) <= 0x11))
 		puts("Work-around for Erratum I2C-A004447 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005812
+	puts("Work-around for Erratum A-005812 enabled\n");
+#endif
 	return 0;
 }
 
