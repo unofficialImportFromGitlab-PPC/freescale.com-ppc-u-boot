@@ -37,10 +37,8 @@
 #include <asm/fsl_serdes.h>
 #include <asm/fsl_ifc.h>
 #include <asm/fsl_pci.h>
-
-#ifndef CONFIG_SDCARD
 #include <hwconfig.h>
-#endif
+#include <i2c.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -49,6 +47,19 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MUX_CPLD_TDM			0x01
 #define MUX_CPLD_SPICS0_FLASH		0x00
 #define MUX_CPLD_SPICS0_SLIC		0x02
+#define PMUXCR1_IFC_MASK	0x00ffff00
+#define PMUXCR1_SDHC_MASK	0x00fff000
+#define PMUXCR1_SDHC_ENABLE	0x00555000
+#define PMUXCR1_ULPI_MASK	0x00ffffc0
+#define PMUXCR1_ULPI_ENABLE	0x00aaaa80
+
+enum {
+	MUX_TYPE_IFC,
+	MUX_TYPE_SDHC,
+	MUX_TYPE_ULPI,
+};
+
+uint pin_mux;
 
 #ifndef CONFIG_SDCARD
 struct cpld_data {
@@ -262,6 +273,16 @@ void fdt_del_sdhc(void *blob)
 	}
 }
 
+void fdt_del_ifc(void *blob)
+{
+	int nodeoff = 0;
+
+	while ((nodeoff = fdt_node_offset_by_compatible(blob, 0,
+			"fsl,ifc")) >= 0) {
+		fdt_del_node(blob, nodeoff);
+	}
+}
+
 void fdt_disable_uart1(void *blob)
 {
 	int nodeoff;
@@ -305,9 +326,13 @@ void ft_board_setup(void *blob, bd_t *bd)
 		fdt_del_flexcan(blob);
 		fdt_del_node_and_alias(blob, "ethernet2");
 	}
-#ifndef CONFIG_SDCARD
-	/* disable sdhc due to sdhc bug */
-	fdt_del_sdhc(blob);
+
+	/* Delete IFC node as IFC pins are multiplexing with SDHC */
+	if (pin_mux != MUX_TYPE_IFC)
+		fdt_del_ifc(blob);
+	else
+		fdt_del_sdhc(blob);
+
 	if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "can")) {
 		fdt_del_tdm(blob);
 		fdt_del_spi_slic(blob);
@@ -325,13 +350,70 @@ void ft_board_setup(void *blob, bd_t *bd)
 		fdt_del_flexcan(blob);
 		fdt_disable_uart1(blob);
 	}
-#endif
 }
 #endif
 
-#ifndef CONFIG_SDCARD
+int config_pin_mux(int if_type)
+{
+	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u8 tmp;
+	uint orig_bus = i2c_get_bus_num();
+
+	i2c_set_bus_num(CONFIG_SYS_PCA9557_BUS_NUM);
+	tmp = 0xf0;
+	if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 3, 1, &tmp, 1) < 0)
+		goto wr_err;
+
+	switch (if_type) {
+	case MUX_TYPE_IFC:
+		tmp = 0x01;
+		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
+			goto wr_err;
+		pin_mux = MUX_TYPE_IFC;
+		clrbits_be32(&gur->pmuxcr, PMUXCR1_IFC_MASK);
+		debug("pin mux is configured for IFC, SDHC disabled\n");
+		break;
+	case MUX_TYPE_SDHC:
+		tmp = 0x05;
+		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
+			goto wr_err;
+		pin_mux = MUX_TYPE_SDHC;
+		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_SDHC_MASK,
+							PMUXCR1_SDHC_ENABLE);
+		debug("pin mux is configured for SDHC, IFC disabled\n");
+		break;
+	case MUX_TYPE_ULPI:
+		tmp = 0x06;
+		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
+			goto wr_err;
+		pin_mux = MUX_TYPE_ULPI;
+		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_ULPI_MASK,
+							PMUXCR1_ULPI_ENABLE);
+		debug("pin mux is configured for ULPI, IFC & SDHC disabled\n");
+		break;
+	default:
+		printf("wrong mux interface type\n");
+		i2c_set_bus_num(orig_bus);
+		return -1;
+	}
+	i2c_set_bus_num(orig_bus);
+	return 0;
+wr_err:
+	printf("pca9557: i2c write failed\n");
+	i2c_set_bus_num(orig_bus);
+	return -1;
+}
+
+void board_reset(void)
+{
+	/* mux to IFC to enable CPLD for reset */
+	if (pin_mux != MUX_TYPE_IFC)
+		config_pin_mux(MUX_TYPE_IFC);
+}
+
 int misc_init_r(void)
 {
+#ifndef CONFIG_SDCARD
 	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
@@ -355,6 +437,34 @@ int misc_init_r(void)
 		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_FLASH);
 	}
 
+	if (hwconfig("esdhc")) {
+		pin_mux = MUX_TYPE_SDHC;
+		config_pin_mux(MUX_TYPE_SDHC);
+	}
+#else
+	pin_mux = MUX_TYPE_SDHC;
+#endif
 	return 0;
 }
-#endif
+
+static int pin_mux_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
+					char * const argv[])
+{
+	if (argc < 2)
+		return CMD_RET_USAGE;
+	if (strcmp(argv[1], "ifc") == 0)
+		config_pin_mux(MUX_TYPE_IFC);
+	else if (strcmp(argv[1], "sdhc") == 0)
+		config_pin_mux(MUX_TYPE_SDHC);
+	else if (strcmp(argv[1], "ulpi") == 0)
+		config_pin_mux(MUX_TYPE_ULPI);
+	else
+		return CMD_RET_USAGE;
+	return 0;
+}
+
+U_BOOT_CMD(
+	mux, 2, 0, pin_mux_cmd,
+	"configure multiplexing pin for IFC/SDHC/ULPI buses",
+	"bus_type[ifc/sdhc/ulpi] (e.g. mux sdhc)"
+);

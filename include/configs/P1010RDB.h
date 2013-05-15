@@ -167,11 +167,9 @@
 #define CONFIG_DDR_CLK_FREQ	66666666 /* DDRCLK on P1010 RDB */
 #define CONFIG_SYS_CLK_FREQ	66666666 /* SYSCLK for P1010 RDB */
 
-#ifndef CONFIG_SDCARD
 #define CONFIG_MISC_INIT_R
-#endif
-
 #define CONFIG_HWCONFIG
+
 /*
  * These can be toggled for performance analysis, otherwise use default.
  */
@@ -497,6 +495,8 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_SYS_I2C_SLAVE		0x7F
 #define CONFIG_SYS_I2C_OFFSET		0x3000
 #define CONFIG_SYS_I2C2_OFFSET		0x3100
+#define CONFIG_SYS_I2C_PCA9557_ADDR	0x18
+#define CONFIG_SYS_PCA9557_BUS_NUM	0
 
 /* I2C EEPROM */
 #undef CONFIG_ID_EEPROM
@@ -582,11 +582,10 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_LBA48
 #endif /* #ifdef CONFIG_FSL_SATA  */
 
-/*  SD interface will only be available in case of SD boot */
 #ifdef CONFIG_SDCARD
-#define CONFIG_MMC
-#define CONFIG_DEF_HWCONFIG		esdhc
+#define CONFIG_DEF_HWCONFIG	esdhc
 #endif
+#define CONFIG_MMC
 
 #ifdef CONFIG_MMC
 #define CONFIG_CMD_MMC
