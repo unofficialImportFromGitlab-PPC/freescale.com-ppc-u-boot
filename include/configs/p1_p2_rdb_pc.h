@@ -731,9 +731,22 @@
 #define CONFIG_ENV_SPI_CS	0
 #define CONFIG_ENV_SPI_MAX_HZ	10000000
 #define CONFIG_ENV_SPI_MODE	0
-#define CONFIG_ENV_SIZE		0x2000	/* 8KB */
 #define CONFIG_ENV_OFFSET	0x100000	/* 1MB */
 #define CONFIG_ENV_SECT_SIZE	0x10000
+/* This is a workaround for issues on the P2020RDB.
+ * Issue discription:
+ * In P2020RDB, after saved environment parameters in SPI flash,
+ * setting HRESET_REQ in reset process will hang the system.
+ *
+ * Change the ENV buffer size to SPI Flash block size, and it can avoid
+ * the extra read/write to the ENV block in SPI Flash, finally, it can
+ * avoid the hang issue.
+ */
+#if defined(CONFIG_P2020RDB)
+#define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE
+#else
+#define CONFIG_ENV_SIZE		0x2000	/* 8KB */
+#endif
 #elif defined(CONFIG_RAMBOOT_SDCARD)
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_FSL_FIXED_MMC_LOCATION
