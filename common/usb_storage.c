@@ -159,10 +159,11 @@ struct us_data {
 #ifdef CONFIG_USB_EHCI
 /*
  * The U-Boot EHCI driver can handle any transfer length as long as there is
- * enough free heap space left, but the SCSI READ(10) and WRITE(10) commands are
- * limited to 65535 blocks.
+ * enough free heap space left, but the SCSI READ(10) and WRITE(10) commands
+ * are limited to 65535 blocks. However some of the popular devices do not
+ * respond with xfer data greater then 40 blocks
  */
-#define USB_MAX_XFER_BLK	65535
+#define USB_MAX_XFER_BLK	40
 #else
 #define USB_MAX_XFER_BLK	20
 #endif
@@ -714,7 +715,7 @@ static int usb_stor_BBB_transport(ccb *srb, struct us_data *us)
 	else
 		pipe = pipeout;
 	result = usb_bulk_msg(us->pusb_dev, pipe, srb->pdata, srb->datalen,
-			      &data_actlen, USB_CNTL_TIMEOUT * 5);
+			      &data_actlen, USB_CNTL_TIMEOUT * 20);
 	/* special handling of STALL in DATA phase */
 	if ((result < 0) && (us->pusb_dev->status & USB_ST_STALLED)) {
 		USB_STOR_PRINTF("DATA:stall\n");
@@ -742,7 +743,7 @@ st:
 again:
 	USB_STOR_PRINTF("STATUS phase\n");
 	result = usb_bulk_msg(us->pusb_dev, pipein, csw, UMASS_BBB_CSW_SIZE,
-				&actlen, USB_CNTL_TIMEOUT*5);
+				&actlen, USB_CNTL_TIMEOUT * 20);
 
 	/* special handling of STALL in STATUS phase */
 	if ((result < 0) && (retry < 1) &&
