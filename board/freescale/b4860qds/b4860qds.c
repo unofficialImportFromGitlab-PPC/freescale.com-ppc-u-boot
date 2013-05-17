@@ -748,6 +748,9 @@ int misc_init_r(void)
 		}
 	}
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005936
+	QIXIS_WRITE(rst_ctl, 0x30);
+#endif
 	return 0;
 }
 
