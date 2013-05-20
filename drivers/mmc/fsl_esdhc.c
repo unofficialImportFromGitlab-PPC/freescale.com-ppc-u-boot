@@ -271,25 +271,43 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 {
 	uint	xfertyp;
 	uint	irqstat;
+	uint	mask, timeout;
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	volatile struct fsl_esdhc *regs = (struct fsl_esdhc *)cfg->esdhc_base;
-
-#ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC111
-	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
-		return 0;
-#endif
 
 	esdhc_write32(&regs->irqstat, -1);
 
 	sync();
 
-	/* Wait for the bus to be idle */
-	while ((esdhc_read32(&regs->prsstat) & PRSSTAT_CICHB) ||
-			(esdhc_read32(&regs->prsstat) & PRSSTAT_CIDHB))
-		;
+	mask = PRSSTAT_CICHB | PRSSTAT_CIDHB;
 
-	while (esdhc_read32(&regs->prsstat) & PRSSTAT_DLA)
-		;
+#ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC111
+	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+		return 0;
+#else
+	/*
+	 * We shouldn't wait for data inihibit for stop commands,
+	 * even though they might use busy signaling
+	 */
+	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
+		mask &= ~PRSSTAT_CIDHB;
+#endif
+
+	/*
+	 * Wait max 10ms for the bus to be idle
+	 * This redundancy check is intend to make sure the bus line
+	 * is ready to use and there is no other unknow err come from
+	 * the last command.
+	 */
+	timeout = 10;
+	while (esdhc_read32(&regs->prsstat) & mask) {
+		if (timeout == 0) {
+			printf("Controller never released inhibit bit(s).\n");
+			return COMM_ERR;
+		}
+		timeout--;
+		udelay(1000);
+	}
 
 	/* Wait at least 8 SD clock cycles before the next command */
 	/*
