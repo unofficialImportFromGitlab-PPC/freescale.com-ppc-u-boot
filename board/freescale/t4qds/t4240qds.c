@@ -261,11 +261,28 @@ static int adjust_vdd(ulong vdd_override)
 
 	/* get the voltage ID from fuse status register */
 	fusesr = in_be32(&gur->dcfg_fusesr);
-	vid = (fusesr >> FSL_CORENET_DCFG_FUSESR_VID_SHIFT) &
-		FSL_CORENET_DCFG_FUSESR_VID_MASK;
-	if (vid == FSL_CORENET_DCFG_FUSESR_VID_MASK) {
-		vid = (fusesr >> FSL_CORENET_DCFG_FUSESR_ALTVID_SHIFT) &
-			FSL_CORENET_DCFG_FUSESR_ALTVID_MASK;
+	/*
+	 * VID is used according to the table below
+	 *                ---------------------------------------
+	 *                |	           DA_V                 |
+	 *                |-------------------------------------|
+	 *                | 5b00000 | 5b00001-5b11110 | 5b11111 |
+	 * ---------------+---------+-----------------+---------|
+	 * | D | 5b00000  | NO VID  | VID = DA_V      | NO VID  |
+	 * | A |----------+---------+-----------------+---------|
+	 * | _ | 5b00001  |VID =    | VID =           |VID =    |
+	 * | V |   ~      | DA_V_ALT|   DA_V_ALT      | DA_A_VLT|
+	 * | _ | 5b11110  |         |                 |         |
+	 * | A |----------+---------+-----------------+---------|
+	 * | L | 5b11111  | No VID  | VID = DA_V      | NO VID  |
+	 * | T |          |         |                 |         |
+	 * ------------------------------------------------------
+	 */
+	vid = (fusesr >> FSL_CORENET_DCFG_FUSESR_ALTVID_SHIFT) &
+		FSL_CORENET_DCFG_FUSESR_ALTVID_MASK;
+	if ((vid == 0) || (vid == FSL_CORENET_DCFG_FUSESR_ALTVID_MASK)) {
+		vid = (fusesr >> FSL_CORENET_DCFG_FUSESR_VID_SHIFT) &
+			FSL_CORENET_DCFG_FUSESR_VID_MASK;
 	}
 	vdd_target = vdd[vid];
 
