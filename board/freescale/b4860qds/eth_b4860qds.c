@@ -274,12 +274,21 @@ int board_eth_init(bd_t *bis)
 				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
 		fm_info_set_phy_address(FM1_DTSEC3,
 				CONFIG_SYS_FM1_DTSEC1_RISER_PHY_ADDR);
+		/*
+		 * XFI does not need a PHY to work, but to avoid U-boot use
+		 * default PHY address which is zero to a MAC when it found
+		 * a MAC has no PHY address, we give a PHY address to XFI
+		 * MAC, and should not use a real XAUI PHY address, since
+		 * MDIO can access it successfully, and then MDIO thinks
+		 * the XAUI card is used for the XFI MAC, which will cause
+		 * error.
+		 */
 		fm_info_set_phy_address(FM1_DTSEC4,
 				CONFIG_SYS_FM1_DTSEC2_RISER_PHY_ADDR);
 		fm_info_set_phy_address(FM1_10GEC1,
-				CONFIG_SYS_FM1_10GEC1_PHY_ADDR);
+				0);
 		fm_info_set_phy_address(FM1_10GEC2,
-				CONFIG_SYS_FM1_10GEC2_PHY_ADDR);
+				1);
 		break;
 	case 0x98:
 		/* XAUI in Slot1 and Slot2 */
