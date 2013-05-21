@@ -69,7 +69,10 @@ int checkboard(void)
 		};
 		unsigned int clock = (sw >> (2 * i)) & 3;
 
-		printf("Bank%u=%sMhz ", i+1, freq[i][clock]);
+		if ((i == 1) && (CPLD_READ(pcba_ver) >= 5))
+			printf("Bank%u=%sMhz ", i+1, freq[i-1][clock]);
+		else
+			printf("Bank%u=%sMhz ", i+1, freq[i][clock]);
 	}
 	puts("\n");
 
@@ -214,15 +217,14 @@ int misc_init_r(void)
 			actual[i] = freq[i][clock];
 
 		/*
-		 * PC board uses a different CPLD with PB board, this CPLD
-		 * has cpld_ver_sub = 1, and pcba_ver = 5. But CPLD on PB
-		 * board has cpld_ver_sub = 0, and pcba_ver = 4.
+		 * RevD(x) board has a different clock setting with RevC(x)
+		 * board, CPLD on RevD(x) board has pcba_ver = 5. RevC(x)
+		 * board has pcba_ver = 4, it can be used to distinguish
+		 * the two boards.
 		 */
-		if ((i == 1) && (CPLD_READ(cpld_ver_sub) == 1)
-				&& (CPLD_READ(pcba_ver) == 5)) {
-			/* PC board bank2 frequency */
+		if ((i == 1) && (CPLD_READ(pcba_ver) >= 5))
+			/* RevD(x) board bank2 frequency */
 			actual[i] = freq[i-1][clock];
-		}
 	}
 
 	for (i = 0; i < NUM_SRDS_BANKS; i++) {
