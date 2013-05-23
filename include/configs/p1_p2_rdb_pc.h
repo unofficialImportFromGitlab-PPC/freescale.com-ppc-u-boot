@@ -50,12 +50,8 @@
 #define CONFIG_SYS_L2_SIZE	(256 << 10)
 #endif
 
-#if (defined(CONFIG_P1020RDB) || defined(CONFIG_P1020RDB_PD))
 #if defined(CONFIG_P1020RDB)
 #define CONFIG_BOARDNAME "P1020RDB-PC"
-#elif defined(CONFIG_P1020RDB_PD)
-#define CONFIG_BOARDNAME "P1020RDB-PD"
-#endif
 #define CONFIG_NAND_FSL_ELBC
 #define CONFIG_P1020
 #define CONFIG_SPI_FLASH
@@ -67,6 +63,35 @@
 #define __SW_BOOT_SD		0x9c
 #define __SW_BOOT_NAND		0xec
 #define __SW_BOOT_PCIE		0x6c
+#define CONFIG_SYS_L2_SIZE	(256 << 10)
+#endif
+
+/*
+ * P1020RDB-PD board has user selectable switches for evaluating different
+ * frequency and boot options for the P1020 device. The table that
+ * follow describe the available options. The front six binary number was in
+ * accordance with SW3[1:6].
+ * 111101 533 533 267 667 NOR Core0 boot; Core1 hold-off
+ * 101101 667 667 333 667 NOR Core0 boot; Core1 hold-off
+ * 011001 800 800 400 667 NOR Core0 boot; Core1 hold-off
+ * 001001 800 800 400 667 SD/MMC Core0 boot; Core1 hold-off
+ * 001101 800 800 400 667 SPI Core0 boot; Core1 hold-off
+ * 010001 800 800 400 667 NAND Core0 boot; Core1 hold-off
+ * 011101 800 800 400 667 PCIe-2 Core0 boot; Core1 hold-off
+ */
+#if defined(CONFIG_P1020RDB_PD)
+#define CONFIG_BOARDNAME "P1020RDB-PD"
+#define CONFIG_NAND_FSL_ELBC
+#define CONFIG_P1020
+#define CONFIG_SPI_FLASH
+#define CONFIG_VSC7385_ENET
+#define CONFIG_SLIC
+#define __SW_BOOT_MASK		0x03
+#define __SW_BOOT_NOR		0x64
+#define __SW_BOOT_SPI		0x34
+#define __SW_BOOT_SD		0x24
+#define __SW_BOOT_NAND		0x44
+#define __SW_BOOT_PCIE		0x74
 #define CONFIG_SYS_L2_SIZE	(256 << 10)
 #endif
 
