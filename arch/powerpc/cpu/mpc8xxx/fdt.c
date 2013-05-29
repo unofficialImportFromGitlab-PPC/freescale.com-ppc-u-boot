@@ -28,6 +28,7 @@
 #include <fdt_support.h>
 #include <asm/mp.h>
 #include <asm/fsl_serdes.h>
+#include <asm/fsl_usb.h>
 #include <phy.h>
 #include <hwconfig.h>
 
@@ -154,7 +155,9 @@ static int fdt_fixup_usb_mode_phy_type(void *blob, const char *mode,
 static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
 					int start_offset)
 {
-	const char *prop_erratum = "fsl,no-erratum-a005275";
+	const char *prop_erratum_a005275 = "fsl,no-erratum-a005275";
+	const char *prop_erratum_a006918 = "fail-erratum-a006918";
+	const char *prop_type = "status";
 	int node_offset, err;
 	const char *node_type = NULL;
 
@@ -163,10 +166,23 @@ static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
 		return -1;
 
 	if (!strcmp(erratum, "erratum_a005275")) {
-		err = fdt_appendprop(blob, node_offset, prop_erratum, NULL, 0);
+		err = fdt_appendprop(blob, node_offset,
+				prop_erratum_a005275, NULL, 0);
 		if (err < 0) {
 			printf("ERROR: could not add %s for %s: %s.\n",
-				prop_erratum, node_type, fdt_strerror(err));
+				prop_erratum_a005275, node_type,
+					fdt_strerror(err));
+		}
+	}
+
+	if (!strcmp(erratum, "erratum_a006918")) {
+		err = fdt_setprop(blob, node_offset, prop_type,
+				prop_erratum_a006918,
+				strlen(prop_erratum_a006918) + 1);
+		if (err < 0) {
+			printf("ERROR: could not set %s for %s: %s.\n",
+				prop_erratum_a006918, node_type,
+					fdt_strerror(err));
 		}
 	}
 
@@ -177,7 +193,10 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 {
 	const char *modes[] = { "host", "peripheral", "otg" };
 	const char *phys[] = { "ulpi", "utmi" };
-	int usb_erratum_off = -1;
+	int usb_erratum_a005275_off = -1;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+	int usb_erratum_a006918_off = -1;
+#endif
 	int usb_mode_off = -1;
 	int usb_phy_off = -1;
 	char str[5];
@@ -229,11 +248,20 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 			return;
 
 		if (hwconfig("no_erratum_a005275")) {
-			usb_erratum_off = fdt_fixup_usb_erratum(blob,
-				"erratum_a005275", usb_erratum_off);
-			if (usb_erratum_off < 0)
+			usb_erratum_a005275_off = fdt_fixup_usb_erratum(blob,
+				"erratum_a005275", usb_erratum_a005275_off);
+			if (usb_erratum_a005275_off < 0)
 				return;
 		}
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+		if (has_fsl_erratum_a006918) {
+			usb_erratum_a006918_off = fdt_fixup_usb_erratum(blob,
+				"erratum_a006918", usb_erratum_a006918_off);
+			if (usb_erratum_a006918_off < 0)
+				return;
+		}
+#endif
 	}
 }
 #endif /* defined(CONFIG_HAS_FSL_DR_USB) || defined(CONFIG_HAS_FSL_MPH_USB) */

@@ -25,6 +25,8 @@
 #ifndef _ASM_FSL_USB_H_
 #define _ASM_FSL_USB_H_
 
+#include <stdbool.h>
+
 #ifdef CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE
 struct ccsr_usb_port_ctrl {
 	u32	ctrl;
@@ -68,6 +70,12 @@ struct ccsr_usb_phy {
 #define CONFIG_SYS_FSL_USB_PLLPRG2_MFI (5 << 16)
 #define CONFIG_SYS_FSL_USB_PLLPRG2_PLL_EN (1 << 21)
 #define CONFIG_SYS_FSL_USB_SYS_CLK_VALID (1 << 0)
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+extern bool	has_fsl_erratum_a006918;
+#define FSL_MAX_USBPLL_RETRY_COUNT	7
+#endif
+
 #else
 struct ccsr_usb_phy {
 	u8	res0[0x18];

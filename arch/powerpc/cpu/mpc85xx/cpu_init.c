@@ -63,6 +63,10 @@ DECLARE_GLOBAL_DATA_PTR;
 struct jobring jr;
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+bool     has_fsl_erratum_a006918;
+#endif
+
 #ifdef CONFIG_QE
 extern qe_iop_conf_t qe_iop_conf_tab[];
 extern void qe_config_iopin(u8 port, u8 pin, int dir,
@@ -236,6 +240,47 @@ static void corenet_tb_init(void)
 
 	/* Enable the timebase register for this core */
 	out_be32(&rcpm->ctbenrl, (1 << whoami));
+}
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+void fsl_erratum_a006918_workaround(void)
+{
+	unsigned int cnt = FSL_MAX_USBPLL_RETRY_COUNT;
+	struct ccsr_usb_phy *usb_phy =
+		(void *)CONFIG_SYS_MPC85xx_USB1_PHY_ADDR;
+
+	has_fsl_erratum_a006918 = true;
+
+	do {
+		/* 1ms delay required for PLL to be stable */
+		mdelay(1);
+		if ((in_be32(&usb_phy->port1.sts)
+			& CONFIG_SYS_FSL_USB_SYS_CLK_VALID)
+				&& (in_be32(&usb_phy->port2.sts)
+					& CONFIG_SYS_FSL_USB_SYS_CLK_VALID)) {
+			has_fsl_erratum_a006918 = false;
+			break;
+		} else {
+			clrsetbits_be32(&usb_phy->pllprg[1],
+				CONFIG_SYS_FSL_USB_PLLPRG2_PLL_EN,
+				CONFIG_SYS_FSL_USB_PLLPRG2_PHY2_CLK_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_PHY1_CLK_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_FRAC_LPF_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_REF_DIV |
+				CONFIG_SYS_FSL_USB_PLLPRG2_MFI);
+			setbits_be32(&usb_phy->pllprg[1],
+				CONFIG_SYS_FSL_USB_PLLPRG2_PHY2_CLK_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_PHY1_CLK_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_FRAC_LPF_EN |
+				CONFIG_SYS_FSL_USB_PLLPRG2_REF_DIV |
+				CONFIG_SYS_FSL_USB_PLLPRG2_MFI |
+				CONFIG_SYS_FSL_USB_PLLPRG2_PLL_EN);
+		}
+	} while (--cnt);
+
+	if (has_fsl_erratum_a006918)
+		printf("ERROR:fsl internal utmi phy init failed\n");
 }
 #endif
 
@@ -667,6 +712,8 @@ skip_l2:
 #if defined(CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE)
 		struct ccsr_usb_phy __iomem *usb_phy =
 			(void *)CONFIG_SYS_MPC85xx_USB1_PHY_ADDR;
+		setbits_be32(&usb_phy->pllprg[0],
+				CONFIG_SYS_FSL_USB_PLLPRG1_PHY_DIV);
 		setbits_be32(&usb_phy->pllprg[1],
 				CONFIG_SYS_FSL_USB_PLLPRG2_PHY2_CLK_EN |
 				CONFIG_SYS_FSL_USB_PLLPRG2_PHY1_CLK_EN |
@@ -684,6 +731,15 @@ skip_l2:
 				CONFIG_SYS_FSL_USB_DRVVBUS_CR_EN);
 		setbits_be32(&usb_phy->port2.pwrfltcfg,
 				CONFIG_SYS_FSL_USB_PWRFLT_CR_EN);
+
+	/* Deal with USB Erratum USB-A006918
+	 * UTMI phy clk instability issue
+	 * T4240 rev 1.0
+	 */
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
+		if (IS_SVR_REV(svr, 1, 0))
+			fsl_erratum_a006918_workaround();
+#endif
 #endif
 
 	/* On P204x/P304x/P5020 Rev1.0, USB transmit will result internal
