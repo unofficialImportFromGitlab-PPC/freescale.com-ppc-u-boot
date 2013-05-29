@@ -108,13 +108,6 @@ const qe_iop_conf_t qe_iop_conf_tab[] = {
 	{0, 17, 2, 0, 2}, /* ENET1_CRS */
 	{0, 16, 2, 0, 2}, /* ENET1_COL */
 
-	/* UCC_3_UART */
-	{1, 0, 2, 0, 2}, /* SER3_CD_B */
-	{0, 28, 2, 0, 2}, /* SER3_CTS_B */
-	{0, 29, 1, 0, 2}, /* SER3_RTS_B */
-	{0, 30, 2, 0, 2}, /* SER3_RXD0 */
-	{0, 31, 1, 0, 2}, /* SER3_TXD0 */
-
 	/* UCC_5_RMII */
 	{1, 11, 2, 0, 1}, /* CLK13 */
 	{1, 7,  1, 0, 2}, /* ENET5_TXD0_SER5_TXD0 */
@@ -124,13 +117,6 @@ const qe_iop_conf_t qe_iop_conf_tab[] = {
 	{1, 5, 1, 0, 2}, /* ENET5_TX_EN_SER5_RTS_B */
 	{1, 4, 2, 0, 2}, /* ENET5_RX_DV_SER5_CTS_B */
 	{1, 8, 2, 0, 2}, /* ENET5_RX_ER_SER5_CD_B */
-
-	/* UCC_7_UART */
-	{0, 22, 2, 0, 2}, /* SER7_CD_B */
-	{0, 18, 2, 0, 2}, /* SER7_CTS_B */
-	{0, 19, 1, 0, 2}, /* SER7_RTS_B */
-	{0, 20, 2, 0, 2}, /* SER7_RXD0 */
-	{0, 21, 1, 0, 2}, /* SER7_TXD0 */
 
 	/* TDMA - clock option is configured in OS based on board setting */
 	{1, 23, 2, 0, 2}, /* TDMA_TXD */
