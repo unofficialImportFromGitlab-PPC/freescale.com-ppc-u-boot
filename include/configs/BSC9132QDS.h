@@ -565,6 +565,7 @@ combinations. this should be removed later
 #define CONFIG_ENV_IS_IN_MMC
 #define CONFIG_SYS_MMC_ENV_DEV		0
 #define CONFIG_ENV_SIZE			0x2000
+#define CONFIG_FSL_FIXED_MMC_LOCATION
 #elif defined(CONFIG_RAMBOOT_SPIFLASH)
 #define CONFIG_ENV_IS_IN_SPI_FLASH
 #define CONFIG_ENV_SPI_BUS	0
