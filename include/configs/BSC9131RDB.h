@@ -429,6 +429,7 @@ extern unsigned long get_sdram_size(void);
 #define CONFIG_UBOOTPATH	"u-boot.bin" /* U-Boot image on TFTP server */
 
 #define CONFIG_BAUDRATE		115200
+#define CONFIG_BOOTDELAY	10	/* -1 disables auto-boot */
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"netdev=eth0\0"						\
