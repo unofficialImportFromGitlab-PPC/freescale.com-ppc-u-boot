@@ -742,18 +742,6 @@ skip_l2:
 #endif
 #endif
 
-	/* On P204x/P304x/P5020 Rev1.0, USB transmit will result internal
-	 * multi-bit ECC errors, which has impact on performance, so software
-	 * should disable all ECC reporting from USB1 and USB2 by setting bits
-	 * 16 and 17 to 1 in the register at DCSRBASE + 0x0002_0520.
-	 */
-#ifdef CONFIG_SYS_FSL_ERRATUM_USB138
-	if (IS_SVR_REV(get_svr(), 1, 0)) {
-		void *p;
-		p = (void *)CONFIG_SYS_DCSRBAR + 0x20520;
-		setbits_be32(p, 3 << (31 - 17));
-	}
-#endif
 #ifdef CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 	/*
 	 * On P3041/P3060/P5020, NAND operations will result internal multi-bit
