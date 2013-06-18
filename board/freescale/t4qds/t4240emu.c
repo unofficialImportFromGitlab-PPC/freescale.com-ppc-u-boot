@@ -38,7 +38,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int checkboard(void)
 {
-	struct cpu_type *cpu = gd->cpu;
+	struct cpu_type *cpu = gd->arch.cpu;
 
 	printf("Board: %sEMU\n", cpu->name);
 

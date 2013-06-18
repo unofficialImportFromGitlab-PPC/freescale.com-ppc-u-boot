@@ -30,7 +30,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 int checkboard(void)
 {
-	struct cpu_type *cpu = gd->cpu;
+	struct cpu_type *cpu = gd->arch.cpu;
 
 	printf("Board: %sPCIe, ", cpu->name);
 	printf("CPLD Ver: 0x%02x\n", CPLD_READ(cpldver));

@@ -69,6 +69,7 @@ BIN_FILES-$(CONFIG_XWAY_SWAP_BYTES) += xway-swap-bytes$(SFX)
 BIN_FILES-y += mkenvimage$(SFX)
 BIN_FILES-y += mkimage$(SFX)
 BIN_FILES-$(CONFIG_SMDK5250) += mksmdk5250spl$(SFX)
+BIN_FILES-$(CONFIG_MX23) += mxsboot$(SFX)
 BIN_FILES-$(CONFIG_MX28) += mxsboot$(SFX)
 BIN_FILES-$(CONFIG_NETCONSOLE) += ncb$(SFX)
 BIN_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1$(SFX)
@@ -77,6 +78,7 @@ BIN_FILES-$(CONFIG_KIRKWOOD) += kwboot$(SFX)
 # Source files which exist outside the tools directory
 EXT_OBJ_FILES-$(CONFIG_BUILD_ENVCRC) += common/env_embedded.o
 EXT_OBJ_FILES-y += common/image.o
+EXT_OBJ_FILES-$(CONFIG_FIT) += common/image-fit.o
 EXT_OBJ_FILES-y += lib/crc32.o
 EXT_OBJ_FILES-y += lib/md5.o
 EXT_OBJ_FILES-y += lib/sha1.o
@@ -94,10 +96,12 @@ NOPED_OBJ_FILES-y += aisimage.o
 NOPED_OBJ_FILES-y += kwbimage.o
 NOPED_OBJ_FILES-y += pblimage.o
 NOPED_OBJ_FILES-y += imximage.o
+NOPED_OBJ_FILES-y += image-host.o
 NOPED_OBJ_FILES-y += omapimage.o
 NOPED_OBJ_FILES-y += mkenvimage.o
 NOPED_OBJ_FILES-y += mkimage.o
 OBJ_FILES-$(CONFIG_SMDK5250) += mkexynosspl.o
+OBJ_FILES-$(CONFIG_MX23) += mxsboot.o
 OBJ_FILES-$(CONFIG_MX28) += mxsboot.o
 OBJ_FILES-$(CONFIG_NETCONSOLE) += ncb.o
 NOPED_OBJ_FILES-y += os_support.o
@@ -126,27 +130,20 @@ LOGO-$(CONFIG_LCD_LOGO) += $(LOGO_DATA_H)
 LOGO-$(CONFIG_VIDEO_LOGO) += $(LOGO_H)
 LOGO-$(CONFIG_VIDEO_LOGO) += $(LOGO_DATA_H)
 
+# Generic logo
 ifeq ($(LOGO_BMP),)
 LOGO_BMP= logos/denx.bmp
+
+# Use board logo and fallback to vendor
+ifneq ($(wildcard logos/$(BOARD).bmp),)
+LOGO_BMP= logos/$(BOARD).bmp
+else
+ifneq ($(wildcard logos/$(VENDOR).bmp),)
+LOGO_BMP= logos/$(VENDOR).bmp
 endif
-ifeq ($(VENDOR),atmel)
-LOGO_BMP= logos/atmel.bmp
 endif
-ifeq ($(VENDOR),esd)
-LOGO_BMP= logos/esd.bmp
-endif
-ifeq ($(VENDOR),freescale)
-LOGO_BMP= logos/freescale.bmp
-endif
-ifeq ($(VENDOR),ronetix)
-LOGO_BMP= logos/ronetix.bmp
-endif
-ifeq ($(VENDOR),syteco)
-LOGO_BMP= logos/syteco.bmp
-endif
-ifeq ($(VENDOR),intercontrol)
-LOGO_BMP= logos/intercontrol.bmp
-endif
+
+endif # !LOGO_BMP
 
 # now $(obj) is defined
 HOSTSRCS += $(addprefix $(SRCTREE)/,$(EXT_OBJ_FILES-y:.o=.c))
@@ -162,7 +159,8 @@ NOPEDOBJS := $(addprefix $(obj),$(NOPED_OBJ_FILES-y))
 # Use native tools and options
 # Define __KERNEL_STRICT_NAMES to prevent typedef overlaps
 #
-HOSTCPPFLAGS =	-idirafter $(SRCTREE)/include \
+HOSTCPPFLAGS =	-include $(SRCTREE)/include/libfdt_env.h \
+		-idirafter $(SRCTREE)/include \
 		-idirafter $(OBJTREE)/include2 \
 		-idirafter $(OBJTREE)/include \
 	        -I $(SRCTREE)/lib/libfdt \
@@ -206,7 +204,9 @@ $(obj)mkimage$(SFX):	$(obj)aisimage.o \
 			$(obj)crc32.o \
 			$(obj)default_image.o \
 			$(obj)fit_image.o \
+			$(obj)image-fit.o \
 			$(obj)image.o \
+			$(obj)image-host.o \
 			$(obj)imximage.o \
 			$(obj)kwbimage.o \
 			$(obj)pblimage.o \

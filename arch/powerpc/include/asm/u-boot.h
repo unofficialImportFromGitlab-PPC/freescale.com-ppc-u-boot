@@ -34,6 +34,11 @@
  * include/asm-ppc/u-boot.h
  */
 
+#ifdef CONFIG_SYS_GENERIC_BOARD
+/* Use the generic board which requires a unified bd_info */
+#include <asm-generic/u-boot.h>
+#else
+
 #ifndef __ASSEMBLY__
 
 typedef struct bd_info {
@@ -53,14 +58,6 @@ typedef struct bd_info {
 #endif
 #if defined(CONFIG_MPC83xx)
 	unsigned long	bi_immrbar;
-#endif
-#if defined(CONFIG_MPC8220)
-	unsigned long	bi_mbar_base;	/* base of internal registers */
-	unsigned long   bi_inpfreq;     /* Input Freq, In MHz */
-	unsigned long   bi_pcifreq;     /* PCI Freq, in MHz */
-	unsigned long   bi_pevfreq;     /* PEV Freq, in MHz */
-	unsigned long   bi_flbfreq;     /* Flexbus Freq, in MHz */
-	unsigned long   bi_vcofreq;     /* VCO Freq, in MHz */
 #endif
 	unsigned long	bi_bootflags;	/* boot / reboot flag (Unused) */
 	unsigned long	bi_ip_addr;	/* IP Address */
@@ -143,6 +140,8 @@ typedef struct bd_info {
 } bd_t;
 
 #endif /* __ASSEMBLY__ */
+
+#endif /* !CONFIG_SYS_GENERIC_BOARD */
 
 /* For image.h:image_check_target_arch() */
 #define IH_ARCH_DEFAULT IH_ARCH_PPC

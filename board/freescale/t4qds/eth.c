@@ -193,7 +193,7 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 		case FM1_DTSEC1:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy21");
+						   "sgmii_phy21");
 			break;
 		case FM1_DTSEC2:
 			if (qsgmiiphy_fix[port])
@@ -203,74 +203,74 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 		case FM1_DTSEC3:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy23");
+						   "sgmii_phy23");
 			break;
 		case FM1_DTSEC4:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy24");
+						   "sgmii_phy24");
 			break;
 		case FM1_DTSEC6:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy12");
+						   "sgmii_phy12");
 			break;
 		case FM1_DTSEC9:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy14");
+						   "sgmii_phy14");
 			else
 				fdt_set_phy_handle(blob, prop, pa,
-						"phy_sgmii4");
+						   "phy_sgmii4");
 			break;
 		case FM1_DTSEC10:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy13");
+						   "sgmii_phy13");
 			else
 				fdt_set_phy_handle(blob, prop, pa,
-						"phy_sgmii3");
+						   "phy_sgmii3");
 			break;
 		case FM2_DTSEC1:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy41");
+						   "sgmii_phy41");
 			break;
 		case FM2_DTSEC2:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy42");
+						   "sgmii_phy42");
 			break;
 		case FM2_DTSEC3:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy43");
+						   "sgmii_phy43");
 			break;
 		case FM2_DTSEC4:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy44");
+						   "sgmii_phy44");
 			break;
 		case FM2_DTSEC6:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy32");
+						   "sgmii_phy32");
 			break;
 		case FM2_DTSEC9:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy34");
+						   "sgmii_phy34");
 			else
 				fdt_set_phy_handle(blob, prop, pa,
-						"phy_sgmii12");
+						   "phy_sgmii12");
 			break;
 		case FM2_DTSEC10:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy33");
+						   "sgmii_phy33");
 			else
 				fdt_set_phy_handle(blob, prop, pa,
-						"phy_sgmii11");
+						   "phy_sgmii11");
 			break;
 		default:
 			break;
@@ -347,7 +347,7 @@ static void initialize_qsgmiiphy_fix(void)
 		 * marked port when doing dtb fixup.
 		 */
 		if (miiphy_read(mdio_names[i],
-			SGMII_CARD_PORT1_PHY_ADDR, MII_PHYSID2, &reg) != 0) {
+				SGMII_CARD_PORT1_PHY_ADDR, MII_PHYSID2, &reg) != 0) {
 			debug("Slot%d PHY ID register 2 read failed\n", i);
 			continue;
 		}

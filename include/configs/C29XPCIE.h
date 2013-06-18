@@ -73,6 +73,7 @@
 #define CONFIG_SYS_HAS_SERDES		/* common SERDES init code */
 
 #define CONFIG_PCI			/* Enable PCI/PCIE */
+#define CONFIG_PCI_INDIRECT_BRIDGE
 #ifdef CONFIG_PCI
 #define CONFIG_PCIE1			/* PCIE controler 1 (slot 1) */
 #define CONFIG_FSL_PCI_INIT		/* Use common FSL init code */

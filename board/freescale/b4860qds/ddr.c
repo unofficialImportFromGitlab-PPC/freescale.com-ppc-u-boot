@@ -210,7 +210,7 @@ unsigned long long step_assign_addresses(fsl_ddr_info_t *pinfo,
 		ctlr_density = rank_density;
 
 		debug("rank density is 0x%llx, ctlr density is 0x%llx\n",
-			rank_density, ctlr_density);
+		      rank_density, ctlr_density);
 		for (i = CONFIG_NUM_DDR_CONTROLLERS - 1; i >= 0; i--) {
 			switch (pinfo->memctl_opts[i].memctl_interleaving_mode) {
 			case FSL_DDR_CACHE_LINE_INTERLEAVING:
@@ -246,7 +246,7 @@ unsigned long long step_assign_addresses(fsl_ddr_info_t *pinfo,
 				pinfo->dimm_params[i][j].base_address =
 					current_mem_base;
 				debug("ctrl %d dimm %d base 0x%llx\n",
-					i, j, current_mem_base);
+				      i, j, current_mem_base);
 				current_mem_base += cap;
 				total_ctlr_mem += cap;
 			}

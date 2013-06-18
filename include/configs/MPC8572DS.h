@@ -71,6 +71,7 @@
 #define CONFIG_PCIE2		1	/* PCIE controler 2 (slot 2) */
 #define CONFIG_PCIE3		1	/* PCIE controler 3 (ULI bridge) */
 #define CONFIG_FSL_PCI_INIT	1	/* Use common FSL init code */
+#define CONFIG_PCI_INDIRECT_BRIDGE 1	/* indirect PCI bridge support */
 #define CONFIG_FSL_PCIE_RESET	1	/* need PCIe reset errata */
 #define CONFIG_SYS_PCI_64BIT	1	/* enable 64-bit PCI resources */
 
@@ -735,7 +736,7 @@
 #define CONFIG_BAUDRATE	115200
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
-"hwconfig=fsl_ddr:ctlr_intlv=bank,bank_intlv=cs0_cs1,ecc=off\0"	\
+"hwconfig=fsl_ddr:ctlr_intlv=bank,bank_intlv=cs0_cs1,ecc=off\0"		\
 "netdev=eth0\0"						\
 "uboot=" __stringify(CONFIG_UBOOTPATH) "\0"				\
 "tftpflash=tftpboot $loadaddr $uboot; "			\

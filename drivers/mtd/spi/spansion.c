@@ -90,6 +90,13 @@ static const struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 		.name = "S25FL032P",
 	},
 	{
+		.idcode1 = 0x0216,
+		.idcode2 = 0x4d00,
+		.pages_per_sector = 256,
+		.nr_sectors = 128,
+		.name = "S25FL064P",
+	},
+	{
 		.idcode1 = 0x2018,
 		.idcode2 = 0x4d01,
 		.pages_per_sector = 256,
@@ -97,11 +104,11 @@ static const struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 		.name = "S25FL129P_64K/S25FL128S",
 	},
 	{
-		.idcode1 = 0x2019,
+		.idcode1 = 0x0219,
 		.idcode2 = 0x4d01,
 		.pages_per_sector = 256,
 		.nr_sectors = 512,
-		.name = "S25FL256S",
+		.name = "S25FL256S_64K",
 	},
 };
 
@@ -128,18 +135,12 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	flash = malloc(sizeof(*flash));
+	flash = spi_flash_alloc_base(spi, params->name);
 	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 
-	flash->spi = spi;
-	flash->name = params->name;
-
-	flash->write = spi_flash_cmd_write_multi;
-	flash->erase = spi_flash_cmd_erase;
-	flash->read = spi_flash_cmd_read_fast;
 	flash->page_size = 256;
 	flash->sector_size = 256 * params->pages_per_sector;
 	flash->size = flash->sector_size * params->nr_sectors;

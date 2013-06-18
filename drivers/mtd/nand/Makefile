@@ -34,6 +34,7 @@ NORMAL_DRIVERS=y
 endif
 
 COBJS-$(CONFIG_SPL_NAND_AM33XX_BCH) += am335x_spl_bch.o
+COBJS-$(CONFIG_SPL_NAND_DOCG4) += docg4_spl.o
 COBJS-$(CONFIG_SPL_NAND_SIMPLE) += nand_spl_simple.o
 COBJS-$(CONFIG_SPL_NAND_LOAD) += nand_spl_load.o
 COBJS-$(CONFIG_SPL_NAND_ECC) += nand_ecc.o
@@ -73,16 +74,17 @@ COBJS-$(CONFIG_NAND_MXS) += mxs_nand.o
 COBJS-$(CONFIG_NAND_NDFC) += ndfc.o
 COBJS-$(CONFIG_NAND_NOMADIK) += nomadik.o
 COBJS-$(CONFIG_NAND_S3C2410) += s3c2410_nand.o
-COBJS-$(CONFIG_NAND_S3C64XX) += s3c64xx.o
 COBJS-$(CONFIG_NAND_SPEAR) += spr_nand.o
 COBJS-$(CONFIG_TEGRA_NAND) += tegra_nand.o
 COBJS-$(CONFIG_NAND_OMAP_GPMC) += omap_gpmc.o
 COBJS-$(CONFIG_NAND_PLAT) += nand_plat.o
+COBJS-$(CONFIG_NAND_DOCG4) += docg4.o
 
 else  # minimal SPL drivers
 
 COBJS-$(CONFIG_NAND_FSL_ELBC) += fsl_elbc_spl.o
 COBJS-$(CONFIG_NAND_FSL_IFC) += fsl_ifc_spl.o
+COBJS-$(CONFIG_NAND_MXC) += mxc_nand_spl.o
 
 endif # drivers
 endif # nand

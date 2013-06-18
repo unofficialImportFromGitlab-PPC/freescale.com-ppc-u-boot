@@ -51,6 +51,25 @@ static void print_eth(int idx)
 }
 
 __maybe_unused
+static void print_eths(void)
+{
+	struct eth_device *dev;
+	int i = 0;
+
+	do {
+		dev = eth_get_dev_by_index(i);
+		if (dev) {
+			printf("eth%dname    = %s\n", i, dev->name);
+			print_eth(i);
+			i++;
+		}
+	} while (dev);
+
+	printf("current eth = %s\n", eth_get_name());
+	printf("ip_addr     = %s\n", getenv("ipaddr"));
+}
+
+__maybe_unused
 static void print_lnum(const char *name, unsigned long long value)
 {
 	printf("%-12s= 0x%.8llX\n", name, value);
@@ -65,12 +84,10 @@ static void print_mhz(const char *name, unsigned long hz)
 }
 
 #if defined(CONFIG_PPC)
-static void __board_detail(void)
+void __weak board_detail(void)
 {
 	/* Please define boot_detail() for your platform */
 }
-
-void board_detail(void) __attribute__((weak, alias("__board_detail")));
 
 int do_bdinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -117,13 +134,6 @@ int do_bdinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 	print_mhz("busfreq",		bd->bi_busfreq);
 #endif /* CONFIG_405GP, CONFIG_405CR, CONFIG_405EP, CONFIG_XILINX_405, CONFIG_440EP CONFIG_440GR */
-#if defined(CONFIG_MPC8220)
-	print_mhz("inpfreq",		bd->bi_inpfreq);
-	print_mhz("flbfreq",		bd->bi_flbfreq);
-	print_mhz("pcifreq",		bd->bi_pcifreq);
-	print_mhz("vcofreq",		bd->bi_vcofreq);
-	print_mhz("pevfreq",		bd->bi_pevfreq);
-#endif
 
 #ifdef CONFIG_ENABLE_36BIT_PHYS
 #ifdef CONFIG_PHYS_64BIT
@@ -202,10 +212,9 @@ int do_bdinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	print_num("sram size      ",	(ulong)bd->bi_sramsize);
 #endif
 #if defined(CONFIG_CMD_NET)
-	print_eth(0);
-	printf("ip_addr     = %s\n", getenv("ipaddr"));
+	print_eths();
 #endif
-	printf("baudrate    = %u bps\n", (ulong)bd->bi_baudrate);
+	printf("baudrate    = %u bps\n", bd->bi_baudrate);
 	return 0;
 }
 
@@ -373,18 +382,19 @@ int do_bdinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	}
 
 #if defined(CONFIG_CMD_NET)
-	print_eth(0);
-	printf("ip_addr     = %s\n", getenv("ipaddr"));
+	print_eths();
 #endif
 	printf("baudrate    = %u bps\n", bd->bi_baudrate);
 #if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF))
-	print_num("TLB addr", gd->tlb_addr);
+	print_num("TLB addr", gd->arch.tlb_addr);
 #endif
 	print_num("relocaddr", gd->relocaddr);
 	print_num("reloc off", gd->reloc_off);
 	print_num("irq_sp", gd->irq_sp);	/* irq stack pointer */
 	print_num("sp start ", gd->start_addr_sp);
+#if defined(CONFIG_LCD) || defined(CONFIG_VIDEO)
 	print_num("FB base  ", gd->fb_base);
+#endif
 	/*
 	 * TODO: Currently only support for davinci SOC's is added.
 	 * Remove this check once all the board implement this.
@@ -470,7 +480,9 @@ int do_bdinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	print_eth(0);
 	printf("ip_addr     = %s\n", getenv("ipaddr"));
 #endif
+#if defined(CONFIG_LCD) || defined(CONFIG_VIDEO)
 	print_num("FB base  ", gd->fb_base);
+#endif
 	return 0;
 }
 

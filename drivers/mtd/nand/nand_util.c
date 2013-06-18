@@ -121,7 +121,7 @@ int nand_erase_opts(nand_info_t *meminfo, const nand_erase_options_t *opts)
 		WATCHDOG_RESET();
 
 		if (!opts->scrub && bbtest) {
-			int ret = meminfo->block_isbad(meminfo, erase.addr);
+			int ret = mtd_block_isbad(meminfo, erase.addr);
 			if (ret > 0) {
 				if (!opts->quiet)
 					printf("\rSkipping bad block at  "
@@ -144,7 +144,7 @@ int nand_erase_opts(nand_info_t *meminfo, const nand_erase_options_t *opts)
 
 		erased_length++;
 
-		result = meminfo->erase(meminfo, &erase);
+		result = mtd_erase(meminfo, &erase);
 		if (result != 0) {
 			printf("\n%s: MTD Erase failure: %d\n",
 			       mtd_device, result);
@@ -153,15 +153,16 @@ int nand_erase_opts(nand_info_t *meminfo, const nand_erase_options_t *opts)
 
 		/* format for JFFS2 ? */
 		if (opts->jffs2 && chip->ecc.layout->oobavail >= 8) {
-			chip->ops.ooblen = 8;
-			chip->ops.datbuf = NULL;
-			chip->ops.oobbuf = (uint8_t *)&cleanmarker;
-			chip->ops.ooboffs = 0;
-			chip->ops.mode = MTD_OOB_AUTO;
+			struct mtd_oob_ops ops;
+			ops.ooblen = 8;
+			ops.datbuf = NULL;
+			ops.oobbuf = (uint8_t *)&cleanmarker;
+			ops.ooboffs = 0;
+			ops.mode = MTD_OPS_AUTO_OOB;
 
-			result = meminfo->write_oob(meminfo,
+			result = mtd_write_oob(meminfo,
 			                            erase.addr,
-			                            &chip->ops);
+			                            &ops);
 			if (result != 0) {
 				printf("\n%s: MTD writeoob failure: %d\n",
 				       mtd_device, result);
@@ -237,6 +238,14 @@ int nand_lock(struct mtd_info *mtd, int tight)
 	/* select the NAND device */
 	chip->select_chip(mtd, 0);
 
+	/* check the Lock Tight Status */
+	chip->cmdfunc(mtd, NAND_CMD_LOCK_STATUS, -1, 0);
+	if (chip->read_byte(mtd) & NAND_LOCK_STATUS_TIGHT) {
+		printf("nand_lock: Device is locked tight!\n");
+		ret = -1;
+		goto out;
+	}
+
 	chip->cmdfunc(mtd,
 		      (tight ? NAND_CMD_LOCK_TIGHT : NAND_CMD_LOCK),
 		      -1, -1);
@@ -249,6 +258,7 @@ int nand_lock(struct mtd_info *mtd, int tight)
 		ret = -1;
 	}
 
+ out:
 	/* de-select the NAND device */
 	chip->select_chip(mtd, -1);
 	return ret;
@@ -337,6 +347,15 @@ int nand_unlock(struct mtd_info *mtd, loff_t start, size_t length,
 		goto out;
 	}
 
+	/* check the Lock Tight Status */
+	page = (int)(start >> chip->page_shift);
+	chip->cmdfunc(mtd, NAND_CMD_LOCK_STATUS, -1, page & chip->pagemask);
+	if (chip->read_byte(mtd) & NAND_LOCK_STATUS_TIGHT) {
+		printf("nand_unlock: Device is locked tight!\n");
+		ret = -1;
+		goto out;
+	}
+
 	if ((start & (mtd->erasesize - 1)) != 0) {
 		printf("nand_unlock: Start address must be beginning of "
 			"nand block!\n");
@@ -358,7 +377,6 @@ int nand_unlock(struct mtd_info *mtd, loff_t start, size_t length,
 	length -= mtd->erasesize;
 
 	/* submit address of first page to unlock */
-	page = (int)(start >> chip->page_shift);
 	chip->cmdfunc(mtd, NAND_CMD_UNLOCK1, -1, page & chip->pagemask);
 
 	/* submit ADDRESS of LAST page to unlock */
@@ -399,11 +417,13 @@ int nand_unlock(struct mtd_info *mtd, loff_t start, size_t length,
  * @param nand NAND device
  * @param offset offset in flash
  * @param length image length
+ * @param used length of flash needed for the requested length
  * @return 0 if the image fits and there are no bad blocks
  *         1 if the image fits, but there are bad blocks
  *        -1 if the image does not fit
  */
-static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length)
+static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length,
+		size_t *used)
 {
 	size_t len_excl_bad = 0;
 	int ret = 0;
@@ -425,7 +445,12 @@ static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length)
 			ret = 1;
 
 		offset += block_len;
+		*used += block_len;
 	}
+
+	/* If the length is not a multiple of block_len, adjust. */
+	if (len_excl_bad > length)
+		*used -= (len_excl_bad - length);
 
 	return ret;
 }
@@ -434,7 +459,8 @@ static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length)
 static size_t drop_ffs(const nand_info_t *nand, const u_char *buf,
 			const size_t *len)
 {
-	size_t i, l = *len;
+	size_t l = *len;
+	ssize_t i;
 
 	for (i = l - 1; i >= 0; i--)
 		if (buf[i] != 0xFF)
@@ -459,22 +485,35 @@ static size_t drop_ffs(const nand_info_t *nand, const u_char *buf,
  * Write image to NAND flash.
  * Blocks that are marked bad are skipped and the is written to the next
  * block instead as long as the image is short enough to fit even after
- * skipping the bad blocks.
+ * skipping the bad blocks.  Due to bad blocks we may not be able to
+ * perform the requested write.  In the case where the write would
+ * extend beyond the end of the NAND device, both length and actual (if
+ * not NULL) are set to 0.  In the case where the write would extend
+ * beyond the limit we are passed, length is set to 0 and actual is set
+ * to the required length.
  *
  * @param nand  	NAND device
  * @param offset	offset in flash
  * @param length	buffer length
+ * @param actual	set to size required to write length worth of
+ *			buffer or 0 on error, if not NULL
+ * @param lim		maximum size that actual may be in order to not
+ *			exceed the buffer
  * @param buffer        buffer to read from
  * @param flags		flags modifying the behaviour of the write to NAND
  * @return		0 in case of success
  */
 int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
-			u_char *buffer, int flags)
+		size_t *actual, loff_t lim, u_char *buffer, int flags)
 {
 	int rval = 0, blocksize;
 	size_t left_to_write = *length;
+	size_t used_for_write = 0;
 	u_char *p_buffer = buffer;
 	int need_skip;
+
+	if (actual)
+		*actual = 0;
 
 #ifdef CONFIG_CMD_NAND_YAFFS
 	if (flags & WITH_YAFFS_OOB) {
@@ -512,11 +551,21 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 		return -EINVAL;
 	}
 
-	need_skip = check_skip_len(nand, offset, *length);
+	need_skip = check_skip_len(nand, offset, *length, &used_for_write);
+
+	if (actual)
+		*actual = used_for_write;
+
 	if (need_skip < 0) {
 		printf("Attempt to write outside the flash area\n");
 		*length = 0;
 		return -EINVAL;
+	}
+
+	if (used_for_write > lim) {
+		puts("Size of write exceeds partition or device limit\n");
+		*length = 0;
+		return -EFBIG;
 	}
 
 	if (!need_skip && !(flags & WITH_DROP_FFS)) {
@@ -557,7 +606,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 
 			ops.len = pagesize;
 			ops.ooblen = nand->oobsize;
-			ops.mode = MTD_OOB_AUTO;
+			ops.mode = MTD_OPS_AUTO_OOB;
 			ops.ooboffs = 0;
 
 			pages = write_size / pagesize_oob;
@@ -567,7 +616,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 				ops.datbuf = p_buffer;
 				ops.oobbuf = ops.datbuf + pagesize;
 
-				rval = nand->write_oob(nand, offset, &ops);
+				rval = mtd_write_oob(nand, offset, &ops);
 				if (rval != 0)
 					break;
 
@@ -609,34 +658,56 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
  *
  * Read image from NAND flash.
  * Blocks that are marked bad are skipped and the next block is read
- * instead as long as the image is short enough to fit even after skipping the
- * bad blocks.
+ * instead as long as the image is short enough to fit even after
+ * skipping the bad blocks.  Due to bad blocks we may not be able to
+ * perform the requested read.  In the case where the read would extend
+ * beyond the end of the NAND device, both length and actual (if not
+ * NULL) are set to 0.  In the case where the read would extend beyond
+ * the limit we are passed, length is set to 0 and actual is set to the
+ * required length.
  *
  * @param nand NAND device
  * @param offset offset in flash
  * @param length buffer length, on return holds number of read bytes
+ * @param actual set to size required to read length worth of buffer or 0
+ * on error, if not NULL
+ * @param lim maximum size that actual may be in order to not exceed the
+ * buffer
  * @param buffer buffer to write to
  * @return 0 in case of success
  */
 int nand_read_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
-		       u_char *buffer)
+		size_t *actual, loff_t lim, u_char *buffer)
 {
 	int rval;
 	size_t left_to_read = *length;
+	size_t used_for_read = 0;
 	u_char *p_buffer = buffer;
 	int need_skip;
 
 	if ((offset & (nand->writesize - 1)) != 0) {
 		printf("Attempt to read non page-aligned data\n");
 		*length = 0;
+		if (actual)
+			*actual = 0;
 		return -EINVAL;
 	}
 
-	need_skip = check_skip_len(nand, offset, *length);
+	need_skip = check_skip_len(nand, offset, *length, &used_for_read);
+
+	if (actual)
+		*actual = used_for_read;
+
 	if (need_skip < 0) {
 		printf("Attempt to read outside the flash area\n");
 		*length = 0;
 		return -EINVAL;
+	}
+
+	if (used_for_read > lim) {
+		puts("Size of read exceeds partition or device limit\n");
+		*length = 0;
+		return -EFBIG;
 	}
 
 	if (!need_skip) {

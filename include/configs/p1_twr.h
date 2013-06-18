@@ -64,6 +64,7 @@
 
 #define CONFIG_FSL_ELBC
 #define CONFIG_PCI
+#define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCIE1	/* PCIE controler 1 (slot 1) */
 #define CONFIG_PCIE2	/* PCIE controler 2 (slot 2) */
 #define CONFIG_FSL_PCI_INIT	/* Use common FSL init code */

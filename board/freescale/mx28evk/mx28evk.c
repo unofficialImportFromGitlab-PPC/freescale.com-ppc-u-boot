@@ -43,14 +43,14 @@ DECLARE_GLOBAL_DATA_PTR;
 int board_early_init_f(void)
 {
 	/* IO0 clock at 480MHz */
-	mx28_set_ioclk(MXC_IOCLK0, 480000);
+	mxs_set_ioclk(MXC_IOCLK0, 480000);
 	/* IO1 clock at 480MHz */
-	mx28_set_ioclk(MXC_IOCLK1, 480000);
+	mxs_set_ioclk(MXC_IOCLK1, 480000);
 
 	/* SSP0 clock at 96MHz */
-	mx28_set_sspclk(MXC_SSPCLK0, 96000, 0);
+	mxs_set_sspclk(MXC_SSPCLK0, 96000, 0);
 	/* SSP2 clock at 160MHz */
-	mx28_set_sspclk(MXC_SSPCLK2, 160000, 0);
+	mxs_set_sspclk(MXC_SSPCLK2, 160000, 0);
 
 #ifdef	CONFIG_CMD_USB
 	mxs_iomux_setup_pad(MX28_PAD_SSP2_SS1__USB1_OVERCURRENT);
@@ -58,6 +58,12 @@ int board_early_init_f(void)
 			MXS_PAD_4MA | MXS_PAD_3V3 | MXS_PAD_NOPULL);
 	gpio_direction_output(MX28_PAD_AUART2_RX__GPIO_3_8, 1);
 #endif
+
+	/* Power on LCD */
+	gpio_direction_output(MX28_PAD_LCD_RESET__GPIO_3_30, 1);
+
+	/* Set contrast to maximum */
+	gpio_direction_output(MX28_PAD_PWM2__GPIO_3_18, 1);
 
 	return 0;
 }
@@ -94,7 +100,7 @@ int board_mmc_init(bd_t *bis)
 	/* Configure MMC0 Power Enable */
 	gpio_direction_output(MX28_PAD_PWM3__GPIO_3_28, 0);
 
-	return mxsmmc_initialize(bis, 0, mx28evk_mmc_wp);
+	return mxsmmc_initialize(bis, 0, mx28evk_mmc_wp, NULL);
 }
 #endif
 

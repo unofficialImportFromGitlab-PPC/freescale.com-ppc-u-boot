@@ -607,9 +607,9 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	/* delete crypto node if not on an E-processor */
 	if (!IS_E_PROCESSOR(get_svr()))
 		fdt_fixup_crypto_node(blob, 0);
-#if CONFIG_SYS_FSL_SEC_COMPAT >= 4  /* SEC 4.x/5.x */
+#if CONFIG_SYS_FSL_SEC_COMPAT >= 4
 	else {
-		ccsr_sec_t *sec;
+		ccsr_sec_t __iomem *sec;
 
 		sec = (void __iomem *)CONFIG_SYS_FSL_SEC_ADDR;
 		fdt_fixup_crypto_node(blob, in_be32(&sec->secvid_ms));
@@ -641,9 +641,9 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 		"bus-frequency", bd->bi_busfreq, 1);
 
 	do_fixup_by_compat_u32(blob, "fsl,pq3-localbus",
-		"bus-frequency", gd->lbc_clk, 1);
+		"bus-frequency", gd->arch.lbc_clk, 1);
 	do_fixup_by_compat_u32(blob, "fsl,elbc",
-		"bus-frequency", gd->lbc_clk, 1);
+		"bus-frequency", gd->arch.lbc_clk, 1);
 #ifdef CONFIG_QE
 	ft_qe_setup(blob);
 	ft_fixup_qe_snum(blob);
@@ -822,7 +822,7 @@ int ft_verify_fdt(void *fdt)
 #ifdef CONFIG_SYS_LBC_ADDR
 	off = fdt_node_offset_by_compatible(fdt, -1, "fsl,elbc");
 	if (off > 0) {
-		const u32 *reg = fdt_getprop(fdt, off, "reg", NULL);
+		const fdt32_t *reg = fdt_getprop(fdt, off, "reg", NULL);
 		if (reg) {
 			uint64_t uaddr = CCSR_VIRT_TO_PHYS(CONFIG_SYS_LBC_ADDR);
 

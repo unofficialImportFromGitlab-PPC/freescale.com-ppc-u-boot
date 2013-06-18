@@ -197,7 +197,7 @@
 #define CONFIG_SPL_TARGET		"u-boot-with-spl.bin"
 
 #define CONFIG_SPL_TEXT_BASE		0xfffff000
-#define CONFIG_SPL_MAX_SIZE		(4 * 1024)
+#define CONFIG_SPL_MAX_SIZE		4096
 
 #ifdef CONFIG_SYS_INIT_L2_ADDR
 /* We multiply CONFIG_SPL_MAX_SIZE by two to leave some room for BSS. */
@@ -250,6 +250,7 @@
 #define CONFIG_PCIE1	/* PCIE controler 1 (slot 1) */
 #define CONFIG_PCIE2	/* PCIE controler 2 (slot 2) */
 #define CONFIG_FSL_PCI_INIT	/* Use common FSL init code */
+#define CONFIG_PCI_INDIRECT_BRIDGE	/* indirect PCI bridge support */
 #define CONFIG_FSL_PCIE_RESET	/* need PCIe reset errata */
 #define CONFIG_SYS_PCI_64BIT	/* enable 64-bit PCI resources */
 

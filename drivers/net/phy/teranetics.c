@@ -46,8 +46,9 @@ int tn2020_config(struct phy_device *phydev)
 		if (phy_hwversion <= 3) {
 			phy_write(phydev, 30, 93, 2);
 			phy_write(phydev, MDIO_MMD_AN, MDIO_CTRL1, restart_an);
-		} else
+		} else {
 			phy_write(phydev, 30, 93, 1);
+		}
 	}
 
 	return 0;

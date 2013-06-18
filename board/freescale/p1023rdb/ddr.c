@@ -98,7 +98,7 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->trwt_override = 1;
 	popts->trwt = 0;
 
-	cpu = gd->cpu;
+	cpu = gd->arch.cpu;
 	/* P1014 and it's derivatives support max 16it DDR width */
 	if (cpu->soc_ver == SVR_P1014)
 		popts->data_bus_width = DDR_DATA_BUS_WIDTH_16;

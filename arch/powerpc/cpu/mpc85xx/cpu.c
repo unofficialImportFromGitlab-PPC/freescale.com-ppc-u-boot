@@ -103,7 +103,7 @@ int checkcpu (void)
 		puts("CPU:   ");
 	}
 
-	cpu = gd->cpu;
+	cpu = gd->arch.cpu;
 
 	puts(cpu->name);
 	if (IS_E_PROCESSOR(svr))
@@ -296,20 +296,22 @@ unsigned long get_tbclk (void)
 
 #if defined(CONFIG_WATCHDOG)
 void
-watchdog_reset(void)
-{
-	int re_enable = disable_interrupts();
-	reset_85xx_watchdog();
-	if (re_enable) enable_interrupts();
-}
-
-void
 reset_85xx_watchdog(void)
 {
 	/*
 	 * Clear TSR(WIS) bit by writing 1
 	 */
 	mtspr(SPRN_TSR, TSR_WIS);
+}
+
+void
+watchdog_reset(void)
+{
+	int re_enable = disable_interrupts();
+
+	reset_85xx_watchdog();
+	if (re_enable)
+		enable_interrupts();
 }
 #endif	/* CONFIG_WATCHDOG */
 

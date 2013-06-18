@@ -47,7 +47,7 @@
 
 #define CONFIG_SYS_TEXT_BASE           0x00201000
 #define CONFIG_SPL_TEXT_BASE           0xfffff000
-#define CONFIG_SPL_MAX_SIZE            (4 * 1024)
+#define CONFIG_SPL_MAX_SIZE            4096
 #define CONFIG_SPL_RELOC_TEXT_BASE     0x00100000
 #define CONFIG_SPL_RELOC_STACK         0x00100000
 #define CONFIG_SYS_NAND_U_BOOT_SIZE    ((512 << 10) + CONFIG_SPL_MAX_SIZE)
@@ -316,7 +316,6 @@
 #define CONFIG_SYS_HUSH_PARSER
 
 /* Video */
-#define CONFIG_FSL_DIU_FB
 
 #ifdef CONFIG_FSL_DIU_FB
 #define CONFIG_SYS_DIU_ADDR	(CONFIG_SYS_CCSRBAR + 0x10000)
@@ -336,7 +335,6 @@
 #endif
 
 #ifndef CONFIG_FSL_DIU_FB
-#define CONFIG_ATI
 #endif
 
 #ifdef CONFIG_ATI
@@ -458,6 +456,7 @@
 #define CONFIG_SYS_PCIE3_IO_SIZE	0x00010000	/* 64k */
 
 #ifdef CONFIG_PCI
+#define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
 #define CONFIG_PCI_SCAN_SHOW		/* show pci devices on startup */
 #define CONFIG_E1000			/* Define e1000 pci Ethernet card */

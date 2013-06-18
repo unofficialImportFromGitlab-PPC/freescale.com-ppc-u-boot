@@ -31,7 +31,7 @@
 #include <asm/omap_gpio.h>
 #include <asm/arch/mmc_host_def.h>
 #include <asm/arch/dss.h>
-#include <asm/arch/clocks.h>
+#include <asm/arch/clock.h>
 #include <i2c.h>
 #include <spartan3.h>
 #include <asm/gpio.h>
@@ -81,6 +81,7 @@ static struct panel_config lcd_cfg[] = {
 	.data_lines     = 0x03, /* 24 Bit RGB */
 	.load_mode      = 0x02, /* Frame Mode */
 	.panel_color	= 0,
+	.gfx_format	= GFXFORMAT_RGB24_UNPACKED,
 	},
 	{
 	.timing_h       = PANEL_TIMING_H(20, 192, 4),
@@ -91,6 +92,7 @@ static struct panel_config lcd_cfg[] = {
 	.data_lines     = 0x03, /* 24 Bit RGB */
 	.load_mode      = 0x02, /* Frame Mode */
 	.panel_color	= 0,
+	.gfx_format	= GFXFORMAT_RGB24_UNPACKED,
 	}
 };
 #endif
@@ -177,9 +179,9 @@ int fpga_post_config_fn(int cookie)
 {
 	debug("%s:%d: FPGA post-configuration\n", __func__, __LINE__);
 
-	fpga_reset(TRUE);
+	fpga_reset(true);
 	udelay(100);
-	fpga_reset(FALSE);
+	fpga_reset(false);
 
 	return 0;
 }
@@ -304,7 +306,7 @@ int board_eth_init(bd_t *bis)
 	!defined(CONFIG_SPL_BUILD)
 int board_mmc_init(bd_t *bis)
 {
-	return omap_mmc_init(0, 0, 0);
+	return omap_mmc_init(0, 0, 0, -1, -1);
 }
 #endif
 

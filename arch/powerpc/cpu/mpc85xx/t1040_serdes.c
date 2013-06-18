@@ -74,7 +74,6 @@ static u8 serdes_cfg_tbl[MAX_SERDES][0xC4][SRDS_MAX_LANES] = {
 
 enum srds_prtcl serdes_get_prtcl(int serdes, int cfg, int lane)
 {
-
 	return serdes_cfg_tbl[serdes][cfg][lane];
 }
 

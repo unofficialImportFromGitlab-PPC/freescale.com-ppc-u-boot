@@ -44,14 +44,12 @@
 
 #define YES		1
 #define NO		0
-#define TRUE		1
-#define FALSE		0
 #define RECOVER	1
 #define SCAN		0
 
 #define S_IFLNK		0120000		/* symbolic link */
 #define BLOCK_NO_ONE		1
-#define SUPERBLOCK_SECTOR	2
+#define SUPERBLOCK_START	(2 * 512)
 #define SUPERBLOCK_SIZE	1024
 #define F_FILE			1
 

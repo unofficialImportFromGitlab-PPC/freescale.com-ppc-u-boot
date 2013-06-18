@@ -82,7 +82,7 @@ void board_init_f(ulong bootflag)
 #ifndef CONFIG_QE
 	ccsr_gpio_t *pgpio = (void *)(CONFIG_SYS_MPC85xx_GPIO_ADDR);
 #elif defined(CONFIG_P1021RDB)
-	par_io_t *par_io = (par_io_t *) &(gur->qe_par_io);
+	par_io_t *par_io = (par_io_t *)&(gur->qe_par_io);
 #endif
 
 	/* initialize selected port with appropriate baud rate */

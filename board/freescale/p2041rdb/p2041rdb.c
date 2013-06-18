@@ -43,7 +43,7 @@ DECLARE_GLOBAL_DATA_PTR;
 int checkboard(void)
 {
 	u8 sw;
-	struct cpu_type *cpu = gd->cpu;
+	struct cpu_type *cpu = gd->arch.cpu;
 	unsigned int i;
 
 	printf("Board: %sRDB, ", cpu->name);

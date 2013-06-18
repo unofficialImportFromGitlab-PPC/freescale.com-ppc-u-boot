@@ -20,29 +20,29 @@ Memory subsystem:
 	- SD/MMC connector to interface with the SD memory card
 Interfaces:
 	- PCIe:
-		– Lane0: x1 mini-PCIe slot
-		– Lane1: x1 PCIe standard slot
+		- Lane0: x1 mini-PCIe slot
+		- Lane1: x1 PCIe standard slot
 	- SATA:
-		– 1 internal SATA connector to 2.5” 160G SATA2 HDD
-		– 1 eSATA connector to rear panel
+		- 1 internal SATA connector to 2.5" 160G SATA2 HDD
+		- 1 eSATA connector to rear panel
 	- 10/100/1000 BaseT Ethernet ports:
-		– eTSEC1, RGMII: one 10/100/1000 port using Vitesse VSC8641XKO
-		– eTSEC2, SGMII: one 10/100/1000 port using Vitesse VSC8221
-		– eTSEC3, SGMII: one 10/100/1000 port using Vitesse VSC8221
+		- eTSEC1, RGMII: one 10/100/1000 port using Vitesse VSC8641XKO
+		- eTSEC2, SGMII: one 10/100/1000 port using Vitesse VSC8221
+		- eTSEC3, SGMII: one 10/100/1000 port using Vitesse VSC8221
 	- USB 2.0 port:
-		– x1 USB2.0 port: via an ULPI PHY to micro-AB connector
-		– x1 USB2.0 poort via an internal PHY to micro-AB connector
+		- x1 USB2.0 port: via an ULPI PHY to micro-AB connector
+		- x1 USB2.0 poort via an internal PHY to micro-AB connector
 	- FlexCAN ports:
-		– x2 DB-9 female connectors for FlexCAN bus(revision 2.0B)
+		- x2 DB-9 female connectors for FlexCAN bus(revision 2.0B)
 		   interface;
 	- DUART interface:
-		– DUART interface: supports two UARTs up to 115200 bps for
-		   console display
-		– RJ45 connectors are used for these 2 UART ports.
+		- DUART interface: supports two UARTs up to 115200 bps for
+		  console display
+		- J45 connectors are used for these 2 UART ports.
 	- TDM
-		– 2 FXS ports connected via an external SLIC to the TDM
+		- 2 FXS ports connected via an external SLIC to the TDM
 		   interface. SLIC is controllled via SPI.
-		– 1 FXO port connected via a relay to FXS for switchover to
+		- 1 FXO port connected via a relay to FXS for switchover to
 		   POTS
 Board connectors:
 	- Mini-ITX power supply connector

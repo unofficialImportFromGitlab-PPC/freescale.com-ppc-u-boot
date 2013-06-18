@@ -44,6 +44,7 @@ int __sata_initialize(void)
 		sata_dev_desc[i].type = DEV_TYPE_HARDDISK;
 		sata_dev_desc[i].lba = 0;
 		sata_dev_desc[i].blksz = 512;
+		sata_dev_desc[i].log2blksz = LOG2(sata_dev_desc[i].blksz);
 		sata_dev_desc[i].block_read = sata_read;
 		sata_dev_desc[i].block_write = sata_write;
 
@@ -196,7 +197,7 @@ static int do_sata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	sata, 5, 1, do_sata,
 	"SATA sub system",
-	"sata init - init SATA sub system\n"
+	"init - init SATA sub system\n"
 	"sata info - show available SATA devices\n"
 	"sata device [dev] - show or set current device\n"
 	"sata part [dev] - print partition table\n"

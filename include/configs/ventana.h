@@ -50,17 +50,9 @@
 #define CONFIG_TEGRA_MMC
 #define CONFIG_CMD_MMC
 
-#define CONFIG_DOS_PARTITION
-#define CONFIG_EFI_PARTITION
-#define CONFIG_FS_EXT4
-#define CONFIG_FS_FAT
-#define CONFIG_CMD_EXT2
-#define CONFIG_CMD_FAT
-#define CONFIG_CMD_FS_GENERIC
-
 /* Environment in eMMC, at the end of 2nd "boot sector" */
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_ENV_OFFSET ((1024 * 1024) - CONFIG_ENV_SIZE)
+#define CONFIG_ENV_OFFSET (-CONFIG_ENV_SIZE)
 #define CONFIG_SYS_MMC_ENV_DEV 0
 #define CONFIG_SYS_MMC_ENV_PART 2
 

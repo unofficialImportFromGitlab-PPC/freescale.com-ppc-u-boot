@@ -75,6 +75,12 @@
 # endif
 #endif	/* CONFIG_ENV_IS_IN_FLASH */
 
+#if defined(CONFIG_ENV_IS_IN_MMC)
+# ifdef CONFIG_ENV_OFFSET_REDUND
+#  define CONFIG_SYS_REDUNDAND_ENVIRONMENT
+# endif
+#endif
+
 #if defined(CONFIG_ENV_IS_IN_NAND)
 # if defined(CONFIG_ENV_OFFSET_OOB)
 #  ifdef CONFIG_ENV_OFFSET_REDUND
@@ -95,6 +101,24 @@ extern unsigned long nand_env_oob_offset;
 #  error "Need to define CONFIG_ENV_SIZE when using CONFIG_ENV_IS_IN_NAND"
 # endif
 #endif /* CONFIG_ENV_IS_IN_NAND */
+
+#if defined(CONFIG_ENV_IS_IN_UBI)
+# ifndef CONFIG_ENV_UBI_PART
+#  error "Need to define CONFIG_ENV_UBI_PART when using CONFIG_ENV_IS_IN_UBI"
+# endif
+# ifndef CONFIG_ENV_UBI_VOLUME
+#  error "Need to define CONFIG_ENV_UBI_VOLUME when using CONFIG_ENV_IS_IN_UBI"
+# endif
+# if defined(CONFIG_ENV_UBI_VOLUME_REDUND)
+#  define CONFIG_SYS_REDUNDAND_ENVIRONMENT
+# endif
+# ifndef CONFIG_ENV_SIZE
+#  error "Need to define CONFIG_ENV_SIZE when using CONFIG_ENV_IS_IN_UBI"
+# endif
+# ifndef CONFIG_CMD_UBI
+#  error "Need to define CONFIG_CMD_UBI when using CONFIG_ENV_IS_IN_UBI"
+# endif
+#endif /* CONFIG_ENV_IS_IN_UBI */
 
 /* Embedded env is only supported for some flash types */
 #ifdef CONFIG_ENV_IS_EMBEDDED

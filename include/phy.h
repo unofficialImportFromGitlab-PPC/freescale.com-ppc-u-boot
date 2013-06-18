@@ -201,6 +201,9 @@ static inline int is_10g_interface(phy_interface_t interface)
 
 int phy_init(void);
 int phy_reset(struct phy_device *phydev);
+struct phy_device *phy_find_by_mask(struct mii_dev *bus, unsigned phy_mask,
+		phy_interface_t interface);
+void phy_connect_dev(struct phy_device *phydev, struct eth_device *dev);
 struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 				struct eth_device *dev,
 				phy_interface_t interface);
@@ -222,6 +225,7 @@ int gen10g_discover_mmds(struct phy_device *phydev);
 int phy_atheros_init(void);
 int phy_broadcom_init(void);
 int phy_davicom_init(void);
+int phy_et1011c_init(void);
 int phy_lxt_init(void);
 int phy_marvell_init(void);
 int phy_micrel_init(void);

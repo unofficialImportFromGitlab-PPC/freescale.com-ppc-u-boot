@@ -163,24 +163,24 @@ static int vsc8574_config(struct phy_device *phydev)
 	u32 val;
 	/* configure regiser 19G for MAC */
 	phy_write(phydev, MDIO_DEVAD_NONE, PHY_EXT_PAGE_ACCESS,
-			PHY_EXT_PAGE_ACCESS_GENERAL);
+		  PHY_EXT_PAGE_ACCESS_GENERAL);
 
 	val = phy_read(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_GENERAL19);
 	if (phydev->interface == PHY_INTERFACE_MODE_QSGMII) {
 		/* set bit 15:14 to '01' for QSGMII mode */
 		val = (val & 0x3fff) | (1 << 14);
 		phy_write(phydev, MDIO_DEVAD_NONE,
-				MIIM_VSC8574_GENERAL19, val);
+			  MIIM_VSC8574_GENERAL19, val);
 		/* Enable 4 ports MAC QSGMII */
 		phy_write(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_GENERAL18,
-				MIIM_VSC8574_18G_QSGMII);
+			  MIIM_VSC8574_18G_QSGMII);
 	} else {
 		/* set bit 15:14 to '00' for SGMII mode */
 		val = val & 0x3fff;
 		phy_write(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_GENERAL19, val);
 		/* Enable 4 ports MAC SGMII */
 		phy_write(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_GENERAL18,
-				MIIM_VSC8574_18G_SGMII);
+			  MIIM_VSC8574_18G_SGMII);
 	}
 	val = phy_read(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_GENERAL18);
 	/* When bit 15 is cleared the command has completed */
@@ -189,7 +189,7 @@ static int vsc8574_config(struct phy_device *phydev)
 
 	/* Enable Serdes Auto-negotiation */
 	phy_write(phydev, MDIO_DEVAD_NONE, PHY_EXT_PAGE_ACCESS,
-			PHY_EXT_PAGE_ACCESS_EXTENDED3);
+		  PHY_EXT_PAGE_ACCESS_EXTENDED3);
 	val = phy_read(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_MAC_SERDES_CON);
 	val = val | MIIM_VSC8574_MAC_SERDES_ANEG;
 	phy_write(phydev, MDIO_DEVAD_NONE, MIIM_VSC8574_MAC_SERDES_CON, val);

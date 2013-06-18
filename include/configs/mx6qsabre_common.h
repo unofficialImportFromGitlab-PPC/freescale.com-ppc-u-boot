@@ -19,6 +19,9 @@
 
 #define CONFIG_MX6
 #define CONFIG_MX6Q
+
+#include "mx6_common.h"
+
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
@@ -33,6 +36,7 @@
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 2 * 1024 * 1024)
 
 #define CONFIG_BOARD_EARLY_INIT_F
+#define CONFIG_BOARD_LATE_INIT
 #define CONFIG_MXC_GPIO
 
 #define CONFIG_MXC_UART
@@ -72,7 +76,9 @@
 /* Command definition */
 #include <config_cmd_default.h>
 
+#define CONFIG_CMD_BMODE
 #define CONFIG_CMD_BOOTZ
+#define CONFIG_CMD_SETEXPR
 #undef CONFIG_CMD_IMLS
 
 #define CONFIG_BOOTDELAY               1
@@ -93,6 +99,19 @@
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
 	"mmcpart=1\0" \
 	"mmcroot=" CONFIG_MMCROOT " rootwait rw\0" \
+	"update_sd_firmware=" \
+		"if test ${ip_dyn} = yes; then " \
+			"setenv get_cmd dhcp; " \
+		"else " \
+			"setenv get_cmd tftp; " \
+		"fi; " \
+		"if mmc dev ${mmcdev}; then "	\
+			"if ${get_cmd} ${update_sd_firmware_filename}; then " \
+				"setexpr fw_sz ${filesize} / 0x200; " \
+				"setexpr fw_sz ${fw_sz} + 1; "	\
+				"mmc write ${loadaddr} 0x2 ${fw_sz}; " \
+			"fi; "	\
+		"fi\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=${mmcroot}\0" \
 	"loadbootscript=" \
@@ -143,7 +162,7 @@
 
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev};" \
-	"if mmc rescan ${mmcdev}; then " \
+	"if mmc rescan; then " \
 		"if run loadbootscript; then " \
 		"run bootscript; " \
 		"else " \
@@ -171,6 +190,7 @@
 
 #define CONFIG_SYS_MEMTEST_START       0x10000000
 #define CONFIG_SYS_MEMTEST_END         0x10010000
+#define CONFIG_SYS_MEMTEST_SCRATCH     0x10800000
 
 #define CONFIG_SYS_LOAD_ADDR           CONFIG_LOADADDR
 #define CONFIG_SYS_HZ                  1000

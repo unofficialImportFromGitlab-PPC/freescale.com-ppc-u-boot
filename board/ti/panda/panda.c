@@ -24,7 +24,7 @@
 #include <common.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/arch/mmc_host_def.h>
-#include <asm/arch/clocks.h>
+#include <asm/arch/clock.h>
 #include <asm/arch/gpio.h>
 #include <asm/gpio.h>
 
@@ -82,6 +82,12 @@ int misc_init_r(void)
 	if (omap_revision() == OMAP4430_ES1_0)
 		return 0;
 
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	if (omap_revision() >= OMAP4460_ES1_0 ||
+		omap_revision() <= OMAP4460_ES1_1)
+		setenv("board_name", strcat(CONFIG_SYS_BOARD, "-es"));
+#endif
+
 	gpio_direction_input(PANDA_ULPI_PHY_TYPE_GPIO);
 	phy_type = gpio_get_value(PANDA_ULPI_PHY_TYPE_GPIO);
 
@@ -133,16 +139,18 @@ int misc_init_r(void)
 
 void set_muxconf_regs_essential(void)
 {
-	do_set_mux(CONTROL_PADCONF_CORE, core_padconf_array_essential,
+	do_set_mux((*ctrl)->control_padconf_core_base,
+		   core_padconf_array_essential,
 		   sizeof(core_padconf_array_essential) /
 		   sizeof(struct pad_conf_entry));
 
-	do_set_mux(CONTROL_PADCONF_WKUP, wkup_padconf_array_essential,
+	do_set_mux((*ctrl)->control_padconf_wkup_base,
+		   wkup_padconf_array_essential,
 		   sizeof(wkup_padconf_array_essential) /
 		   sizeof(struct pad_conf_entry));
 
 	if (omap_revision() >= OMAP4460_ES1_0)
-		do_set_mux(CONTROL_PADCONF_WKUP,
+		do_set_mux((*ctrl)->control_padconf_wkup_base,
 				 wkup_padconf_array_essential_4460,
 				 sizeof(wkup_padconf_array_essential_4460) /
 				 sizeof(struct pad_conf_entry));
@@ -150,27 +158,29 @@ void set_muxconf_regs_essential(void)
 
 void set_muxconf_regs_non_essential(void)
 {
-	do_set_mux(CONTROL_PADCONF_CORE, core_padconf_array_non_essential,
+	do_set_mux((*ctrl)->control_padconf_core_base,
+		   core_padconf_array_non_essential,
 		   sizeof(core_padconf_array_non_essential) /
 		   sizeof(struct pad_conf_entry));
 
 	if (omap_revision() < OMAP4460_ES1_0)
-		do_set_mux(CONTROL_PADCONF_CORE,
+		do_set_mux((*ctrl)->control_padconf_core_base,
 				core_padconf_array_non_essential_4430,
 				sizeof(core_padconf_array_non_essential_4430) /
 				sizeof(struct pad_conf_entry));
 	else
-		do_set_mux(CONTROL_PADCONF_CORE,
+		do_set_mux((*ctrl)->control_padconf_core_base,
 				core_padconf_array_non_essential_4460,
 				sizeof(core_padconf_array_non_essential_4460) /
 				sizeof(struct pad_conf_entry));
 
-	do_set_mux(CONTROL_PADCONF_WKUP, wkup_padconf_array_non_essential,
+	do_set_mux((*ctrl)->control_padconf_wkup_base,
+		   wkup_padconf_array_non_essential,
 		   sizeof(wkup_padconf_array_non_essential) /
 		   sizeof(struct pad_conf_entry));
 
 	if (omap_revision() < OMAP4460_ES1_0)
-		do_set_mux(CONTROL_PADCONF_WKUP,
+		do_set_mux((*ctrl)->control_padconf_wkup_base,
 				wkup_padconf_array_non_essential_4430,
 				sizeof(wkup_padconf_array_non_essential_4430) /
 				sizeof(struct pad_conf_entry));
@@ -179,8 +189,7 @@ void set_muxconf_regs_non_essential(void)
 #if !defined(CONFIG_SPL_BUILD) && defined(CONFIG_GENERIC_MMC)
 int board_mmc_init(bd_t *bis)
 {
-	omap_mmc_init(0, 0, 0);
-	return 0;
+	return omap_mmc_init(0, 0, 0, -1, -1);
 }
 #endif
 

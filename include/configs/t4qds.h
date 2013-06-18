@@ -115,7 +115,6 @@
 #define CONFIG_SYS_FLASH_BASE	0xe0000000
 #define CONFIG_SYS_FLASH_BASE_PHYS	(0xf00000000ull | CONFIG_SYS_FLASH_BASE)
 
-
 #define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
 
 #define CONFIG_BOARD_EARLY_INIT_R	/* call board_early_init_r function */
@@ -237,6 +236,7 @@
 #define CONFIG_SYS_PCIE4_IO_SIZE	0x00010000	/* 64k */
 
 #ifdef CONFIG_PCI
+#define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_NET_MULTI
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
 #define CONFIG_E1000

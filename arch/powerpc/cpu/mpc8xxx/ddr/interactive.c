@@ -1373,7 +1373,7 @@ struct data_strings {
 
 #define DATA_OPTIONS(name, step, dimm) {#name, step, dimm}
 
-static unsigned int fsl_ddr_parse_interactive_cmd (
+static unsigned int fsl_ddr_parse_interactive_cmd(
 	char **argv,
 	int argc,
 	unsigned int *pstep_mask,

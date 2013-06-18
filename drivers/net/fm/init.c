@@ -244,15 +244,16 @@ static void ft_fixup_port(void *blob, struct fm_eth_info *info, char *prop)
 	 * FM1_10GEC1 is enabled and  FM1_DTSEC9 is disabled, ensure that the
 	 * dual-role MAC is not disabled, ditto for other dual-role MACs.
 	 */
-	if (((info->port == FM1_DTSEC9) && (PORT_IS_ENABLED(FM1_10GEC1)))
-	    || ((info->port == FM1_DTSEC10) && (PORT_IS_ENABLED(FM1_10GEC2)))
-	    || ((info->port == FM1_10GEC1) && (PORT_IS_ENABLED(FM1_DTSEC9)))
-	    || ((info->port == FM1_10GEC2) && (PORT_IS_ENABLED(FM1_DTSEC10)))
+	if (((info->port == FM1_DTSEC9) && (PORT_IS_ENABLED(FM1_10GEC1)))	||
+	    ((info->port == FM1_DTSEC10) && (PORT_IS_ENABLED(FM1_10GEC2)))	||
+	    ((info->port == FM1_10GEC1) && (PORT_IS_ENABLED(FM1_DTSEC9)))	||
+	    ((info->port == FM1_10GEC2) && (PORT_IS_ENABLED(FM1_DTSEC10)))
 #if (CONFIG_SYS_NUM_FMAN == 2)
-	    || ((info->port == FM2_DTSEC9) && (PORT_IS_ENABLED(FM2_10GEC1)))
-	    || ((info->port == FM2_DTSEC10) && (PORT_IS_ENABLED(FM2_10GEC2)))
-	    || ((info->port == FM2_10GEC1) && (PORT_IS_ENABLED(FM2_DTSEC9)))
-	    || ((info->port == FM2_10GEC2) && (PORT_IS_ENABLED(FM2_DTSEC10)))
+										||
+	    ((info->port == FM2_DTSEC9) && (PORT_IS_ENABLED(FM2_10GEC1)))	||
+	    ((info->port == FM2_DTSEC10) && (PORT_IS_ENABLED(FM2_10GEC2)))	||
+	    ((info->port == FM2_10GEC1) && (PORT_IS_ENABLED(FM2_DTSEC9)))	||
+	    ((info->port == FM2_10GEC2) && (PORT_IS_ENABLED(FM2_DTSEC10)))
 #endif
 	)
 		return;
