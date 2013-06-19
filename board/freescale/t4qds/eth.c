@@ -198,7 +198,7 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 		case FM1_DTSEC2:
 			if (qsgmiiphy_fix[port])
 				fdt_set_phy_handle(blob, prop, pa,
-						"sgmii_phy22");
+						   "sgmii_phy22");
 			break;
 		case FM1_DTSEC3:
 			if (qsgmiiphy_fix[port])

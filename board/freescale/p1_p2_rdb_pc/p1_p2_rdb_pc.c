@@ -571,15 +571,15 @@ void ft_board_setup(void *blob, bd_t *bd)
 		int off = fdt_node_offset_by_compatible(blob, -1,
 				soc_elbc_compat);
 		if (off < 0) {
-			printf("WARNING: could not find compatible node"
-				" %s: %s.\n", soc_elbc_compat,
-				fdt_strerror(off));
+			printf("WARNING: could not find compatible node %s: %s.\n",
+			       soc_elbc_compat,
+			       fdt_strerror(off));
 				return;
 		}
 		err = fdt_del_node(blob, off);
 		if (err < 0) {
 			printf("WARNING: could not remove %s: %s.\n",
-				soc_elbc_compat, fdt_strerror(err));
+			       soc_elbc_compat, fdt_strerror(err));
 		}
 		return;
 	}
@@ -589,23 +589,23 @@ void ft_board_setup(void *blob, bd_t *bd)
 	usb1_off = fdt_node_offset_by_compatible(blob, -1,
 		soc_usb_compat);
 	if (usb1_off < 0) {
-		printf("WARNING: could not find compatible node"
-			"%s: %s.\n", soc_usb_compat,
-			fdt_strerror(usb1_off));
+		printf("WARNING: could not find compatible node %s: %s.\n",
+		       soc_usb_compat,
+		       fdt_strerror(usb1_off));
 		return;
 	}
 	usb2_off = fdt_node_offset_by_compatible(blob, usb1_off,
 			soc_usb_compat);
 	if (usb2_off < 0) {
-		printf("WARNING: could not find compatible node"
-			" %s: %s.\n", soc_usb_compat,
-			fdt_strerror(usb2_off));
+		printf("WARNING: could not find compatible node %s: %s.\n",
+		       soc_usb_compat,
+		       fdt_strerror(usb2_off));
 		return;
 	}
 	err = fdt_del_node(blob, usb2_off);
 	if (err < 0) {
 		printf("WARNING: could not remove %s: %s.\n",
-			soc_usb_compat, fdt_strerror(err));
+		       soc_usb_compat, fdt_strerror(err));
 	}
 
 }

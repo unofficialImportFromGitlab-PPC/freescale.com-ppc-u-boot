@@ -355,6 +355,7 @@ int board_eth_init(bd_t *bis)
 		}
 	}
 
+
 	cpu_eth_init(bis);
 #endif
 

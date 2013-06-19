@@ -301,6 +301,10 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (IS_SVR_REV(svr, 1, 0))
 		puts("Work-around for Erratum A005871 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005871
+	if (IS_SVR_REV(svr, 1, 0))
+		puts("Work-around for Erratum A005871 enabled\n");
+#endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004849
 	/* This work-around is implemented in PBI, so just check for it */
 	check_erratum_a4849(svr);
