@@ -172,11 +172,6 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 		out_be32(&ddr->debug[28], 0x30003000);
 #endif
 
-#ifdef CONFIG_SYS_FSL_ERRATUM_DDR_A003474
-	out_be32(&ddr->debug[12], 0x00000015);
-	out_be32(&ddr->debug[21], 0x24000000);
-#endif /* CONFIG_SYS_FSL_ERRATUM_DDR_A003474 */
-
 	/*
 	 * For RDIMMs, JEDEC spec requires clocks to be stable before reset is
 	 * deasserted. Clocks start when any chip select is enabled and clock
@@ -272,6 +267,12 @@ step2:
 
 	}
 #endif
+
+/* This workaround needs to be done after A003, in case both are activated */
+#ifdef CONFIG_SYS_FSL_ERRATUM_DDR_A003474
+	out_be32(&ddr->debug[12], 0x00000015);
+	out_be32(&ddr->debug[21], 0x24000000);
+#endif /* CONFIG_SYS_FSL_ERRATUM_DDR_A003474 */
 	/*
 	 * For 8572 DDR1 erratum - DDR controller may enter illegal state
 	 * when operatiing in 32-bit bus mode with 4-beat bursts,
