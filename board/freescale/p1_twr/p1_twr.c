@@ -148,7 +148,7 @@ int checkboard(void)
 
 	printf("Board: %s\n", CONFIG_BOARDNAME);
 
-	boot_status = ((gur->porbmsr) >> MPC85XX_PORBMSR_ROMLOC_SHIFT) & 0xf;
+	boot_status = ((gur->porbmsr) >> MPC85xx_PORBMSR_ROMLOC_SHIFT) & 0xf;
 	puts("rom_loc: ");
 	if (boot_status == PORBMSR_ROMLOC_NOR)
 		puts("nor flash");

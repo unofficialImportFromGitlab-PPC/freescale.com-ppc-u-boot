@@ -58,9 +58,9 @@ struct fsl_e_tlb_entry tlb_table[] = {
 	 * space is at 0xfff00000, it covered the 0xfffff000.
 	 */
 	SET_TLB_ENTRY(1, CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR,
-			CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS,
-			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_W|MAS2_G,
-			0, 0, BOOKE_PAGESZ_1M, 1),
+		      CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS,
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_W|MAS2_G,
+		      0, 0, BOOKE_PAGESZ_1M, 1),
 #else
 	SET_TLB_ENTRY(1, 0xfffff000, 0xfffff000,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
@@ -152,9 +152,9 @@ struct fsl_e_tlb_entry tlb_table[] = {
 	 * fetching ucode and ENV from master
 	 */
 	SET_TLB_ENTRY(1, CONFIG_SYS_SRIO_PCIE_BOOT_UCODE_ENV_ADDR,
-		CONFIG_SYS_SRIO_PCIE_BOOT_UCODE_ENV_ADDR_PHYS,
-		MAS3_SX|MAS3_SW|MAS3_SR, MAS2_G,
-		0, 17, BOOKE_PAGESZ_1M, 1),
+		      CONFIG_SYS_SRIO_PCIE_BOOT_UCODE_ENV_ADDR_PHYS,
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_G,
+		      0, 17, BOOKE_PAGESZ_1M, 1),
 #endif
 };
 

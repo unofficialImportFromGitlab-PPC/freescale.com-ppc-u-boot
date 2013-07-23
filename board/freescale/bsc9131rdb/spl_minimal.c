@@ -84,7 +84,7 @@ void board_init_f(ulong bootflag)
 	gd->bus_clk = CONFIG_SYS_CLK_FREQ * plat_ratio;
 
 	NS16550_init((NS16550_t)CONFIG_SYS_NS16550_COM1,
-			gd->bus_clk / 16 / CONFIG_BAUDRATE);
+		     gd->bus_clk / 16 / CONFIG_BAUDRATE);
 
 	puts("\nNAND boot... ");
 

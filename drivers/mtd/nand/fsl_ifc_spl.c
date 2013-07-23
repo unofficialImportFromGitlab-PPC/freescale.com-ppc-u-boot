@@ -46,9 +46,9 @@ static inline int check_read_ecc(uchar *buf, u32 *eccstat,
 				 unsigned int bufnum, int page_size)
 {
 	u32 reg = eccstat[bufnum / 4];
-	int errors = (reg >> ((3 - bufnum % 4) * 8)) & 15;
+	int errors = (reg >> ((3 - bufnum % 4) * 8)) & 0xf;
 
-	if (errors == 15) { /* uncorrectable */
+	if (errors == 0xf) { /* uncorrectable */
 		/* Blank pages fail hw ECC checks */
 		if (is_blank(buf, page_size))
 			return 1;
@@ -127,13 +127,13 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 
 	if (csor & CSOR_NAND_PGS_4K) {
 		page_size = 4096;
-		bufnum_mask = 1;
+		bufnum_mask = 0x1;
 	} else if (csor & CSOR_NAND_PGS_2K) {
 		page_size = 2048;
-		bufnum_mask = 3;
+		bufnum_mask = 0x3;
 	} else {
 		page_size = 512;
-		bufnum_mask = 15;
+		bufnum_mask = 0xf;
 
 		if (port_size == 8)
 			bad_marker = 5;
@@ -161,8 +161,8 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 		out_be32(&ifc->ifc_nand.nand_fir1, 0x0);
 
 		out_be32(&ifc->ifc_nand.nand_fcr0,
-			(NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT) |
-			(NAND_CMD_READSTART << IFC_NAND_FCR0_CMD1_SHIFT));
+			 (NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT) |
+			 (NAND_CMD_READSTART << IFC_NAND_FCR0_CMD1_SHIFT));
 	} else {
 		out_be32(&ifc->ifc_nand.nand_fir0,
 			 (IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
@@ -172,7 +172,7 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 		out_be32(&ifc->ifc_nand.nand_fir1, 0x0);
 
 		out_be32(&ifc->ifc_nand.nand_fcr0,
-			NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT);
+			 NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT);
 	}
 
 	/* Program FBCR = 0 for full page read */
@@ -193,7 +193,7 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 			out_be32(&ifc->ifc_nand.col0, 0);
 			/* start read */
 			out_be32(&ifc->ifc_nand.nandseq_strt,
-				IFC_NAND_SEQ_STRT_FIR_STRT);
+				 IFC_NAND_SEQ_STRT_FIR_STRT);
 
 			/* wait for read to complete */
 			nand_wait(&buf[sram_addr], bufnum, page_size);

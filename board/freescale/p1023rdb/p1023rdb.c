@@ -88,8 +88,8 @@ int board_early_init_r(void)
 	disable_tlb(flash_esel);
 
 	set_tlb(1, flashbase, CONFIG_SYS_FLASH_BASE_PHYS,
-			MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-			0, flash_esel, BOOKE_PAGESZ_256M, 1);
+		MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		0, flash_esel, BOOKE_PAGESZ_256M, 1);
 
 	setup_portals();
 
@@ -128,9 +128,9 @@ int board_eth_init(bd_t *bis)
 	fm_info_set_phy_address(FM1_DTSEC2, CONFIG_SYS_FM1_DTSEC2_PHY_ADDR);
 
 	fm_info_set_mdio(FM1_DTSEC1,
-		miiphy_get_dev_by_name(DEFAULT_FM_MDIO_NAME));
+			 miiphy_get_dev_by_name(DEFAULT_FM_MDIO_NAME));
 	fm_info_set_mdio(FM1_DTSEC2,
-		miiphy_get_dev_by_name(DEFAULT_FM_MDIO_NAME));
+			 miiphy_get_dev_by_name(DEFAULT_FM_MDIO_NAME));
 
 #ifdef CONFIG_FMAN_ENET
 	cpu_eth_init(bis);

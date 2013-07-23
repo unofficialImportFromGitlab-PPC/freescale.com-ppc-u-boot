@@ -32,7 +32,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static void sdram_init(void)
 {
-	ccsr_ddr_t __iomem *ddr = (ccsr_ddr_t __iomem *)CONFIG_SYS_MPC8xxx_DDR_ADDR;
+	ccsr_ddr_t *ddr = (ccsr_ddr_t *)CONFIG_SYS_MPC8xxx_DDR_ADDR;
 #if CONFIG_DDR_CLK_FREQ == 100000000
 	__raw_writel(CONFIG_SYS_DDR_CS0_BNDS, &ddr->cs0_bnds);
 	__raw_writel(CONFIG_SYS_DDR_CS0_CONFIG, &ddr->cs0_config);
@@ -88,7 +88,7 @@ static void sdram_init(void)
 void board_init_f(ulong bootflag)
 {
 	u32 plat_ratio;
-	ccsr_gur_t __iomem *gur = (void __iomem *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
+	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
 
 	/* initialize selected port with appropriate baud rate */
 	plat_ratio = in_be32(&gur->porpllsr) & MPC85xx_PORPLLSR_PLAT_RATIO;
@@ -96,7 +96,7 @@ void board_init_f(ulong bootflag)
 	gd->bus_clk = CONFIG_SYS_CLK_FREQ * plat_ratio;
 
 	NS16550_init((NS16550_t)CONFIG_SYS_NS16550_COM1,
-			gd->bus_clk / 16 / CONFIG_BAUDRATE);
+		     gd->bus_clk / 16 / CONFIG_BAUDRATE);
 
 	puts("\nNAND boot... ");
 

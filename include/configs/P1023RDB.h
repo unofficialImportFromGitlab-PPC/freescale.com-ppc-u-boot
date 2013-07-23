@@ -47,7 +47,7 @@
 
 #define CONFIG_FSL_ELBC		/* Has Enhanced localbus controller */
 #define CONFIG_PCI		/* Enable PCI/PCIE */
-#define CONFIG_PCI_INDIRECT_BRIDGE
+#define CONFIG_PCI_INDIRECT_BRIDGE     /* indirect PCI bridge support */
 #define CONFIG_PCIE1		/* PCIE controler 1 (slot 1) */
 #define CONFIG_PCIE2		/* PCIE controler 2 (slot 2) */
 #define CONFIG_PCIE3		/* PCIE controler 3 (slot 3) */
@@ -100,18 +100,18 @@ extern unsigned long get_clock_freq(void);
 /*
  * Memory map
  *
- * 0x0000_0000	0x1fff_ffff	DDR			500M Cacheable
+ * 0x0000_0000	0x1fff_ffff	DDR			512M cacheable
  * 0x8000_0000	0xbfff_ffff	PCI Express Mem		1G non-cacheable
  * 0xc000_0000	0xdfff_ffff	PCI			512M non-cacheable
  * 0xe100_0000	0xe3ff_ffff	PCI IO range		4M non-cacheable
- * 0xff00_0000	0xff3f_ffff	DPAA_QBMAN		4M
+ * 0xff00_0000	0xff3f_ffff	DPAA_QBMAN		4M cacheable
+ * 0xff60_0000	0xff7f_ffff	CCSR			2M non-cacheable
+ * 0xffd0_0000	0xffd0_3fff	L1 for stack		16K cacheable TLB0
  *
  * Localbus non-cacheable
  *
- * 0xec00_0000	0xefff_ffff	NOR flash		64M NOR flash
- * 0xff60_0000	0xff7f_ffff	CCSR			2M non-cacheable
+ * 0xec00_0000	0xefff_ffff	NOR flash		64M non-cacheable
  * 0xffa0_0000	0xffaf_ffff	NAND			1M non-cacheable
- * 0xffd0_0000	0xffd0_3fff	init ram		16K Cacheable TLB0
  */
 
 /*
@@ -137,11 +137,9 @@ extern unsigned long get_clock_freq(void);
 
 #define CONFIG_SYS_INIT_RAM_LOCK
 #define CONFIG_SYS_INIT_RAM_ADDR	0xffd00000	/* Initial L1 address */
-#define CONFIG_SYS_INIT_RAM_END	0x00004000	/* End of used area in RAM */
-
-#define CONFIG_SYS_GBL_DATA_SIZE	128	/* num bytes initial data */
-#define CONFIG_SYS_GBL_DATA_OFFSET	\
-	(CONFIG_SYS_INIT_RAM_END - CONFIG_SYS_GBL_DATA_SIZE)
+#define CONFIG_SYS_INIT_RAM_SIZE	0x00004000/* Size of used area in RAM */
+#define CONFIG_SYS_GBL_DATA_OFFSET	(CONFIG_SYS_INIT_RAM_SIZE - \
+					GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_OFFSET	CONFIG_SYS_GBL_DATA_OFFSET
 
 #define CONFIG_SYS_MONITOR_LEN	(512 * 1024)	  /* Reserve 512 kB for Mon */
@@ -150,7 +148,7 @@ extern unsigned long get_clock_freq(void);
 #define CONFIG_SYS_NAND_BASE		0xffa00000
 #define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
 
-#define CONFIG_SYS_NAND_BASE_LIST	{CONFIG_SYS_NAND_BASE}
+#define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
 #define CONFIG_SYS_MAX_NAND_DEVICE	1
 #define CONFIG_MTD_NAND_VERIFY_WRITE
 #define CONFIG_CMD_NAND
@@ -344,16 +342,11 @@ extern unsigned long get_clock_freq(void);
 
 /*
  * For booting Linux, the board info and command line data
- * have to be in the first 16 MB of memory, since this is
+ * have to be in the first 64 MB of memory, since this is
  * the maximum mapped by the Linux kernel during initialization.
  */
-#define CONFIG_SYS_BOOTMAPSZ	(16 << 20) /* Initial Memory map for Linux*/
-#define CONFIG_SYS_BOOTM_LEN	(16 << 20) /* Increase max gunzip size */
-
-#if defined(CONFIG_CMD_KGDB)
-#define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
-#endif
+#define CONFIG_SYS_BOOTMAPSZ	(64 << 20)   /* Initial Memory map for Linux*/
+#define CONFIG_SYS_BOOTM_LEN	(64 << 20)   /* Increase max gunzip size */
 
 /*
  * Environment Configuration
@@ -364,7 +357,7 @@ extern unsigned long get_clock_freq(void);
 /* default location for tftp and bootm */
 #define CONFIG_LOADADDR		1000000
 
-#define CONFIG_BOOTDELAY 10	/* -1 disables auto-boot */
+#define CONFIG_BOOTDELAY -1	/* -1 disables auto-boot */
 
 #define CONFIG_BAUDRATE	115200
 

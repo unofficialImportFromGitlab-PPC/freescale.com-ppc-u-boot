@@ -84,7 +84,6 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 				dimm_params_t *pdimm,
 				unsigned int ctrl_num)
 {
-	struct cpu_type *cpu;
 	int i;
 	popts->clk_adjust = 6;
 	popts->cpo_override = 0x1f;
@@ -97,11 +96,6 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->wrlvl_start = 0x8;
 	popts->trwt_override = 1;
 	popts->trwt = 0;
-
-	cpu = gd->arch.cpu;
-	/* P1014 and it's derivatives support max 16it DDR width */
-	if (cpu->soc_ver == SVR_P1014)
-		popts->data_bus_width = DDR_DATA_BUS_WIDTH_16;
 
 	for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
 		popts->cs_local_opts[i].odt_rd_cfg = FSL_DDR_ODT_NEVER;

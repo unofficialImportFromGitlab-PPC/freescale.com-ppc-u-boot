@@ -45,6 +45,15 @@
 #define CONFIG_SYS_NO_FLASH
 #endif
 
+#ifdef CONFIG_SRIO_PCIE_BOOT_SLAVE
+/* Set 1M boot space */
+#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR (CONFIG_SYS_TEXT_BASE & 0xfff00000)
+#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS \
+		(0x300000000ull | CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR)
+#define CONFIG_RESET_VECTOR_ADDRESS 0xfffffffc
+#define CONFIG_SYS_NO_FLASH
+#endif
+
 /* High Level Configuration Options */
 #define CONFIG_BOOKE
 #define CONFIG_E500			/* BOOKE e500 family */
