@@ -404,12 +404,14 @@ wr_err:
 	return -1;
 }
 
+#ifndef CONFIG_SDCARD
 void board_reset(void)
 {
 	/* mux to IFC to enable CPLD for reset */
 	if (pin_mux != MUX_TYPE_IFC)
 		config_pin_mux(MUX_TYPE_IFC);
 }
+#endif
 
 int misc_init_r(void)
 {
