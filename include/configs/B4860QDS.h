@@ -778,8 +778,14 @@ unsigned long get_board_ddr_clk(void);
 
 #define __USB_PHY_TYPE	ulpi
 
+#ifdef CONFIG_PPC_B4860
+#define HWCONFIG	"hwconfig=fsl_ddr:ctlr_intlv=null,en_cpc:cpc2,"
+#else
+#define	HWCONFIG	"hwconfig=fsl_ddr:ctlr_intlv=null,"
+#endif
+
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
-	"hwconfig=fsl_ddr:ctlr_intlv=null,"		\
+	HWCONFIG						\
 	"bank_intlv=cs0_cs1;"					\
 	"usb1:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
