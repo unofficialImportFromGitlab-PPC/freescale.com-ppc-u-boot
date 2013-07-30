@@ -22,9 +22,6 @@
  * MA 02111-1307 USA
  */
 
-/* Required to obtain the getline prototype from stdio.h */
-#define _GNU_SOURCE
-
 #include "mkimage.h"
 #include <image.h>
 #include "kwbimage.h"

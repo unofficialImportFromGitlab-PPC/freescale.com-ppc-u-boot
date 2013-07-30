@@ -25,9 +25,6 @@
  * MA 02111-1307 USA
  */
 
-/* We want the GNU version of basename() */
-#define _GNU_SOURCE
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
