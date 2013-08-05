@@ -61,8 +61,12 @@ int checkboard(void)
 
 	if (sw < 0x8)
 		printf("vBank: %d\n", sw);
-	else if (sw >= 0x8 && sw <= 0xE)
+	else if (sw == 0x8)
+		puts("PromJet\n");
+	else if (sw == 0x9)
 		puts("NAND\n");
+	else if (sw == 0x15)
+		printf("IFCCard\n");
 	else
 		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
 
@@ -80,13 +84,12 @@ int checkboard(void)
 	 * we just display both values and hope the user notices when they
 	 * don't match.
 	 */
-	puts("SERDES Reference Clocks: ");
+	puts("SERDES Reference: ");
 	sw = QIXIS_READ(brdcfg[2]);
-	clock = (sw >> 5) & 7;
-	printf("Bank1=%sMHz ", freq[clock]);
-	sw = QIXIS_READ(brdcfg[4]);
 	clock = (sw >> 6) & 3;
-	printf("Bank2=%sMHz\n", freq[clock]);
+	printf("Clock1=%sMHz ", freq[clock]);
+	clock = (sw >> 4) & 3;
+	printf("Clock2=%sMHz\n", freq[clock]);
 
 	return 0;
 }
@@ -124,13 +127,23 @@ unsigned long get_board_sys_clk(void)
 {
 	u8 sysclk_conf = QIXIS_READ(brdcfg[1]);
 
-	switch ((sysclk_conf & 0x0C) >> 2) {
-	case QIXIS_CLK_100:
+	switch (sysclk_conf & 0x0F) {
+	case QIXIS_SYSCLK_64:
+		return 64000000;
+	case QIXIS_SYSCLK_83:
+		return 83333333;
+	case QIXIS_SYSCLK_100:
 		return 100000000;
-	case QIXIS_CLK_125:
+	case QIXIS_SYSCLK_125:
 		return 125000000;
-	case QIXIS_CLK_133:
+	case QIXIS_SYSCLK_133:
 		return 133333333;
+	case QIXIS_SYSCLK_150:
+		return 150000000;
+	case QIXIS_SYSCLK_160:
+		return 160000000;
+	case QIXIS_SYSCLK_166:
+		return 166666666;
 	}
 	return 66666666;
 }
@@ -139,57 +152,17 @@ unsigned long get_board_ddr_clk(void)
 {
 	u8 ddrclk_conf = QIXIS_READ(brdcfg[1]);
 
-	switch (ddrclk_conf & 0x03) {
-	case QIXIS_CLK_100:
+	switch ((ddrclk_conf & 0x30) >> 4) {
+	case QIXIS_DDRCLK_100:
 		return 100000000;
-	case QIXIS_CLK_125:
+	case QIXIS_DDRCLK_125:
 		return 125000000;
-	case QIXIS_CLK_133:
+	case QIXIS_DDRCLK_133:
 		return 133333333;
 	}
 	return 66666666;
 }
 
-static int serdes_refclock(u8 sw, u8 sdclk)
-{
-	unsigned int clock;
-	u32 ret = -1;
-	u8 brdcfg4;
-
-	if (sdclk == 1) {
-		brdcfg4 = QIXIS_READ(brdcfg[4]);
-		if ((brdcfg4 & CLK_MUX_SEL_MASK) == ETH_PHY_CLK_OUT)
-			return SRDS_PLLCR0_RFCK_SEL_125;
-		else
-			clock = (sw >> 5) & 7;
-	} else
-		clock = (sw >> 6) & 3;
-
-	switch (clock) {
-	case 0:
-		ret = SRDS_PLLCR0_RFCK_SEL_100;
-		break;
-	case 1:
-		ret = SRDS_PLLCR0_RFCK_SEL_125;
-		break;
-	case 2:
-		ret = SRDS_PLLCR0_RFCK_SEL_156_25;
-		break;
-	case 3:
-		ret = SRDS_PLLCR0_RFCK_SEL_161_13;
-		break;
-	case 4:
-	case 5:
-	case 6:
-		ret = SRDS_PLLCR0_RFCK_SEL_122_88;
-		break;
-	default:
-		ret = -1;
-		break;
-	}
-
-	return ret;
-}
 static const char *serdes_clock_to_string(u32 clock)
 {
 	switch (clock) {
@@ -199,48 +172,53 @@ static const char *serdes_clock_to_string(u32 clock)
 		return "125";
 	case SRDS_PLLCR0_RFCK_SEL_156_25:
 		return "156.25";
-	case SRDS_PLLCR0_RFCK_SEL_161_13:
-		return "161.13";
 	default:
-		return "122.88";
+		return "Unknown frequency";
 	}
 }
 
-#define NUM_SRDS_BANKS	2
-
+#define NUM_PLL	2
 int misc_init_r(void)
 {
 	u8 sw;
 	serdes_corenet_t *srds_regs =
 		(void *)CONFIG_SYS_FSL_CORENET_SERDES_ADDR;
-	u32 actual[NUM_SRDS_BANKS];
-	unsigned int i;
-	int clock;
+	u32 actual[NUM_PLL] = { 0 };
+	int i;
+	u32 pllcr0, pllcr1, expected;
 
 	sw = QIXIS_READ(brdcfg[2]);
-	clock = serdes_refclock(sw, 1);
-	if (clock >= 0)
-		actual[0] = clock;
-	else
-		printf("Warning: SDREFCLK1 switch setting is unsupported\n");
-
-	sw = QIXIS_READ(brdcfg[4]);
-	clock = serdes_refclock(sw, 2);
-	if (clock >= 0)
-		actual[1] = clock;
-	else
-		printf("Warning: SDREFCLK2 switch setting unsupported\n");
-
-	for (i = 0; i < NUM_SRDS_BANKS; i++) {
-		u32 pllcr0 = srds_regs->bank[i].pllcr0;
-		u32 expected = pllcr0 & SRDS_PLLCR0_RFCK_SEL_MASK;
-		if (expected != actual[i]) {
-			printf("Warning: SERDES bank %u expects reference clock"
-			       " %sMHz, but actual is %sMHz\n", i + 1,
-			       serdes_clock_to_string(expected),
-			       serdes_clock_to_string(actual[i]));
+	for (i = 0; i < NUM_PLL; i++) {
+		unsigned int clock = (sw >> (6 - 2 * i)) & 3;
+		switch (clock) {
+		case 0:
+			actual[i] = SRDS_PLLCR0_RFCK_SEL_100;
+			break;
+		case 1:
+			actual[i] = SRDS_PLLCR0_RFCK_SEL_125;
+			break;
+		case 2:
+			actual[i] = SRDS_PLLCR0_RFCK_SEL_156_25;
+			break;
 		}
 	}
+
+	pllcr0 = srds_regs->bank[0].pllcr0;
+	expected = pllcr0 & SRDS_PLLCR0_RFCK_SEL_MASK;
+	if (expected != actual[0]) {
+		printf("SERDES1 expects ref clk1 %sMHz, but actual is %sMHz\n",
+		       serdes_clock_to_string(expected),
+		       serdes_clock_to_string(actual[0]));
+	}
+
+	pllcr1 = srds_regs->bank[0].pllcr1;
+	expected = pllcr1 & SRDS_PLLCR0_RFCK_SEL_MASK;
+	if (expected != actual[1]) {
+		printf("SERDES1 expects ref clk2 %sMHz, but actual is %sMHz\n",
+		       serdes_clock_to_string(expected),
+		       serdes_clock_to_string(actual[1]));
+	}
+
 
 	return 0;
 }
