@@ -322,12 +322,7 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 	if ((SVR_SOC_VER(svr) == SVR_8548 && IS_SVR_REV(svr, 3, 1)) ||
-	    (SVR_SOC_VER(svr) == SVR_P1010 && IS_SVR_REV(svr, 1, 0)) ||
-	    (SVR_SOC_VER(svr) == SVR_P1023 && (svr & 0xff) <= 0x11) ||
-	    (SVR_SOC_VER(svr) == SVR_P3041 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_P4080 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_P5020 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_9131 && (svr & 0xff) <= 0x11))
+	    (SVR_REV(svr) <= CONFIG_SYS_FSL_A004447_SVR_REV))
 		puts("Work-around for Erratum I2C-A004447 enabled\n");
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005812

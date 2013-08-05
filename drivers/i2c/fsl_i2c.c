@@ -232,12 +232,7 @@ static int i2c_fixup(const struct fsl_i2c *dev)
 	unsigned int svr = get_svr();
 
 	if ((SVR_SOC_VER(svr) == SVR_8548 && IS_SVR_REV(svr, 3, 1)) ||
-	    (SVR_SOC_VER(svr) == SVR_P1010 && IS_SVR_REV(svr, 1, 0)) ||
-	    (SVR_SOC_VER(svr) == SVR_P1023 && (svr & 0xff) <= 0x11) ||
-	    (SVR_SOC_VER(svr) == SVR_P3041 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_P4080 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_P5020 && (svr & 0xff) <= 0x20) ||
-	    (SVR_SOC_VER(svr) == SVR_9131 && (svr & 0xff) <= 0x11))
+	    (SVR_REV(svr) <= CONFIG_SYS_FSL_A004447_SVR_REV))
 		flags = I2C_CR_BIT6;
 #endif
 
