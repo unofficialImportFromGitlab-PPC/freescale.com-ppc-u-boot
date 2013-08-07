@@ -28,7 +28,7 @@
 #include <fdt_support.h>
 #include <asm/mp.h>
 #include <asm/fsl_serdes.h>
-#include <asm/fsl_usb.h>
+#include <fsl_usb.h>
 #include <phy.h>
 #include <hwconfig.h>
 
