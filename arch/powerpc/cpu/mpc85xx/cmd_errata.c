@@ -339,6 +339,9 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (IS_SVR_REV(svr, 1, 0))
 		puts("Work-around for Erratum A003571 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005125
+	puts("Work-around for Erratum A005125 enabled\n");
+#endif
 	return 0;
 }
 
