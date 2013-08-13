@@ -24,6 +24,7 @@
 #define __FSL_SECURE_BOOT_H
 #include <asm/config_mpc85xx.h>
 
+#ifdef CONFIG_SECURE_BOOT
 #if defined(CONFIG_FSL_CORENET)
 #define CONFIG_SYS_PBI_FLASH_BASE		0xc0000000
 #elif defined(CONFIG_BSC9132QDS)
@@ -116,4 +117,5 @@
  */
 #undef CONFIG_ZERO_BOOTDELAY_CHECK
 
+#endif
 #endif

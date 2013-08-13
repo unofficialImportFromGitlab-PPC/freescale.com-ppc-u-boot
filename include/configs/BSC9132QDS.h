@@ -729,8 +729,6 @@ combinations. this should be removed later
 
 #define CONFIG_BOOTCOMMAND CONFIG_RAMBOOTCOMMAND
 
-#ifdef CONFIG_SECURE_BOOT
 #include <asm/fsl_secure_boot.h>
-#endif
 
 #endif	/* __CONFIG_H */
