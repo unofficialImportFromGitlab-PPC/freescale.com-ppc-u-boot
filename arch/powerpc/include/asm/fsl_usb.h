@@ -78,11 +78,28 @@ extern bool	has_fsl_erratum_a006918;
 
 #else
 struct ccsr_usb_phy {
-	u8	res0[0x18];
+	u32     config1;
+	u32     config2;
+	u32     config3;
+	u32     config4;
+	u32     config5;
+	u32     status1;
 	u32	usb_enable_override;
 	u8	res[0xe4];
 };
+#define CONFIG_SYS_FSL_USB_HS_DISCNCT_INC (3 << 22)
+#define CONFIG_SYS_FSL_USB_RX_AUTO_CAL_RD_WR_SEL (1 << 20)
+#define CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_0 13
+#define CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_3 16
+#define CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_0 0
+#define CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_3 3
 #define CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE 1
+#define CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK 0x07
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+extern bool has_erratum_a006261(void);
+#endif
+
 #endif
 
 #endif /*_ASM_FSL_USB_H_ */

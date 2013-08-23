@@ -25,6 +25,7 @@
 #include <linux/compiler.h>
 #include <asm/processor.h>
 #include "fsl_corenet_serdes.h"
+#include <asm/fsl_usb.h>
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004849
 /*
@@ -337,6 +338,11 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #if defined(CONFIG_SYS_FSL_B4860QDS_XFI_ERR) && defined(CONFIG_B4860QDS)
 	puts("Work-around for Erratum XFI on B4860QDS enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+	if (has_erratum_a006261())
+		puts("Work-around for Erratum A006261 enabled\n");
+#endif
+
 	return 0;
 }
 

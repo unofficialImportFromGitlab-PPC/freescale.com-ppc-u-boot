@@ -56,6 +56,7 @@
 #endif
 
 #include "../../../../drivers/block/fsl_sata.h"
+#include <asm/fsl_usb.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -240,6 +241,33 @@ static void corenet_tb_init(void)
 
 	/* Enable the timebase register for this core */
 	out_be32(&rcpm->ctbenrl, (1 << whoami));
+}
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+void fsl_erratum_a006261_workaround(struct ccsr_usb_phy __iomem *usb_phy)
+{
+	u32 temp = 0;
+	u32 status = in_be32(&usb_phy->status1);
+
+	u32 squelch_prog_rd_0_2 =
+		(status >> CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_0)
+			& CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK;
+
+	u32 squelch_prog_rd_3_5 =
+		(status >> CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_3)
+			& CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK;
+
+	setbits_be32(&usb_phy->config1,
+		    CONFIG_SYS_FSL_USB_HS_DISCNCT_INC);
+	setbits_be32(&usb_phy->config2,
+		    CONFIG_SYS_FSL_USB_RX_AUTO_CAL_RD_WR_SEL);
+
+	temp = squelch_prog_rd_0_2 << CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_0;
+	out_be32(&usb_phy->config2, in_be32(&usb_phy->config2) | temp);
+
+	temp = squelch_prog_rd_3_5 << CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_3;
+	out_be32(&usb_phy->config2, in_be32(&usb_phy->config2) | temp);
 }
 #endif
 
@@ -697,6 +725,10 @@ skip_l2:
 	{
 		struct ccsr_usb_phy __iomem *usb_phy1 =
 			(void *)CONFIG_SYS_MPC85xx_USB1_PHY_ADDR;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy1);
+#endif
 		out_be32(&usb_phy1->usb_enable_override,
 				CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE);
 	}
@@ -705,6 +737,10 @@ skip_l2:
 	{
 		struct ccsr_usb_phy __iomem *usb_phy2 =
 			(void *)CONFIG_SYS_MPC85xx_USB2_PHY_ADDR;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy2);
+#endif
 		out_be32(&usb_phy2->usb_enable_override,
 				CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE);
 	}
