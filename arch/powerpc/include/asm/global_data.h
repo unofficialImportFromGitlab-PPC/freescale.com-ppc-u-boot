@@ -184,6 +184,9 @@ typedef	struct	global_data {
 #endif
 	void		**jt;		/* jump table */
 	char		env_buf[32];	/* buffer for getenv() before reloc. */
+#if defined(CONFIG_HARD_I2C)
+	int		cur_i2c_bus;	/* current used i2c bus */
+#endif
 } gd_t;
 
 #include <asm-generic/global_data_flags.h>
