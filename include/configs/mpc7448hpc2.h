@@ -178,6 +178,7 @@
  * Miscellaneous configurable options
  */
 #define CONFIG_VERSION_VARIABLE		1
+#define CONFIG_HARD_I2C
 #define CONFIG_TSI108_I2C
 #define CONFIG_SYS_I2C_SPEED		100000	/* I2C speed */
 

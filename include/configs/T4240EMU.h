@@ -94,11 +94,6 @@
 #define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NOR_FTIM2
 #define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NOR_FTIM3
 
-
-/* I2C */
-#define CONFIG_SYS_I2C_SPEED		4000000	/* faster speed for emulator */
-
-
 /* Qman/Bman */
 #define CONFIG_SYS_DPAA_QBMAN		/* Support Q/Bman */
 #define CONFIG_SYS_BMAN_NUM_PORTALS	50

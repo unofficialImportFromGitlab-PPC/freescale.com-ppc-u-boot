@@ -271,6 +271,8 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CONFIG_SYS_I2C_EEPROM_ADDR	0x52
 #define CONFIG_SYS_I2C_SLAVE		0x7F
 #define CONFIG_SYS_I2C_OFFSET		0x3000
+#define CONFIG_SYS_I2C2_SPEED		400000	/* I2C spd and slave address */
+#define CONFIG_SYS_I2C2_SLAVE		0x7F
 #define CONFIG_SYS_I2C2_OFFSET		0x3100
 
 /*

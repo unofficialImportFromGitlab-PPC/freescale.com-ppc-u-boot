@@ -41,6 +41,14 @@
 /* All functions assume that Tsi108 I2C block is the only master on the bus */
 /* I2C read helper function */
 
+int i2c_set_bus_num(unsigned int bus)
+{
+	if (bus >= 1)
+		return -1;
+
+	return 0;
+}
+
 void i2c_init(int speed, int slaveaddr)
 {
 	/*

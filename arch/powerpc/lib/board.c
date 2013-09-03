@@ -218,7 +218,7 @@ static int init_func_ram(void)
 static int init_func_i2c(void)
 {
 	puts("I2C:   ");
-	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	i2c_set_bus_num(0);
 	puts("ready\n");
 	return 0;
 }

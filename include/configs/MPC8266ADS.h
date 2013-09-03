@@ -131,6 +131,7 @@
 
 /* other options */
 #define CONFIG_HARD_I2C		1	/* To enable I2C support	*/
+#define CONFIG_I2C_MULTI_BUS
 #define CONFIG_SYS_I2C_SPEED		400000	/* I2C speed and slave address	*/
 #define CONFIG_SYS_I2C_SLAVE		0x7F
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN 1
