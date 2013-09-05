@@ -12,6 +12,9 @@
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_ddr_dimm_params.h>
 
+#include "cpld.h"
+
+#define C29XPCIE_HARDWARE_REVA	0x40
 /*
  * Micron MT41J128M16HA-15E
  * */
@@ -81,6 +84,9 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->wrlvl_start = 0x4;
 	popts->trwt_override = 1;
 	popts->trwt = 0;
+
+	if (CPLD_READ(hwver) == C29XPCIE_HARDWARE_REVA)
+		popts->ecc_mode = 0;
 
 	for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
 		popts->cs_local_opts[i].odt_rd_cfg = FSL_DDR_ODT_NEVER;

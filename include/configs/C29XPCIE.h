@@ -525,7 +525,7 @@
 #define CONFIG_BAUDRATE		115200
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
-	"hwconfig=" __stringify(CONFIG_DEF_HWCONFIG)  "\0"	\
+	"hwconfig=fsl_ddr:ecc=off\0"	\
 	"netdev=eth0\0"						\
 	"uboot=" __stringify(CONFIG_UBOOTPATH) "\0"		\
 	"loadaddr=1000000\0"				\
