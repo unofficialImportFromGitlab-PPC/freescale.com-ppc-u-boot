@@ -23,6 +23,7 @@
 #include <common.h>
 #include <command.h>
 #include <linux/compiler.h>
+#include <asm/fsl_errata.h>
 #include <asm/processor.h>
 #include "fsl_corenet_serdes.h"
 
@@ -322,6 +323,10 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006593
 	puts("Work-around for Erratum A006593 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006379
+	if (has_erratum_a006379())
+		puts("Work-around for Erratum A006379 enabled\n");
 #endif
 #if defined(CONFIG_SYS_FSL_ERRATUM_A005936) && defined(CONFIG_B4860QDS)
 	puts("Work-around for Erratum A005936 enabled\n");
