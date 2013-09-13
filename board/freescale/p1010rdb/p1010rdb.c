@@ -60,8 +60,8 @@ enum {
 };
 
 uint pin_mux;
+static int config_pin_mux(int if_type);
 
-#ifndef CONFIG_SDCARD
 struct cpld_data {
 	u8 cpld_ver; /* cpld revision */
 	u8 pcba_ver; /* pcb revision number */
@@ -79,17 +79,14 @@ struct cpld_data {
 	u8 por2; /* POR Options */
 	u8 por3; /* POR Options */
 };
-#endif
 
 int board_early_init_f(void)
 {
 	ccsr_gpio_t *pgpio = (void *)(CONFIG_SYS_MPC85xx_GPIO_ADDR);
-#ifndef CONFIG_SDCARD
 	struct fsl_ifc *ifc = (void *)CONFIG_SYS_IFC_ADDR;
 
 	/* Clock configuration to access CPLD using IFC(GPCM) */
 	setbits_be32(&ifc->ifc_gcr, 1 << IFC_GCR_TBCTL_TRN_TIME_SHIFT);
-#endif
 	/*
 	* Reset PCIe slots via GPIO4
 	*/
@@ -101,7 +98,6 @@ int board_early_init_f(void)
 
 int board_early_init_r(void)
 {
-#ifndef CONFIG_SDCARD
 	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
 	const u8 flash_esel = find_tlb_idx((void *)flashbase, 1);
 
@@ -125,7 +121,6 @@ int board_early_init_r(void)
 			CONFIG_SYS_FLASH_BASE_PHYS + 0x1000000,
 			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 			0, flash_esel+1, BOOKE_PAGESZ_16M, 1);
-#endif
 	return 0;
 }
 
@@ -143,6 +138,10 @@ int checkboard(void)
 	cpu = gd->cpu;
 	printf("Board: %sRDB\n", cpu->name);
 
+#ifdef CONFIG_SDCARD
+	/* switch to IFC to read info from CPLD */
+	config_pin_mux(MUX_TYPE_IFC);
+#endif
 	return 0;
 }
 
@@ -318,7 +317,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
-int config_pin_mux(int if_type)
+static int config_pin_mux(int if_type)
 {
 	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 	u8 tmp;
@@ -369,7 +368,13 @@ wr_err:
 	return -1;
 }
 
-#ifndef CONFIG_SDCARD
+#ifdef CONFIG_SDCARD
+int board_mmc_init(bd_t *bis)
+{
+	config_pin_mux(MUX_TYPE_SDHC);
+	return -1;
+}
+#else
 void board_reset(void)
 {
 	/* mux to IFC to enable CPLD for reset */
@@ -380,7 +385,6 @@ void board_reset(void)
 
 int misc_init_r(void)
 {
-#ifndef CONFIG_SDCARD
 	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
@@ -404,13 +408,11 @@ int misc_init_r(void)
 		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_FLASH);
 	}
 
-	if (hwconfig("esdhc")) {
-		pin_mux = MUX_TYPE_SDHC;
+	if (hwconfig("esdhc"))
 		config_pin_mux(MUX_TYPE_SDHC);
-	}
-#else
-	pin_mux = MUX_TYPE_SDHC;
-#endif
+	else if (hwconfig("ifc"))
+		config_pin_mux(MUX_TYPE_IFC);
+
 	return 0;
 }
 

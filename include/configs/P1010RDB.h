@@ -269,10 +269,6 @@ extern unsigned long get_sdram_size(void);
  * 0xffe0_0000	0xffef_ffff	CCSR			1M non-cacheable
  */
 
-/* In case of SD card boot, IFC interface is not available because of muxing */
-#ifdef CONFIG_SDCARD
-#define CONFIG_SYS_NO_FLASH
-#else
 /*
  * IFC Definitions
  */
@@ -423,7 +419,6 @@ extern unsigned long get_sdram_size(void);
 					FTIM2_GPCM_TCH(0x0) | \
 					FTIM2_GPCM_TWP(0x1f))
 #define CONFIG_SYS_CS3_FTIM3		0x0
-#endif	/* CONFIG_SDCARD */
 
 #if defined(CONFIG_RAMBOOT_SDCARD) || defined(CONFIG_RAMBOOT_SPIFLASH)
 #define CONFIG_SYS_RAMBOOT
