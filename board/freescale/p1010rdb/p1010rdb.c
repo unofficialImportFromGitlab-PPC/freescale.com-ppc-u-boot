@@ -56,14 +56,23 @@ DECLARE_GLOBAL_DATA_PTR;
 enum {
 	MUX_TYPE_IFC,
 	MUX_TYPE_SDHC,
-	MUX_TYPE_ULPI,
+	MUX_TYPE_SPIFLASH,
+	MUX_TYPE_TDM,
+	MUX_TYPE_CAN,
+	MUX_TYPE_CS0_NOR,
+	MUX_TYPE_CS0_NAND,
 };
 
-uint pin_mux;
-static int config_pin_mux(int if_type);
+enum {
+	I2C_READ_BANK,
+	I2C_READ_PCB_VER,
+};
+
+static uint sd_ifc_mux;
 
 struct cpld_data {
 	u8 cpld_ver; /* cpld revision */
+#if defined(CONFIG_P1010RDB_PA)
 	u8 pcba_ver; /* pcb revision number */
 	u8 twindie_ddr3;
 	u8 res1[6];
@@ -78,6 +87,9 @@ struct cpld_data {
 	u8 por1; /* POR Options */
 	u8 por2; /* POR Options */
 	u8 por3; /* POR Options */
+#elif defined(CONFIG_P1010RDB_PB)
+	u8 rom_loc;
+#endif
 };
 
 int board_early_init_f(void)
@@ -131,16 +143,201 @@ void pci_init_board(void)
 }
 #endif /* ifdef CONFIG_PCI */
 
+static int config_board_mux(int ctrl_type)
+{
+	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u8 tmp;
+
+#if defined(CONFIG_P1010RDB_PA)
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+
+	switch (ctrl_type) {
+	case MUX_TYPE_IFC:
+		i2c_set_bus_num(I2C_PCA9557_BUS_NUM);
+		tmp = 0xf0;
+		i2c_write(I2C_PCA9557_ADDR1, 3, 1, &tmp, 1);
+		tmp = 0x01;
+		i2c_write(I2C_PCA9557_ADDR1, 1, 1, &tmp, 1);
+		sd_ifc_mux = MUX_TYPE_IFC;
+		clrbits_be32(&gur->pmuxcr, PMUXCR1_IFC_MASK);
+		debug("pin mux is configured for IFC, SDHC disabled\n");
+		break;
+	case MUX_TYPE_SDHC:
+		i2c_set_bus_num(I2C_PCA9557_BUS_NUM);
+		tmp = 0xf0;
+		i2c_write(I2C_PCA9557_ADDR1, 3, 1, &tmp, 1);
+		tmp = 0x05;
+		i2c_write(I2C_PCA9557_ADDR1, 1, 1, &tmp, 1);
+		sd_ifc_mux = MUX_TYPE_SDHC;
+		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_SDHC_MASK,
+				PMUXCR1_SDHC_ENABLE);
+		debug("pin mux is configured for SDHC, IFC disabled\n");
+		break;
+	case MUX_TYPE_SPIFLASH:
+		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_FLASH);
+		break;
+	case MUX_TYPE_TDM:
+		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_TDM);
+		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_SLIC);
+		break;
+	case MUX_TYPE_CAN:
+		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_CAN_UART);
+		break;
+	default:
+		break;
+	}
+
+#elif defined(CONFIG_P1010RDB_PB)
+	uint orig_bus = i2c_get_bus_num();
+	i2c_set_bus_num(I2C_PCA9557_BUS_NUM);
+
+	switch (ctrl_type) {
+	case MUX_TYPE_IFC:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x04);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x04);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		sd_ifc_mux = MUX_TYPE_IFC;
+		clrbits_be32(&gur->pmuxcr, PMUXCR1_IFC_MASK);
+		break;
+	case MUX_TYPE_SDHC:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		setbits_8(&tmp, 0x04);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x04);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		sd_ifc_mux = MUX_TYPE_SDHC;
+		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_SDHC_MASK,
+				PMUXCR1_SDHC_ENABLE);
+		break;
+	case MUX_TYPE_SPIFLASH:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x80);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x80);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		break;
+	case MUX_TYPE_TDM:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		setbits_8(&tmp, 0x82);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x82);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		break;
+	case MUX_TYPE_CAN:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x02);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x02);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		break;
+	case MUX_TYPE_CS0_NOR:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x08);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x08);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		break;
+	case MUX_TYPE_CS0_NAND:
+		i2c_read(I2C_PCA9557_ADDR2, 0, 1, &tmp, 1);
+		setbits_8(&tmp, 0x08);
+		i2c_write(I2C_PCA9557_ADDR2, 1, 1, &tmp, 1);
+		i2c_read(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		clrbits_8(&tmp, 0x08);
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &tmp, 1);
+		break;
+	default:
+		break;
+	}
+	i2c_set_bus_num(orig_bus);
+#endif
+	return 0;
+}
+
+#ifdef CONFIG_P1010RDB_PB
+int i2c_pca9557_read(int type)
+{
+	u8 val;
+
+	i2c_set_bus_num(I2C_PCA9557_BUS_NUM);
+	i2c_read(I2C_PCA9557_ADDR2, 0, 1, &val, 1);
+
+	switch (type) {
+	case I2C_READ_BANK:
+		val = (val & 0x10) >> 4;
+		break;
+	case I2C_READ_PCB_VER:
+		val = ((val & 0x60) >> 5) + 1;
+		break;
+	default:
+		break;
+	}
+
+	return val;
+}
+#endif
+
 int checkboard(void)
 {
 	struct cpu_type *cpu;
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+	u8 val;
 
 	cpu = gd->cpu;
-	printf("Board: %sRDB\n", cpu->name);
+#if defined(CONFIG_P1010RDB_PA)
+	printf("Board: %sRDB-PA, ", cpu->name);
+#elif defined(CONFIG_P1010RDB_PB)
+	printf("Board: %sRDB-PB, ", cpu->name);
+	i2c_set_bus_num(I2C_PCA9557_BUS_NUM);
+	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+	val = 0x0;  /* no polarity inversion */
+	i2c_write(I2C_PCA9557_ADDR2, 2, 1, &val, 1);
+#endif
 
 #ifdef CONFIG_SDCARD
 	/* switch to IFC to read info from CPLD */
-	config_pin_mux(MUX_TYPE_IFC);
+	config_board_mux(MUX_TYPE_IFC);
+#endif
+
+#if defined(CONFIG_P1010RDB_PA)
+	val = (in_8(&cpld_data->pcba_ver) & 0xF);
+	printf("PCB: v%x.0\n", val);
+#elif defined(CONFIG_P1010RDB_PB)
+	val = in_8(&cpld_data->cpld_ver);
+	printf("CPLD: v%x.%x, ", val >> 4, val & 0xf);
+	printf("PCB: v%x.0, ", i2c_pca9557_read(I2C_READ_PCB_VER));
+	val = in_8(&cpld_data->rom_loc) & 0xf;
+	puts("Boot from ");
+	switch (val) {
+	case 0xf:
+		config_board_mux(MUX_TYPE_CS0_NOR);
+		printf("NOR vBank%d\n", i2c_pca9557_read(I2C_READ_BANK));
+		break;
+	case 0xe:
+		puts("SDHC\n");
+		val = 0x60; /* set pca9557 pin input/output */
+		i2c_write(I2C_PCA9557_ADDR2, 3, 1, &val, 1);
+		break;
+	case 0x5:
+		config_board_mux(MUX_TYPE_IFC);
+		config_board_mux(MUX_TYPE_CS0_NAND);
+		puts("NAND\n");
+		break;
+	case 0x6:
+		config_board_mux(MUX_TYPE_IFC);
+		puts("SPI\n");
+		break;
+	default:
+		puts("unknown\n");
+		break;
+	}
 #endif
 	return 0;
 }
@@ -292,7 +489,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 	}
 
 	/* Delete IFC node as IFC pins are multiplexing with SDHC */
-	if (pin_mux != MUX_TYPE_IFC)
+	if (sd_ifc_mux != MUX_TYPE_IFC)
 		fdt_del_ifc(blob);
 	else
 		fdt_del_sdhc(blob);
@@ -317,75 +514,23 @@ void ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
-static int config_pin_mux(int if_type)
-{
-	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	u8 tmp;
-	uint orig_bus = i2c_get_bus_num();
-
-	i2c_set_bus_num(CONFIG_SYS_PCA9557_BUS_NUM);
-	tmp = 0xf0;
-	if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 3, 1, &tmp, 1) < 0)
-		goto wr_err;
-
-	switch (if_type) {
-	case MUX_TYPE_IFC:
-		tmp = 0x01;
-		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
-			goto wr_err;
-		pin_mux = MUX_TYPE_IFC;
-		clrbits_be32(&gur->pmuxcr, PMUXCR1_IFC_MASK);
-		debug("pin mux is configured for IFC, SDHC disabled\n");
-		break;
-	case MUX_TYPE_SDHC:
-		tmp = 0x05;
-		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
-			goto wr_err;
-		pin_mux = MUX_TYPE_SDHC;
-		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_SDHC_MASK,
-							PMUXCR1_SDHC_ENABLE);
-		debug("pin mux is configured for SDHC, IFC disabled\n");
-		break;
-	case MUX_TYPE_ULPI:
-		tmp = 0x06;
-		if (i2c_write(CONFIG_SYS_I2C_PCA9557_ADDR, 1, 1, &tmp, 1) < 0)
-			goto wr_err;
-		pin_mux = MUX_TYPE_ULPI;
-		clrsetbits_be32(&gur->pmuxcr, PMUXCR1_ULPI_MASK,
-							PMUXCR1_ULPI_ENABLE);
-		debug("pin mux is configured for ULPI, IFC & SDHC disabled\n");
-		break;
-	default:
-		printf("wrong mux interface type\n");
-		i2c_set_bus_num(orig_bus);
-		return -1;
-	}
-	i2c_set_bus_num(orig_bus);
-	return 0;
-wr_err:
-	printf("pca9557: i2c write failed\n");
-	i2c_set_bus_num(orig_bus);
-	return -1;
-}
-
 #ifdef CONFIG_SDCARD
 int board_mmc_init(bd_t *bis)
 {
-	config_pin_mux(MUX_TYPE_SDHC);
+	config_board_mux(MUX_TYPE_SDHC);
 	return -1;
 }
 #else
 void board_reset(void)
 {
 	/* mux to IFC to enable CPLD for reset */
-	if (pin_mux != MUX_TYPE_IFC)
-		config_pin_mux(MUX_TYPE_IFC);
+	if (sd_ifc_mux != MUX_TYPE_IFC)
+		config_board_mux(MUX_TYPE_IFC);
 }
 #endif
 
 int misc_init_r(void)
 {
-	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 
 	if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "can")) {
@@ -393,7 +538,7 @@ int misc_init_r(void)
 				MPC85xx_PMUXCR_CAN1_UART |
 				MPC85xx_PMUXCR_CAN2_TDM |
 				MPC85xx_PMUXCR_CAN2_UART);
-		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_CAN_UART);
+		config_board_mux(MUX_TYPE_CAN);
 	} else if (hwconfig_subarg_cmp("fsl_p1010mux", "tdm_can", "tdm")) {
 		clrbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_CAN2_UART |
 				MPC85xx_PMUXCR_CAN1_UART);
@@ -401,17 +546,20 @@ int misc_init_r(void)
 				MPC85xx_PMUXCR_CAN1_TDM);
 		clrbits_be32(&gur->pmuxcr2, MPC85xx_PMUXCR2_UART_GPIO);
 		setbits_be32(&gur->pmuxcr2, MPC85xx_PMUXCR2_UART_TDM);
-		out_8(&cpld_data->tdm_can_sel, MUX_CPLD_TDM);
-		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_SLIC);
+		config_board_mux(MUX_TYPE_TDM);
 	} else {
 		/* defaultly spi_cs_sel to flash */
-		out_8(&cpld_data->spi_cs0_sel, MUX_CPLD_SPICS0_FLASH);
+		config_board_mux(MUX_TYPE_SPIFLASH);
 	}
 
 	if (hwconfig("esdhc"))
-		config_pin_mux(MUX_TYPE_SDHC);
+		config_board_mux(MUX_TYPE_SDHC);
 	else if (hwconfig("ifc"))
-		config_pin_mux(MUX_TYPE_IFC);
+		config_board_mux(MUX_TYPE_IFC);
+
+#ifdef CONFIG_P1010RDB_PB
+	setbits_be32(&gur->pmuxcr2, MPC85xx_PMUXCR2_GPIO01_DRVVBUS);
+#endif
 
 	return 0;
 }
@@ -422,11 +570,9 @@ static int pin_mux_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 	if (argc < 2)
 		return CMD_RET_USAGE;
 	if (strcmp(argv[1], "ifc") == 0)
-		config_pin_mux(MUX_TYPE_IFC);
+		config_board_mux(MUX_TYPE_IFC);
 	else if (strcmp(argv[1], "sdhc") == 0)
-		config_pin_mux(MUX_TYPE_SDHC);
-	else if (strcmp(argv[1], "ulpi") == 0)
-		config_pin_mux(MUX_TYPE_ULPI);
+		config_board_mux(MUX_TYPE_SDHC);
 	else
 		return CMD_RET_USAGE;
 	return 0;
@@ -434,6 +580,6 @@ static int pin_mux_cmd(cmd_tbl_t *cmdtp, int flag, int argc,
 
 U_BOOT_CMD(
 	mux, 2, 0, pin_mux_cmd,
-	"configure multiplexing pin for IFC/SDHC/ULPI buses",
-	"bus_type[ifc/sdhc/ulpi] (e.g. mux sdhc)"
+	"configure multiplexing pin for IFC/SDHC buses",
+	"bus_type[ifc/sdhc] (e.g. mux sdhc)"
 );
