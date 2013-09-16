@@ -494,6 +494,54 @@ i2c_write(u8 dev, uint addr, int alen, u8 *data, int length)
 	return -1;
 }
 
+/* To perform any generic transaction on a I2C slave which involves
+
+   START: Address: Write bytes(cmd + data): clock extension:
+   RESTART: Address: Read bytes (data + status): STOP
+
+   This is different from standard I2C devices which are supported
+   in existing i2c_read and i2c_write functions.
+   */
+int
+i2c_write_read(u8 dev, u8 *wdata, int wlength, u8 *rdata, int rlength)
+{
+	int i = -1; /* signal error */
+
+	if (i2c_wait4bus())
+		return -1;
+
+/* Generate a START and send the Address and the Tx Bytes to the slave.
+ * "START: Address: Write bytes wdata[wlength]"
+ */
+	if (i2c_write_addr(dev, I2C_WRITE_BIT, 0) != 0)
+		i = __i2c_write(wdata, wlength);
+
+	if (i != wlength)
+		return -1;
+
+/* Now issue a READ by generating a RESTART condition
+ * "RESTART: Address: Read bytes rdata[rlength]"
+ * Some slaves may also do clock stretching and keep the SCL low until
+ * they finish some command processing at their end. The I2C controller
+ * will wait for the clock stretching period to get over before generating
+ * the RESTART condition on the bus.
+ */
+	if (rlength
+	    && i2c_write_addr(dev, I2C_READ_BIT, 1) != 0)
+		i = __i2c_read(rdata, rlength);
+
+/* Generate STOP */
+	writeb(I2C_CR_MEN, &i2c_dev[i2c_bus_num]->cr);
+
+	if (i2c_wait4bus()) /* Wait until STOP */
+		debug("i2c_write_read: wait4bus timed out\n");
+
+	if (i != rlength)
+		return -1;
+
+	return 0;
+}
+
 int
 i2c_probe(uchar chip)
 {
