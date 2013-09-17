@@ -22,6 +22,7 @@
 #define _ASM_FSL_ERRATA_H
 
 #include <common.h>
+#include <stdbool.h>
 #include <asm/processor.h>
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006379
