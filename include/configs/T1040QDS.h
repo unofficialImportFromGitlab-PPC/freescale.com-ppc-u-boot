@@ -409,7 +409,7 @@ unsigned long get_board_ddr_clk(void);
 
 /* I2C */
 #define CONFIG_SYS_I2C
-#define CONFIG_SYS_FSL_I2C
+#define CONFIG_SYS_I2C_FSL
 #define CONFIG_SYS_FSL_I2C_SPEED	400000	/* I2C speed in Hz */
 #define CONFIG_SYS_FSL_I2C_SLAVE	0x7F
 #define CONFIG_SYS_FSL_I2C_OFFSET	0x118000
