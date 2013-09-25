@@ -216,12 +216,12 @@ int i2x_mux_select_mux(int bus);
 int i2c_mux_ident_muxstring_f (uchar *buf);
 #endif
 
-#ifdef CONFIG_HARD_I2C
+void i2c_init(int speed, int slaveaddr);
+#ifdef CONFIG_FSL_I2C
 /*
  * Initialization, must be called once on start up, may be called
  * repeatedly to change the speed and slave addresses.
  */
-void i2c_init(int speed, int slaveaddr);
 #ifdef CONFIG_SYS_I2C_INIT_BOARD
 void i2c_init_board(void);
 #endif
@@ -426,6 +426,12 @@ unsigned int i2c_get_bus_speed(void);
 #  define CONFIG_SYS_MAX_I2C_BUS		2
 # endif
 # define I2C_MULTI_BUS				0
+# ifndef CONFIG_SYS_I2C2_SPEED
+# define CONFIG_SYS_I2C2_SPEED CONFIG_SYS_I2C_SPEED
+# endif
+# ifndef CONFIG_SYS_I2C2_SLAVE
+# define CONFIG_SYS_I2C2_SLAVE CONFIG_SYS_I2C_SLAVE
+# endif
 #else
 # define CONFIG_SYS_MAX_I2C_BUS		1
 # define I2C_MULTI_BUS				0
