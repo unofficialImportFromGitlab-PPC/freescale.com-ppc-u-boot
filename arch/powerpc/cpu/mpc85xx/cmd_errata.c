@@ -296,6 +296,14 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (IS_SVR_REV(svr, 1, 0))
 		puts("Work-around for Erratum A005871 enabled\n");
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006475
+	if (SVR_MAJ(get_svr()) == 1)
+		puts("Work-around for Erratum A006475 enabled\n");
+#endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006384
+	if (SVR_MAJ(get_svr()) == 1)
+		puts("Work-around for Erratum A006384 enabled\n");
+#endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005977
 	if (IS_SVR_REV(svr, 1, 0))
 		puts("Work-around for Erratum A005977 enabled\n");
