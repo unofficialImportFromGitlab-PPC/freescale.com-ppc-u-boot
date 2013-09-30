@@ -3836,6 +3836,11 @@ Low Level (hardware related) configuration options:
 		that is executed before the actual U-Boot. E.g. when
 		compiling a NAND SPL.
 
+- CONFIG_SYS_MPC85XX_NO_RESETVEC
+		Only for 85xx systems. If this variable is specified, the section
+		.resetvec is not kept and the section .bootpg is placed in the
+		previous 4k of the .text section.
+
 - CONFIG_USE_ARCH_MEMCPY
   CONFIG_USE_ARCH_MEMSET
 		If these options are used a optimized version of memcpy/memset will
