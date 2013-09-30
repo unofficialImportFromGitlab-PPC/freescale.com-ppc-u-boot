@@ -61,6 +61,12 @@ SECTIONS
 	_edata  =  .;
 
 	. = .;
+	. = ALIGN(4);
+	.u_boot_list : {
+		#include <u-boot.lst>
+	}
+
+	. = .;
 	__start___ex_table = .;
 	__ex_table : { *(__ex_table) }
 	__stop___ex_table = .;
