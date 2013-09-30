@@ -26,7 +26,6 @@ include $(TOPDIR)/config.mk
 LIB	= $(obj)libgeneric.o
 
 ifndef CONFIG_SPL_BUILD
-COBJS-$(CONFIG_ADDR_MAP) += addr_map.o
 COBJS-$(CONFIG_BCH) += bch.o
 COBJS-$(CONFIG_AES) += aes.o
 COBJS-$(CONFIG_BZIP2) += bzlib.o
@@ -37,13 +36,10 @@ COBJS-$(CONFIG_BZIP2) += bzlib_huffman.o
 COBJS-$(CONFIG_USB_TTY) += circbuf.o
 COBJS-y += crc7.o
 COBJS-y += crc16.o
-COBJS-y += display_options.o
-COBJS-y += errno.o
 COBJS-$(CONFIG_OF_CONTROL) += fdtdec.o
 COBJS-$(CONFIG_TEST_FDTDEC) += fdtdec_test.o
 COBJS-$(CONFIG_GZIP) += gunzip.o
 COBJS-$(CONFIG_GZIP_COMPRESSED) += gzip.o
-COBJS-y += hashtable.o
 COBJS-$(CONFIG_LMB) += lmb.o
 COBJS-y += ldiv.o
 COBJS-$(CONFIG_MD5) += md5.o
@@ -58,14 +54,12 @@ endif
 
 ifdef CONFIG_SPL_BUILD
 COBJS-$(CONFIG_SPL_YMODEM_SUPPORT) += crc16.o
-COBJS-$(CONFIG_SPL_NET_SUPPORT) += crc32.o
-ifneq ($(CONFIG_SPL_SPI_FLASH_SUPPORT)$(CONFIG_SPL_NET_SUPPORT),)
-COBJS-y += display_options.o
-endif
-COBJS-$(CONFIG_SPL_NET_SUPPORT) += errno.o
-COBJS-$(CONFIG_SPL_NET_SUPPORT) += hashtable.o
 COBJS-$(CONFIG_SPL_NET_SUPPORT) += net_utils.o
 endif
+COBJS-$(CONFIG_ADDR_MAP) += addr_map.o
+COBJS-y += hashtable.o
+COBJS-y += errno.o
+COBJS-y += display_options.o
 COBJS-y += crc32.o
 COBJS-y += ctype.o
 COBJS-y += div64.o
