@@ -1337,7 +1337,9 @@ int mmc_initialize(bd_t *bis)
 	if (board_mmc_init(bis) < 0)
 		cpu_mmc_init(bis);
 
+#ifndef CONFIG_SPL_BUILD
 	print_mmc_devices(',');
+#endif
 
 	return 0;
 }
