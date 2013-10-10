@@ -254,6 +254,24 @@ static void corenet_tb_init(void)
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006261
 void fsl_erratum_a006261_workaround(struct ccsr_usb_phy __iomem *usb_phy)
 {
+#ifdef CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE
+	u32 xcvrprg = in_be32(&usb_phy->port1.xcvrprg);
+
+	/* Increase Disconnect Threshold by 50mV */
+	xcvrprg &= ~CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_MASK |
+						INC_DCNT_THRESHOLD_50MV;
+	/* Enable programming of USB High speed Disconnect threshold */
+	xcvrprg |= CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_EN;
+	out_be32(&usb_phy->port1.xcvrprg, xcvrprg);
+
+	xcvrprg = in_be32(&usb_phy->port2.xcvrprg);
+	/* Increase Disconnect Threshold by 50mV */
+	xcvrprg &= ~CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_MASK |
+						INC_DCNT_THRESHOLD_50MV;
+	/* Enable programming of USB High speed Disconnect threshold */
+	xcvrprg |= CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_EN;
+	out_be32(&usb_phy->port2.xcvrprg, xcvrprg);
+#else
 	u32 temp = 0;
 	u32 status = in_be32(&usb_phy->status1);
 
@@ -275,6 +293,7 @@ void fsl_erratum_a006261_workaround(struct ccsr_usb_phy __iomem *usb_phy)
 
 	temp = squelch_prog_rd_3_5 << CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_3;
 	out_be32(&usb_phy->config2, in_be32(&usb_phy->config2) | temp);
+#endif
 }
 #endif
 
@@ -784,7 +803,12 @@ skip_l2:
 		if (IS_SVR_REV(svr, 1, 0))
 			fsl_erratum_a006918_workaround();
 #endif
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy);
 #endif
+
+#endif /* CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE */
 
 	/* On P204x/P304x/P5020 Rev1.0, USB transmit will result internal
 	 * multi-bit ECC errors, which has impact on performance, so software

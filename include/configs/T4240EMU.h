@@ -35,6 +35,7 @@
 #define CONFIG_SYS_FSL_NO_SERDES	1
 
 #include "t4qds.h"
+#include <asm/config_mpc85xx.h>
 
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_CACHE_FLUSH
@@ -120,6 +121,10 @@
 
 
 #define CONFIG_BOOTDELAY	0
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+#undef CONFIG_SYS_FSL_ERRATUM_A006261
+#endif
 
 /*
  * T4240 has 3 DDR controllers. Default to 3-way interleaving. It can be

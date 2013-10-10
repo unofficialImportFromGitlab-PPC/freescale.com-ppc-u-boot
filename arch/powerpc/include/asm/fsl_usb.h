@@ -70,6 +70,13 @@ struct ccsr_usb_phy {
 #define CONFIG_SYS_FSL_USB_PLLPRG2_MFI (5 << 16)
 #define CONFIG_SYS_FSL_USB_PLLPRG2_PLL_EN (1 << 21)
 #define CONFIG_SYS_FSL_USB_SYS_CLK_VALID (1 << 0)
+#define CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_EN (1 << 7)
+#define CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_MASK (3 << 4)
+
+#define INC_DCNT_THRESHOLD_25MV        (0 << 4)
+#define INC_DCNT_THRESHOLD_50MV        (1 << 4)
+#define DEC_DCNT_THRESHOLD_25MV        (2 << 4)
+#define DEC_DCNT_THRESHOLD_50MV        (3 << 4)
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006918
 extern bool	has_fsl_erratum_a006918;
@@ -96,16 +103,16 @@ struct ccsr_usb_phy {
 #define CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE 1
 #define CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK 0x07
 
-#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
-extern bool has_erratum_a006261(void);
-#endif
-
 #endif
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005728
 /* Retry count for checking UTMI PHY CLK validity */
 #define UTMI_PHY_CLK_VALID_CHK_RETRY 5
 extern bool has_erratum_a005728(void);
+#endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+extern bool has_erratum_a006261(void);
 #endif
 
 #endif /*_ASM_FSL_USB_H_ */
