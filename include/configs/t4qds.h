@@ -106,8 +106,6 @@
 
 #define CONFIG_DDR_SPD
 #define CONFIG_FSL_DDR3
-#define CONFIG_FSL_DDR_INTERACTIVE
-
 
 /*
  * IFC Definitions
