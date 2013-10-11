@@ -30,7 +30,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#ifndef CONFIG_SYS_INIT_L2_ADDR
+#ifdef CONFIG_SYS_RUN_INDDR
 /*
  * Fixed sdram init -- doesn't use serial presence detect.
  */
@@ -119,7 +119,7 @@ void board_init_f(ulong bootflag)
 	out_be32(&par_io[1].cpdir1, 0x00000000);
 #endif
 
-#ifndef CONFIG_SYS_INIT_L2_ADDR
+#ifdef CONFIG_SYS_RUN_INDDR
 	/* Initialize the DDR3 */
 	sdram_init();
 #endif

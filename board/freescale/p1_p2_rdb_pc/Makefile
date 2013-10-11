@@ -37,6 +37,9 @@ ifdef MINIMAL
 COBJS-y	+= spl_minimal.o tlb.o law.o
 
 else
+ifdef CONFIG_SPL_BUILD
+COBJS-y += spl.o
+endif
 
 COBJS-y        += $(BOARD).o
 COBJS-y        += ddr.o
