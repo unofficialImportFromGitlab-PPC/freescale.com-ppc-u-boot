@@ -25,6 +25,12 @@
 
 include $(TOPDIR)/helper.mk
 
+ifeq ($(CONFIG_TPL_BUILD),y)
+SPL_BIN := u-boot-tpl
+else
+SPL_BIN := u-boot-spl
+endif
+
 ifeq ($(CURDIR),$(SRCTREE))
 dir :=
 else
@@ -34,7 +40,11 @@ endif
 ifneq ($(OBJTREE),$(SRCTREE))
 # Create object files for SPL in a separate directory
 ifeq ($(CONFIG_SPL_BUILD),y)
+ifeq ($(CONFIG_TPL_BUILD),y)
+obj := $(if $(dir),$(TPLTREE)/$(dir)/,$(TPLTREE)/)
+else
 obj := $(if $(dir),$(SPLTREE)/$(dir)/,$(SPLTREE)/)
+endif
 else
 obj := $(if $(dir),$(OBJTREE)/$(dir)/,$(OBJTREE)/)
 endif
@@ -44,8 +54,12 @@ $(shell mkdir -p $(obj))
 else
 # Create object files for SPL in a separate directory
 ifeq ($(CONFIG_SPL_BUILD),y)
+ifeq ($(CONFIG_TPL_BUILD),y)
+obj := $(if $(dir),$(TPLTREE)/$(dir)/,$(TPLTREE)/)
+else
 obj := $(if $(dir),$(SPLTREE)/$(dir)/,$(SPLTREE)/)
 
+endif
 $(shell mkdir -p $(obj))
 else
 obj :=
@@ -156,12 +170,17 @@ CHECK	= sparse
 #########################################################################
 
 # Load generated board configuration
+ifeq ($(CONFIG_TPL_BUILD),y)
+# Include TPL autoconf
+sinclude $(OBJTREE)/include/tpl-autoconf.mk
+else
 ifeq ($(CONFIG_SPL_BUILD),y)
 # Include SPL autoconf
 sinclude $(OBJTREE)/include/spl-autoconf.mk
 else
 # Include normal autoconf
 sinclude $(OBJTREE)/include/autoconf.mk
+endif
 endif
 sinclude $(OBJTREE)/include/config.mk
 
@@ -223,8 +242,15 @@ ifneq ($(CONFIG_SPL_PAD_TO),)
 CPPFLAGS += -DCONFIG_SPL_PAD_TO=$(CONFIG_SPL_PAD_TO)
 endif
 
+ifneq ($(CONFIG_TPL_PAD_TO),)
+CPPFLAGS += -DCONFIG_TPL_PAD_TO=$(CONFIG_TPL_PAD_TO)
+endif
+
 ifeq ($(CONFIG_SPL_BUILD),y)
 CPPFLAGS += -DCONFIG_SPL_BUILD
+ifeq ($(CONFIG_TPL_BUILD),y)
+CPPFLAGS += -DCONFIG_TPL_BUILD
+endif
 endif
 
 ifneq ($(RESET_VECTOR_ADDRESS),)
@@ -279,9 +305,9 @@ ifneq ($(CONFIG_SYS_TEXT_BASE),)
 LDFLAGS_u-boot += -Ttext $(CONFIG_SYS_TEXT_BASE)
 endif
 
-LDFLAGS_u-boot-spl += -T $(obj)u-boot-spl.lds $(LDFLAGS_FINAL)
+LDFLAGS_$(SPL_BIN) += -T $(obj)u-boot-spl.lds $(LDFLAGS_FINAL)
 ifneq ($(CONFIG_SPL_TEXT_BASE),)
-LDFLAGS_u-boot-spl += -Ttext $(CONFIG_SPL_TEXT_BASE)
+LDFLAGS_$(SPL_BIN) += -Ttext $(CONFIG_SPL_TEXT_BASE)
 endif
 
 # Linus' kernel sanity checking tool

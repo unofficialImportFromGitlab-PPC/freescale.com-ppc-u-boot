@@ -2930,6 +2930,17 @@ FIT uImage format:
 		use an arch-specific makefile fragment instead, for
 		example if more than one image needs to be produced.
 
+- TPL framework
+		CONFIG_TPL
+		Enable building of TPL globally.
+
+		CONFIG_TPL_PAD_TO
+		Image offset to which the TPL should be padded before appending
+		the TPL payload. By default, this is defined as
+		CONFIG_SPL_MAX_SIZE, or 0 if CONFIG_SPL_MAX_SIZE is undefined.
+		CONFIG_SPL_PAD_TO must be either 0, meaning to append the SPL
+		payload without any padding, or >= CONFIG_SPL_MAX_SIZE.
+
 Modem Support:
 --------------
 
@@ -3851,6 +3862,11 @@ Low Level (hardware related) configuration options:
 		Modifies the behaviour of start.S when compiling a loader
 		that is executed before the actual U-Boot. E.g. when
 		compiling a NAND SPL.
+
+- CONFIG_TPL_BUILD
+		Modifies the behaviour of start.S  when compiling a loader
+		that is executed after the SPL and before the actual U-Boot.
+		It is loaded by the SPL.
 
 - CONFIG_SYS_MPC85XX_NO_RESETVEC
 		Only for 85xx systems. If this variable is specified, the section
