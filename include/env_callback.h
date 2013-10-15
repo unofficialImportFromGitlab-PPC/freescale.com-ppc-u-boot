@@ -68,7 +68,7 @@ void env_callback_init(ENTRY *var_entry);
  * when associated through the ".callbacks" environment variable, the callback
  * will be executed any time the variable is inserted, overwritten, or deleted.
  */
-#if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_SPL_ENV_SUPPORT)
+#ifdef CONFIG_SPL_BUILD
 #define U_BOOT_ENV_CALLBACK(name, callback) \
 	static inline void _u_boot_env_noop_##name(void) \
 	{ \

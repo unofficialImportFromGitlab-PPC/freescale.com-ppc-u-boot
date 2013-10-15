@@ -851,7 +851,11 @@
  * avoid the hang issue.
  */
 #if defined(CONFIG_P2020RDB)
+#ifdef CONFIG_SPL_BUILD
+#define CONFIG_ENV_SIZE		0x2000
+#else
 #define CONFIG_ENV_SIZE		CONFIG_ENV_SECT_SIZE
+#endif
 #else
 #define CONFIG_ENV_SIZE		0x2000	/* 8KB */
 #endif
