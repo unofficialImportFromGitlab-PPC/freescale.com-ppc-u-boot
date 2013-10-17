@@ -7,20 +7,7 @@
  * Copyright (c) 2008 Freescale Semiconductor, Inc.
  * Author: Scott Wood <scottwood@freescale.com>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -72,20 +59,20 @@ static int nand_load_image(uint32_t offs, unsigned int uboot_size, void *vdst)
 	if (large) {
 		fmr |= FMR_ECCM;
 		out_be32(&regs->fcr, (NAND_CMD_READ0 << FCR_CMD0_SHIFT) |
-		                     (NAND_CMD_READSTART << FCR_CMD1_SHIFT));
+				     (NAND_CMD_READSTART << FCR_CMD1_SHIFT));
 		out_be32(&regs->fir,
-		         (FIR_OP_CW0 << FIR_OP0_SHIFT) |
-		         (FIR_OP_CA  << FIR_OP1_SHIFT) |
-		         (FIR_OP_PA  << FIR_OP2_SHIFT) |
-		         (FIR_OP_CW1 << FIR_OP3_SHIFT) |
-		         (FIR_OP_RBW << FIR_OP4_SHIFT));
+			 (FIR_OP_CW0 << FIR_OP0_SHIFT) |
+			 (FIR_OP_CA  << FIR_OP1_SHIFT) |
+			 (FIR_OP_PA  << FIR_OP2_SHIFT) |
+			 (FIR_OP_CW1 << FIR_OP3_SHIFT) |
+			 (FIR_OP_RBW << FIR_OP4_SHIFT));
 	} else {
 		out_be32(&regs->fcr, NAND_CMD_READ0 << FCR_CMD0_SHIFT);
 		out_be32(&regs->fir,
-		         (FIR_OP_CW0 << FIR_OP0_SHIFT) |
-		         (FIR_OP_CA  << FIR_OP1_SHIFT) |
-		         (FIR_OP_PA  << FIR_OP2_SHIFT) |
-		         (FIR_OP_RBW << FIR_OP3_SHIFT));
+			 (FIR_OP_CW0 << FIR_OP0_SHIFT) |
+			 (FIR_OP_CA  << FIR_OP1_SHIFT) |
+			 (FIR_OP_PA  << FIR_OP2_SHIFT) |
+			 (FIR_OP_RBW << FIR_OP3_SHIFT));
 	}
 
 	out_be32(&regs->fbcr, 0);

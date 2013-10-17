@@ -3,29 +3,11 @@
  *
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * This software may be used and distributed according to the
- * terms of the GNU Public License, Version 2, incorporated
- * herein by reference.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * Version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef _ASM_FSL_USB_H_
 #define _ASM_FSL_USB_H_
-
-#include <stdbool.h>
 
 #ifdef CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE
 struct ccsr_usb_port_ctrl {
@@ -82,7 +64,7 @@ struct ccsr_usb_phy {
 	u32	usb_enable_override;
 	u8	res[0xe4];
 };
-#define CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE 1
+#define	CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE	1
 #endif
 
 #endif /*_ASM_FSL_USB_H_ */

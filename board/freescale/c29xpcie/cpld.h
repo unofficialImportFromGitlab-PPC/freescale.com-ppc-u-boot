@@ -3,10 +3,7 @@
  * Author: Mingkai Hu <Mingkai.Hu@freescale.com>
  *         Po Liu <Po.Liu@freescale.com>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * SPDX-License-Identifier:	GPL-2.0+
  *
  * This file provides support for the ngPIXIS, a board-specific FPGA used on
  * some Freescale reference boards.
@@ -35,19 +32,9 @@ struct cpld_data {
 	u8 bootcfg4;	/* 0x1b - Boot configure 4 Register */
 };
 
-/* Pointer to the CPLD register set */
-#define cpld ((struct cpld_data *)CONFIG_SYS_CPLD_BASE)
-
-u8 cpld_read(unsigned int reg);
-void cpld_write(unsigned int reg, u8 value);
-
 #define CPLD_BANKSEL_EN		0x02
 #define CPLD_BANKSEL_MASK	0x3f
 #define CPLD_SELECT_BANK1	0xc0
 #define CPLD_SELECT_BANK2	0x80
 #define CPLD_SELECT_BANK3	0x40
 #define CPLD_SELECT_BANK4	0x00
-
-#define CPLD_READ(reg) cpld_read(offsetof(struct cpld_data, reg))
-#define CPLD_WRITE(reg, value) cpld_write(offsetof(struct cpld_data, reg), \
-						value)

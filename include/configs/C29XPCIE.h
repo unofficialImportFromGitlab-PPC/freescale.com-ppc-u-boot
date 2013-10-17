@@ -1,23 +1,7 @@
 /*
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /*
@@ -27,24 +11,10 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#ifdef CONFIG_36BIT
 #define CONFIG_PHYS_64BIT
-#endif
 
-#ifdef CONFIG_C291PCIE
-#define CONFIG_C291
-#endif
-
-#ifdef CONFIG_C292PCIE
-#define CONFIG_C292
-#endif
-
-#ifdef CONFIG_C293PCIE
-#define CONFIG_C293
-#endif
-
-#if defined(CONFIG_C291) || defined(CONFIG_C292) || defined(CONFIG_C293)
-#define CONFIG_C29X
+#ifdef CONFIG_C29XPCIE
+#define CONFIG_PPC_C29X
 #endif
 
 #ifdef CONFIG_SPIFLASH
@@ -73,10 +43,10 @@
 #define CONFIG_SYS_HAS_SERDES		/* common SERDES init code */
 
 #define CONFIG_PCI			/* Enable PCI/PCIE */
-#define CONFIG_PCI_INDIRECT_BRIDGE
 #ifdef CONFIG_PCI
 #define CONFIG_PCIE1			/* PCIE controler 1 (slot 1) */
 #define CONFIG_FSL_PCI_INIT		/* Use common FSL init code */
+#define CONFIG_PCI_INDIRECT_BRIDGE
 #define CONFIG_FSL_PCIE_RESET		/* need PCIe reset errata */
 #define CONFIG_SYS_PCI_64BIT		/* enable 64-bit PCI resources */
 
@@ -85,13 +55,6 @@
 
 #define CONFIG_E1000
 
-/* Add Sil3132 support */
-#define CONFIG_CMD_SATA
-#define CONFIG_SATA_SIL
-#define CONFIG_SYS_SATA_MAX_DEVICE  1
-#define CONFIG_LIBATA
-#define CONFIG_LBA48
-
 /*
  * PCI Windows
  * Memory space is mapped 1-1, but I/O space must start from 0.
@@ -99,22 +62,13 @@
 /* controller 1, Slot 1, tgtid 1, Base address a000 */
 #define CONFIG_SYS_PCIE1_NAME		"Slot 1"
 #define CONFIG_SYS_PCIE1_MEM_VIRT	0x80000000
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_PCIE1_MEM_BUS	0x80000000
 #define CONFIG_SYS_PCIE1_MEM_PHYS	0xc00000000ull
-#else
-#define CONFIG_SYS_PCIE1_MEM_BUS	0x80000000
-#define CONFIG_SYS_PCIE1_MEM_PHYS	0x80000000
-#endif
 #define CONFIG_SYS_PCIE1_MEM_SIZE	0x10000000	/* 256M */
 #define CONFIG_SYS_PCIE1_IO_VIRT	0xffc00000
 #define CONFIG_SYS_PCIE1_IO_BUS		0x00000000
 #define CONFIG_SYS_PCIE1_IO_SIZE	0x00010000	/* 64k */
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_PCIE1_IO_PHYS	0xfffc00000ull
-#else
-#define CONFIG_SYS_PCIE1_IO_PHYS	0xffc00000
-#endif
 
 #define CONFIG_PCI_PNP			/* do pci plug-and-play */
 
@@ -141,10 +95,8 @@
 
 #define CONFIG_ENABLE_36BIT_PHYS
 
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_ADDR_MAP			1
 #define CONFIG_SYS_NUM_ADDR_MAP		16	/* number of TLB1 entries */
-#endif
 
 #define CONFIG_SYS_MEMTEST_START	0x00200000
 #define CONFIG_SYS_MEMTEST_END		0x00400000
@@ -157,12 +109,10 @@
 #define SPD_EEPROM_ADDRESS		0x50
 #define CONFIG_SYS_DDR_RAW_TIMING
 
+/* DDR ECC Setup*/
 #define CONFIG_DDR_ECC
-
-#ifdef CONFIG_DDR_ECC
 #define CONFIG_MEM_INIT_VALUE		0xDeadBeef
 #define CONFIG_ECC_INIT_VIA_DDRCONTROLLER
-#endif
 
 #define CONFIG_SYS_SDRAM_SIZE		512
 #define CONFIG_SYS_DDR_SDRAM_BASE	0x00000000
@@ -176,12 +126,8 @@
 
 /* Platform SRAM setting  */
 #define CONFIG_SYS_PLATFORM_SRAM_BASE	0xffb00000
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_PLATFORM_SRAM_BASE_PHYS \
 			(0xf00000000ull | CONFIG_SYS_PLATFORM_SRAM_BASE)
-#else
-#define CONFIG_SYS_PLATFORM_SRAM_BASE_PHYS CONFIG_SYS_PLATFORM_SRAM_BASE
-#endif
 #define CONFIG_SYS_PLATFORM_SRAM_SIZE	(512 << 10)
 
 /*
@@ -191,11 +137,7 @@
 #define CONFIG_SYS_FLASH_BASE		0xec000000
 #define CONFIG_SYS_MAX_FLASH_SECT	512	/* 64M */
 
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_FLASH_BASE_PHYS	(0xf00000000ull | CONFIG_SYS_FLASH_BASE)
-#else
-#define CONFIG_SYS_FLASH_BASE_PHYS	CONFIG_SYS_FLASH_BASE
-#endif
 
 #define CONFIG_SYS_FLASH_BANKS_LIST	{ CONFIG_SYS_FLASH_BASE_PHYS }
 #define CONFIG_SYS_MAX_FLASH_BANKS	1
@@ -234,11 +176,7 @@
 /* NAND Flash on IFC */
 #define CONFIG_NAND_FSL_IFC
 #define CONFIG_SYS_NAND_BASE		0xff800000
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_NAND_BASE_PHYS	0xfff800000ull
-#else
-#define CONFIG_SYS_NAND_BASE_PHYS	CONFIG_SYS_NAND_BASE
-#endif
 
 #define CONFIG_SYS_NAND_BASE_LIST	{ CONFIG_SYS_NAND_BASE }
 
@@ -293,12 +231,8 @@
 
 /* CPLD on IFC, selected by CS2 */
 #define CONFIG_SYS_CPLD_BASE		0xffdf0000
-#ifdef CONFIG_PHYS_64BIT
 #define CONFIG_SYS_CPLD_BASE_PHYS	(0xf00000000ull \
 					| CONFIG_SYS_CPLD_BASE)
-#else
-#define CONFIG_SYS_CPLD_BASE_PHYS	CONFIG_SYS_CPLD_BASE
-#endif
 
 #define CONFIG_SYS_CSPR2	(CSPR_PHYS_ADDR(CONFIG_SYS_CPLD_BASE_PHYS) \
 				| CSPR_PORT_SIZE_8 \
@@ -320,8 +254,6 @@
 #if defined(CONFIG_RAMBOOT_SPIFLASH)
 #define CONFIG_SYS_RAMBOOT
 #define CONFIG_SYS_EXTRA_ENV_RELOC
-#else
-#undef CONFIG_SYS_RAMBOOT
 #endif
 
 #define CONFIG_BOARD_EARLY_INIT_R
@@ -355,9 +287,6 @@
 
 /* Use the HUSH parser */
 #define CONFIG_SYS_HUSH_PARSER
-#ifdef	CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
-#endif
 
 /*
  * Pass open firmware flat tree
@@ -373,10 +302,10 @@
 #define CONFIG_SYS_I2C
 #define CONFIG_SYS_I2C_FSL
 #define CONFIG_SYS_FSL_I2C_SPEED	400000
-#define CONFIG_SYS_FSL_I2C_SLAVE	0x7F
-#define CONFIG_SYS_FSL_I2C_OFFSET	0x3000
 #define CONFIG_SYS_FSL_I2C2_SPEED	400000
+#define CONFIG_SYS_FSL_I2C_SLAVE	0x7F
 #define CONFIG_SYS_FSL_I2C2_SLAVE	0x7F
+#define CONFIG_SYS_FSL_I2C_OFFSET	0x3000
 #define CONFIG_SYS_FSL_I2C2_OFFSET	0x3100
 
 /* I2C EEPROM */
@@ -399,10 +328,7 @@
 #define CONFIG_SF_DEFAULT_MODE		SPI_MODE_0
 
 #ifdef CONFIG_TSEC_ENET
-#ifndef CONFIG_NET_MULTI
 #define CONFIG_NET_MULTI
-#endif
-
 #define CONFIG_MII			/* MII PHY management */
 #define CONFIG_MII_DEFAULT_TSEC	1	/* Allow unregistered phys */
 #define CONFIG_TSEC1		1
@@ -472,24 +398,12 @@
 #define CONFIG_SYS_LOAD_ADDR	0x2000000	/* default load address */
 #define CONFIG_SYS_PROMPT	"=> "		/* Monitor Command Prompt */
 
-#ifdef CONFIG_CMD_KGDB
-#define CONFIG_SYS_CBSIZE	1024		/* Console I/O Buffer Size */
-#else
 #define CONFIG_SYS_CBSIZE	256		/* Console I/O Buffer Size */
-#endif
-#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)
+#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
 						/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS	16		/* max number of command args */
 #define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE/* Boot Argument Buffer Size */
 #define CONFIG_SYS_HZ		1000		/* dec freq: 1ms ticks */
-
-/*
- * Internal Definitions
- *
- * Boot Flags
- */
-#define BOOTFLAG_COLD	0x01		/* Normal Power-On: Boot from FLASH */
-#define BOOTFLAG_WARM	0x02		/* Software reboot */
 
 /*
  * For booting Linux, the board info and command line data
@@ -498,11 +412,6 @@
  */
 #define CONFIG_SYS_BOOTMAPSZ	(64 << 20) /* Initial Memory map for Linux */
 #define CONFIG_SYS_BOOTM_LEN	(64 << 20) /* Increase max gunzip size */
-
-#ifdef CONFIG_CMD_KGDB
-#define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
-#endif
 
 /*
  * Environment Configuration
@@ -520,12 +429,12 @@
 /* default location for tftp and bootm */
 #define CONFIG_LOADADDR		1000000
 
-#define CONFIG_BOOTDELAY	10	/* -1 disables auto-boot */
+#define CONFIG_BOOTDELAY	-1	/* -1 disables auto-boot */
 
 #define CONFIG_BAUDRATE		115200
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
-	"hwconfig=fsl_ddr:ecc=off\0"	\
+	"hwconfig=" __stringify(CONFIG_DEF_HWCONFIG)  "\0"	\
 	"netdev=eth0\0"						\
 	"uboot=" __stringify(CONFIG_UBOOTPATH) "\0"		\
 	"loadaddr=1000000\0"				\
@@ -533,24 +442,8 @@
 	"ramdiskaddr=2000000\0"				\
 	"ramdiskfile=rootfs.ext2.gz.uboot\0"		\
 	"fdtaddr=c00000\0"				\
-	"fdtfile=c293pcie.dtb\0"			\
-	"bdev=sda1\0"					\
-	"hwconfig=usb1:dr_mode=host,phy_type=utmi\0"	\
+	"fdtfile=name/of/device-tree.dtb\0"			\
 	"othbootargs=ramdisk_size=600000\0"		\
-	"usbfatboot=setenv bootargs root=/dev/ram rw "	\
-	"console=$consoledev,$baudrate $othbootargs; "	\
-	"usb start;"					\
-	"fatload usb 0:2 $loadaddr $bootfile;"		\
-	"fatload usb 0:2 $fdtaddr $fdtfile;"		\
-	"fatload usb 0:2 $ramdiskaddr $ramdiskfile;"	\
-	"bootm $loadaddr $ramdiskaddr $fdtaddr\0"	\
-	"usbext2boot=setenv bootargs root=/dev/ram rw "	\
-	"console=$consoledev,$baudrate $othbootargs; "	\
-	"usb start;"					\
-	"ext2load usb 0:4 $loadaddr $bootfile;"		\
-	"ext2load usb 0:4 $fdtaddr $fdtfile;"		\
-	"ext2load usb 0:4 $ramdiskaddr $ramdiskfile;"	\
-	"bootm $loadaddr $ramdiskaddr $fdtaddr\0"	\
 
 #define CONFIG_RAMBOOTCOMMAND			\
 	"setenv bootargs root=/dev/ram rw "	\

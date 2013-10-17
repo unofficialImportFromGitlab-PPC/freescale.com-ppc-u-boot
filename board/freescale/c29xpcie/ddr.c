@@ -1,10 +1,7 @@
 /*
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -14,8 +11,8 @@
 #include <asm/fsl_ddr_dimm_params.h>
 
 #include "cpld.h"
+#define C29XPCIE_HARDWARE_REVA 0x40
 
-#define C29XPCIE_HARDWARE_REVA	0x40
 /*
  * Micron MT41J128M16HA-15E
  * */
@@ -34,7 +31,7 @@ dimm_params_t ddr_raw_timing = {
 	.burst_lengths_bitmask = 0x0c,
 
 	.tckmin_x_ps = 1650,
-	.caslat_x = 0x7e << 4,	/* 5,6,7,8,9,10 */
+	.caslat_x = 0x7e << 4,  /* 5,6,7,8,9,10 */
 	.taa_ps = 14050,
 	.twr_ps = 15000,
 	.trcd_ps = 13500,
@@ -69,6 +66,8 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 				unsigned int ctrl_num)
 {
 	int i;
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+
 	popts->clk_adjust = 4;
 	popts->cpo_override = 0x1f;
 	popts->write_data_delay = 4;
@@ -86,7 +85,7 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->trwt_override = 1;
 	popts->trwt = 0;
 
-	if (CPLD_READ(hwver) == C29XPCIE_HARDWARE_REVA)
+	if (in_8(&cpld_data->hwver) == C29XPCIE_HARDWARE_REVA)
 		popts->ecc_mode = 0;
 
 	for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {

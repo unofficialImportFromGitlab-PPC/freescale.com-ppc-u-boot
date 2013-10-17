@@ -22,7 +22,7 @@
 #ifndef USB_EHCI_H
 #define USB_EHCI_H
 
-#include <stdbool.h>
+#include <usb.h>
 
 #if !defined(CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS)
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	2
@@ -254,7 +254,7 @@ struct QH {
 	};
 };
 
-#define	PORTSC_FSL_PFSC	(1 << 24)	/* PFSC bit to disable HS chirping */
+#define	PORTSC_FSL_PFSC (1 << 24)	/* PFSC bit to disable HS chirping */
 
 struct ehci_ctrl {
 	struct ehci_hccr *hccr;	/* R/O registers, not need for volatile */
@@ -265,7 +265,7 @@ struct ehci_ctrl {
 	struct QH periodic_queue __aligned(USB_DMA_MINALIGN);
 	uint32_t *periodic_list;
 	int ntds;
-	bool has_fsl_erratum_a005275;	/* Freescale HS silicon quirk */
+	bool has_fsl_erratum_a005275;   /* Freescale HS silicon quirk */
 };
 
 /* Low level init functions */

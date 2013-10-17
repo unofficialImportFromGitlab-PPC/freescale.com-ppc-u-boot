@@ -6,23 +6,7 @@
  * (C) Copyright 2001
  * Gerald Van Baren, Custom IDEAS, vanbaren@cideas.com.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  *
  * The original I2C interface was
  *   (C) 2000 by Paolo Scaffardi (arsenio@tin.it)
@@ -195,27 +179,6 @@ void i2c_init(int speed, int slaveaddr);
 void i2c_init_board(void);
 #ifdef CONFIG_SYS_I2C_BOARD_LATE_INIT
 void i2c_board_late_init(void);
-#endif
-
-#if defined(CONFIG_I2C_MUX)
-
-typedef struct _mux {
-	uchar	chip;
-	uchar	channel;
-	char	*name;
-	struct _mux	*next;
-} I2C_MUX;
-
-typedef struct _mux_device {
-	int	busid;
-	I2C_MUX	*mux;	/* List of muxes, to reach the device */
-	struct _mux_device	*next;
-} I2C_MUX_DEVICE;
-
-I2C_MUX_DEVICE	*i2c_mux_search_device(int id);
-I2C_MUX_DEVICE *i2c_mux_ident_muxstring (uchar *buf);
-int i2x_mux_select_mux(int bus);
-int i2c_mux_ident_muxstring_f (uchar *buf);
 #endif
 
 #ifdef CONFIG_SYS_I2C
@@ -427,7 +390,7 @@ unsigned int i2c_get_bus_speed(void);
 # if !defined(CONFIG_SYS_MAX_I2C_BUS)
 #  define CONFIG_SYS_MAX_I2C_BUS		2
 # endif
-# define I2C_MULTI_BUS				0
+# define I2C_MULTI_BUS				1
 #else
 # define CONFIG_SYS_MAX_I2C_BUS		1
 # define I2C_MULTI_BUS				0

@@ -1,23 +1,7 @@
 /*
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /*
@@ -45,7 +29,6 @@
 #define CONFIG_SYS_CLK_FREQ	100000000
 #define CONFIG_DDR_CLK_FREQ	133333333
 #define CONFIG_FSL_TBCLK_EXTRA_DIV 100
-
 
 /*
  * DDR Setup
@@ -94,11 +77,9 @@
 #define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NOR_FTIM2
 #define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NOR_FTIM3
 
-
 /* I2C */
 #define CONFIG_SYS_FSL_I2C_SPEED	4000000	/* faster speed for emulator */
 #define CONFIG_SYS_FSL_I2C2_SPEED	4000000
-
 
 /* Qman/Bman */
 #define CONFIG_SYS_DPAA_QBMAN		/* Support Q/Bman */
@@ -115,15 +96,13 @@
 #define CONFIG_SYS_DPAA_PME
 #define CONFIG_SYS_PMAN
 #define CONFIG_SYS_DPAA_DCE
-#define CONFIG_SYS_DPAA_RMAN		/* RMan */
+#define CONFIG_SYS_DPAA_RMAN
 #define CONFIG_SYS_INTERLAKEN
 
 #define CONFIG_SYS_QE_FMAN_FW_IN_NOR
 #define CONFIG_SYS_QE_FMAN_FW_ADDR		0xEFF40000
 #define CONFIG_SYS_QE_FMAN_FW_LENGTH	0x10000
 #define CONFIG_SYS_FDT_PAD		(0x3000 + CONFIG_SYS_QE_FMAN_FW_LENGTH)
-
-
 
 #define CONFIG_BOOTDELAY	0
 

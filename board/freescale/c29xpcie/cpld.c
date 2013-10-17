@@ -3,10 +3,7 @@
  * Author: Mingkai Hu <Mingkai.hu@freescale.com>
  *         Po Liu <Po.Liu@freescale.com>
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * SPDX-License-Identifier:	GPL-2.0+
  *
  * This file provides support for the board-specific CPLD used on some Freescale
  * reference boards.
@@ -23,48 +20,31 @@
 #include <asm/io.h>
 
 #include "cpld.h"
-
-static u8 __cpld_read(unsigned int reg)
-{
-	void *p = (void *)CONFIG_SYS_CPLD_BASE;
-
-	return in_8(p + reg);
-}
-
-u8 cpld_read(unsigned int reg) __attribute__((weak, alias("__cpld_read")));
-
-static void __cpld_write(unsigned int reg, u8 value)
-{
-	void *p = (void *)CONFIG_SYS_CPLD_BASE;
-
-	out_8(p + reg, value);
-}
-
-void cpld_write(unsigned int reg, u8 value)
-	__attribute__((weak, alias("__cpld_write")));
-
 /**
  * Set the boot bank to the alternate bank
  */
-void __cpld_set_altbank(u8 banksel)
+void cpld_set_altbank(u8 banksel)
 {
-	u8 reg11 = CPLD_READ(flhcsr);
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+	u8 reg11;
+
+	reg11 = in_8(&cpld_data->flhcsr);
 
 	switch (banksel) {
 	case 1:
-		CPLD_WRITE(flhcsr, (reg11 & CPLD_BANKSEL_MASK)
+		out_8(&cpld_data->flhcsr, (reg11 & CPLD_BANKSEL_MASK)
 			| CPLD_BANKSEL_EN | CPLD_SELECT_BANK1);
 		break;
 	case 2:
-		CPLD_WRITE(flhcsr, (reg11 & CPLD_BANKSEL_MASK)
+		out_8(&cpld_data->flhcsr, (reg11 & CPLD_BANKSEL_MASK)
 			| CPLD_BANKSEL_EN | CPLD_SELECT_BANK2);
 		break;
 	case 3:
-		CPLD_WRITE(flhcsr, (reg11 & CPLD_BANKSEL_MASK)
+		out_8(&cpld_data->flhcsr, (reg11 & CPLD_BANKSEL_MASK)
 			| CPLD_BANKSEL_EN | CPLD_SELECT_BANK3);
 		break;
 	case 4:
-		CPLD_WRITE(flhcsr, (reg11 & CPLD_BANKSEL_MASK)
+		out_8(&cpld_data->flhcsr, (reg11 & CPLD_BANKSEL_MASK)
 			| CPLD_BANKSEL_EN | CPLD_SELECT_BANK4);
 		break;
 	default:
@@ -76,39 +56,35 @@ void __cpld_set_altbank(u8 banksel)
 	do_reset(NULL, 0, 0, NULL);
 }
 
-void cpld_set_altbank(u8 banksel)
-	__attribute__((weak, alias("__cpld_set_altbank")));
-
 /**
  * Set the boot bank to the default bank
  */
-void __cpld_set_defbank(void)
-{
-	__cpld_set_altbank(4);
-}
-
 void cpld_set_defbank(void)
-	__attribute__((weak, alias("__cpld_set_defbank")));
+{
+	cpld_set_altbank(4);
+}
 
 #ifdef DEBUG
 static void cpld_dump_regs(void)
 {
-	printf("chipid1		= 0x%02x\n", CPLD_READ(chipid1));
-	printf("chipid2		= 0x%02x\n", CPLD_READ(chipid2));
-	printf("hwver		= 0x%02x\n", CPLD_READ(hwver));
-	printf("cpldver		= 0x%02x\n", CPLD_READ(cpldver));
-	printf("rstcon		= 0x%02x\n", CPLD_READ(rstcon));
-	printf("flhcsr		= 0x%02x\n", CPLD_READ(flhcsr));
-	printf("wdcsr		= 0x%02x\n", CPLD_READ(wdcsr));
-	printf("wdkick		= 0x%02x\n", CPLD_READ(wdkick));
-	printf("fancsr		= 0x%02x\n", CPLD_READ(fancsr));
-	printf("ledcsr		= 0x%02x\n", CPLD_READ(ledcsr));
-	printf("misc		= 0x%02x\n", CPLD_READ(misccsr));
-	printf("bootor		= 0x%02x\n", CPLD_READ(bootor));
-	printf("bootcfg1	= 0x%02x\n", CPLD_READ(bootcfg1));
-	printf("bootcfg2	= 0x%02x\n", CPLD_READ(bootcfg2));
-	printf("bootcfg3	= 0x%02x\n", CPLD_READ(bootcfg3));
-	printf("bootcfg4	= 0x%02x\n", CPLD_READ(bootcfg4));
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+
+	printf("chipid1		= 0x%02x\n", in_8(&cpld_data->chipid1));
+	printf("chipid2		= 0x%02x\n", in_8(&cpld_data->chipid2));
+	printf("hwver		= 0x%02x\n", in_8(&cpld_data->hwver));
+	printf("cpldver		= 0x%02x\n", in_8(&cpld_data->cpldver));
+	printf("rstcon		= 0x%02x\n", in_8(&cpld_data->rstcon));
+	printf("flhcsr		= 0x%02x\n", in_8(&cpld_data->flhcsr));
+	printf("wdcsr		= 0x%02x\n", in_8(&cpld_data->wdcsr));
+	printf("wdkick		= 0x%02x\n", in_8(&cpld_data->wdkick));
+	printf("fancsr		= 0x%02x\n", in_8(&cpld_data->fancsr));
+	printf("ledcsr		= 0x%02x\n", in_8(&cpld_data->ledcsr));
+	printf("misc		= 0x%02x\n", in_8(&cpld_data->misccsr));
+	printf("bootor		= 0x%02x\n", in_8(&cpld_data->bootor));
+	printf("bootcfg1	= 0x%02x\n", in_8(&cpld_data->bootcfg1));
+	printf("bootcfg2	= 0x%02x\n", in_8(&cpld_data->bootcfg2));
+	printf("bootcfg3	= 0x%02x\n", in_8(&cpld_data->bootcfg3));
+	printf("bootcfg4	= 0x%02x\n", in_8(&cpld_data->bootcfg4));
 	putc('\n');
 }
 #endif

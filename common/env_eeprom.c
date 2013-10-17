@@ -5,23 +5,7 @@
  * (C) Copyright 2001 Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  * Andreas Heppel <aheppel@sysgo.de>
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -49,41 +33,17 @@ static int eeprom_bus_read(unsigned dev_addr, unsigned offset,
 #if defined(CONFIG_I2C_ENV_EEPROM_BUS)
 	int old_bus = i2c_get_bus_num();
 
-#if defined(CONFIG_SYS_I2C)
 	if (old_bus != CONFIG_I2C_ENV_EEPROM_BUS)
 		i2c_set_bus_num(CONFIG_I2C_ENV_EEPROM_BUS);
-#else
-	if (gd->flags & GD_FLG_RELOC) {
-		if (env_eeprom_bus == -1) {
-			I2C_MUX_DEVICE *dev = NULL;
-			dev = i2c_mux_ident_muxstring(
-				(uchar *)CONFIG_I2C_ENV_EEPROM_BUS);
-			if (dev != NULL)
-				env_eeprom_bus = dev->busid;
-			else
-				printf("error adding env eeprom bus.\n");
-		}
-		if (old_bus != env_eeprom_bus) {
-			i2c_set_bus_num(env_eeprom_bus);
-			old_bus = env_eeprom_bus;
-		}
-	} else {
-		rcode = i2c_mux_ident_muxstring_f(
-				(uchar *)CONFIG_I2C_ENV_EEPROM_BUS);
-	}
-#endif
 #endif
 
 	rcode = eeprom_read(dev_addr, offset, buffer, cnt);
 
 #if defined(CONFIG_I2C_ENV_EEPROM_BUS)
-#if defined(CONFIG_SYS_I2C)
-	if (old_bus != CONFIG_I2C_ENV_EEPROM_BUS)
-#else
 	if (old_bus != env_eeprom_bus)
-#endif
 		i2c_set_bus_num(old_bus);
 #endif
+
 	return rcode;
 }
 
@@ -94,14 +54,12 @@ static int eeprom_bus_write(unsigned dev_addr, unsigned offset,
 #if defined(CONFIG_I2C_ENV_EEPROM_BUS)
 	int old_bus = i2c_get_bus_num();
 
-#if defined(CONFIG_SYS_I2C)
 	if (old_bus != CONFIG_I2C_ENV_EEPROM_BUS)
 		i2c_set_bus_num(CONFIG_I2C_ENV_EEPROM_BUS);
-#else
-	rcode = i2c_mux_ident_muxstring_f((uchar *)CONFIG_I2C_ENV_EEPROM_BUS);
 #endif
-#endif
+
 	rcode = eeprom_write(dev_addr, offset, buffer, cnt);
+
 #if defined(CONFIG_I2C_ENV_EEPROM_BUS)
 	i2c_set_bus_num(old_bus);
 #endif

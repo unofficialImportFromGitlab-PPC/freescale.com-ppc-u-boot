@@ -206,15 +206,15 @@ static unsigned int get_i2c_clock(int bus)
 		return gd->arch.i2c1_clk;	/* I2C1 clock */
 }
 
-static int i2c_fixup(const struct fsl_i2c *dev)
+static int fsl_i2c_fixup(const struct fsl_i2c *dev)
 {
 	const unsigned long long timeout = usec2ticks(CONFIG_I2C_MBB_TIMEOUT);
 	unsigned long long timeval = 0;
 	int ret = -1;
 	unsigned int flags = 0;
+
 #ifdef CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 	unsigned int svr = get_svr();
-
 	if ((SVR_SOC_VER(svr) == SVR_8548 && IS_SVR_REV(svr, 3, 1)) ||
 	    (SVR_REV(svr) <= CONFIG_SYS_FSL_A004447_SVR_REV))
 		flags = I2C_CR_BIT6;
@@ -255,9 +255,9 @@ err:
 
 static void fsl_i2c_init(struct i2c_adapter *adap, int speed, int slaveadd)
 {
+	const struct fsl_i2c *dev;
 	const unsigned long long timeout = usec2ticks(CONFIG_I2C_MBB_TIMEOUT);
 	unsigned long long timeval;
-	const struct fsl_i2c *dev;
 
 #ifdef CONFIG_SYS_I2C_INIT_BOARD
 	/* Call board specific i2c bus reset routine before accessing the
@@ -266,7 +266,6 @@ static void fsl_i2c_init(struct i2c_adapter *adap, int speed, int slaveadd)
 	*/
 	i2c_init_board();
 #endif
-
 	dev = (struct fsl_i2c *)i2c_dev[adap->hwadapnr];
 
 	writeb(0, &dev->cr);		/* stop I2C controller */
@@ -281,8 +280,9 @@ static void fsl_i2c_init(struct i2c_adapter *adap, int speed, int slaveadd)
 		if ((get_ticks() - timeval) < timeout)
 			continue;
 
-		if (i2c_fixup(dev))
-			debug("i2c_init: BUS#%d failed to init\n", adap->hwadapnr);
+		if (fsl_i2c_fixup(dev))
+			debug("i2c_init: BUS#%d failed to init\n",
+			      adap->hwadapnr);
 
 		break;
 	}
@@ -455,8 +455,10 @@ fsl_i2c_write(struct i2c_adapter *adap, u8 dev, uint addr, int alen,
 	int i = -1; /* signal error */
 	u8 *a = (u8*)&addr;
 
-	if (i2c_wait4bus(adap) >= 0 &&
-	    i2c_write_addr(adap, dev, I2C_WRITE_BIT, 0) != 0 &&
+	if (i2c_wait4bus(adap) < 0)
+		return -1;
+
+	if (i2c_write_addr(adap, dev, I2C_WRITE_BIT, 0) != 0 &&
 	    __i2c_write(adap, &a[4 - alen], alen) == alen) {
 		i = __i2c_write(adap, data, length);
 	}

@@ -7,23 +7,7 @@
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -206,7 +190,8 @@ static void enable_cpc(void)
 
 	}
 
-	printf("Corenet Platform Cache: %d KB enabled\n", size);
+	puts("Corenet Platform Cache: ");
+	print_size(size * 1024, " enabled\n");
 }
 
 static void invalidate_cpc(void)
@@ -554,28 +539,28 @@ int cpu_init_r(void)
 	case 0x1:
 		if (ver == SVR_8540 || ver == SVR_8560   ||
 		    ver == SVR_8541 || ver == SVR_8555) {
-			puts("128 KB ");
-			/* set L2E=1, L2I=1, & L2BLKSZ=1 (128 Kbyte) */
+			puts("128 KiB ");
+			/* set L2E=1, L2I=1, & L2BLKSZ=1 (128 KiBibyte) */
 			cache_ctl = 0xc4000000;
 		} else {
-			puts("256 KB ");
+			puts("256 KiB ");
 			cache_ctl = 0xc0000000; /* set L2E=1, L2I=1, & L2SRAM=0 */
 		}
 		break;
 	case 0x2:
 		if (ver == SVR_8540 || ver == SVR_8560   ||
 		    ver == SVR_8541 || ver == SVR_8555) {
-			puts("256 KB ");
-			/* set L2E=1, L2I=1, & L2BLKSZ=2 (256 Kbyte) */
+			puts("256 KiB ");
+			/* set L2E=1, L2I=1, & L2BLKSZ=2 (256 KiBibyte) */
 			cache_ctl = 0xc8000000;
 		} else {
-			puts ("512 KB ");
+			puts("512 KiB ");
 			/* set L2E=1, L2I=1, & L2SRAM=0 */
 			cache_ctl = 0xc0000000;
 		}
 		break;
 	case 0x3:
-		puts("1024 KB ");
+		puts("1024 KiB ");
 		/* set L2E=1, L2I=1, & L2SRAM=0 */
 		cache_ctl = 0xc0000000;
 		break;
@@ -623,13 +608,14 @@ int cpu_init_r(void)
 	if (CONFIG_SYS_INIT_L2CSR0 & L2CSR0_L2E) {
 		while (!(mfspr(SPRN_L2CSR0) & L2CSR0_L2E))
 			;
-		printf("%d KB enabled\n", (l2cfg0 & 0x3fff) * 64);
+		print_size((l2cfg0 & 0x3fff) * 64 * 1024, " enabled\n");
 	}
 
 skip_l2:
 #elif defined(CONFIG_SYS_FSL_QORIQ_CHASSIS2) && defined(CONFIG_E6500)
 	if (l2cache->l2csr0 & L2CSR0_L2E)
-		printf("%d KB enabled\n", (l2cache->l2cfg0 & 0x3fff) * 64);
+		print_size((l2cache->l2cfg0 & 0x3fff) * 64 * 1024,
+			   " enabled\n");
 
 	enable_cluster_l2();
 #else

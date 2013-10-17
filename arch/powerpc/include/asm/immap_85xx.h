@@ -6,23 +6,7 @@
  * Copyright(c) 2002,2003 Motorola Inc.
  * Xianghua Xiao (x.xiao@motorola.com)
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef __IMMAP_85xx__
@@ -2170,7 +2154,7 @@ typedef struct ccsr_gur {
 #ifdef CONFIG_MPC8536
 #define MPC85xx_PORPLLSR_DDR_RATIO	0x3e000000
 #define MPC85xx_PORPLLSR_DDR_RATIO_SHIFT	25
-#elif defined(CONFIG_C29X)
+#elif defined(CONFIG_PPC_C29X)
 #define MPC85xx_PORPLLSR_DDR_RATIO	0x00003f00
 #define MPC85xx_PORPLLSR_DDR_RATIO_SHIFT	(9 - ((gur->pordevsr2 \
 					& MPC85xx_PORDEVSR2_DDR_SPD_0) \
@@ -2222,7 +2206,7 @@ typedef struct ccsr_gur {
 #elif defined(CONFIG_BSC9132)
 #define MPC85xx_PORDEVSR_IO_SEL		0x00FE0000
 #define MPC85xx_PORDEVSR_IO_SEL_SHIFT	17
-#elif defined(CONFIG_C29X)
+#elif defined(CONFIG_PPC_C29X)
 #define MPC85xx_PORDEVSR_IO_SEL		0x00e00000
 #define MPC85xx_PORDEVSR_IO_SEL_SHIFT	21
 #else
@@ -2240,7 +2224,7 @@ typedef struct ccsr_gur {
 #define MPC85xx_PORDEVSR_RIO_DEV_ID	0x00000007
 	u32	pordbgmsr;	/* POR debug mode status */
 	u32	pordevsr2;	/* POR I/O device status 2 */
-#if defined(CONFIG_C29X)
+#if defined(CONFIG_PPC_C29X)
 #define MPC85xx_PORDEVSR2_DDR_SPD_0	0x00000008
 #define MPC85xx_PORDEVSR2_DDR_SPD_0_SHIFT	3
 #endif
@@ -2390,7 +2374,7 @@ typedef struct ccsr_gur {
 #define MPC85xx_PMUXCR0_SIM_SEL_MASK	0x0003b000
 #define MPC85xx_PMUXCR0_SIM_SEL		0x00014000
 #endif
-#if defined(CONFIG_C29X)
+#if defined(CONFIG_PPC_C29X)
 #define MPC85xx_PMUXCR_SPI_MASK			0x00000300
 #define MPC85xx_PMUXCR_SPI			0x00000000
 #define MPC85xx_PMUXCR_SPI_GPIO			0x00000100
@@ -3134,13 +3118,8 @@ typedef struct ccsr_snvs_regs {
 #define CONFIG_SYS_MPC85xx_USB2_PHY_OFFSET 0x214100
 #define CONFIG_SYS_MPC85xx_SATA1_OFFSET		0x220000
 #define CONFIG_SYS_MPC85xx_SATA2_OFFSET		0x221000
-#if defined(CONFIG_C29X)
-#define CONFIG_SYS_FSL_SEC_OFFSET		0x80000
-#define CONFIG_SYS_FSL_JR0_OFFSET		0x81000
-#else
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x300000
 #define CONFIG_SYS_FSL_JR0_OFFSET		0x301000
-#endif
 #define CONFIG_SYS_FSL_CORENET_DCE_OFFSET	0x312000
 #define CONFIG_SYS_SNVS_OFFSET			0x314000
 #define CONFIG_SYS_FSL_CORENET_PME_OFFSET	0x316000
@@ -3201,8 +3180,13 @@ typedef struct ccsr_snvs_regs {
 #endif
 #define CONFIG_SYS_MDIO1_OFFSET			0x24000
 #define CONFIG_SYS_MPC85xx_ESDHC_OFFSET		0x2e000
+#if defined(CONFIG_C29X)
+#define CONFIG_SYS_FSL_SEC_OFFSET		0x80000
+#define CONFIG_SYS_FSL_JR0_OFFSET		0x81000
+#else
 #define CONFIG_SYS_FSL_SEC_OFFSET		0x30000
 #define CONFIG_SYS_FSL_JR0_OFFSET		0x31000
+#endif
 #define CONFIG_SYS_MPC85xx_SERDES2_OFFSET	0xE3100
 #define CONFIG_SYS_MPC85xx_SERDES1_OFFSET	0xE3000
 #define CONFIG_SYS_SNVS_OFFSET			0xE6000

@@ -47,7 +47,7 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	ddr_freq = get_ddr_freq(0) / 1000000;
 	while (pbsp->datarate_mhz_high) {
 		if (pbsp->n_ranks == pdimm->n_ranks &&
-		   (pdimm->rank_density >> 30) >= pbsp->rank_GB) {
+		   (pdimm->rank_density >> 30) >= pbsp->rank_gb) {
 			if (ddr_freq <= pbsp->datarate_mhz_high) {
 				popts->cpo_override = pbsp->cpo;
 				popts->write_data_delay =
@@ -80,10 +80,10 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 		panic("DIMM is not supported by this board");
 	}
 found:
-	debug("Found timing match: n_ranks %d, data rate %d, rank_GB %d\n"
+	debug("Found timing match: n_ranks %d, data rate %d, rank_gb %d\n"
 		"\tclk_adjust %d, wrlvl_start %d, wrlvl_ctrl_2 0x%x, "
 		"wrlvl_ctrl_3 0x%x\n",
-		pbsp->n_ranks, pbsp->datarate_mhz_high, pbsp->rank_GB,
+		pbsp->n_ranks, pbsp->datarate_mhz_high, pbsp->rank_gb,
 		pbsp->clk_adjust, pbsp->wrlvl_start, pbsp->wrlvl_ctl_2,
 		pbsp->wrlvl_ctl_3);
 

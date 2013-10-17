@@ -1,21 +1,7 @@
 /*
  * Copyright 2011-2012 Freescale Semiconductor, Inc.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
- *
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef _ASM_MPC85xx_CONFIG_H_
@@ -84,9 +70,9 @@
 #define CONFIG_SYS_FSL_SRIO_IB_WIN_NUM	5
 #define CONFIG_SYS_FSL_RMU
 #define CONFIG_SYS_FSL_SRIO_MSG_UNIT_NUM	2
+#define CONFIG_SYS_FSL_ERRATUM_A005125
 #define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 #define CONFIG_SYS_FSL_A004447_SVR_REV	0x00
-#define CONFIG_SYS_FSL_ERRATUM_A005125
 
 #elif defined(CONFIG_MPC8555)
 #define CONFIG_MAX_CPUS			1
@@ -156,10 +142,10 @@
 #define CONFIG_SYS_FSL_ERRATUM_P1010_A003549
 #define CONFIG_SYS_FSL_ERRATUM_SEC_A003571
 #define CONFIG_SYS_FSL_ERRATUM_IFC_A003399
-#define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
-#define CONFIG_SYS_FSL_A004447_SVR_REV	0x10
 #define CONFIG_SYS_FSL_ISBC_VER		1
 #define CONFIG_SYS_FSL_ERRATUM_A005125
+#define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
+#define CONFIG_SYS_FSL_A004447_SVR_REV	0x10
 
 /* P1011 is single core version of P1020 */
 #elif defined(CONFIG_P1011)
@@ -294,9 +280,9 @@
 #define CONFIG_SYS_FM_MURAM_SIZE	0x10000
 #define CONFIG_SYS_FSL_PCIE_COMPAT	"fsl,qoriq-pcie-v2.2"
 #define CONFIG_SYS_CCSRBAR_DEFAULT	0xff600000
+#define CONFIG_SYS_FSL_ERRATUM_A005125
 #define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 #define CONFIG_SYS_FSL_A004447_SVR_REV	0x11
-#define CONFIG_SYS_FSL_ERRATUM_A005125
 
 /* P1024 is lower end variant of P1020 */
 #elif defined(CONFIG_P1024)
@@ -430,10 +416,10 @@
 #define CONFIG_SYS_FSL_CORENET_SNOOPVEC_COREONLY 0xf0000000
 #define CONFIG_SYS_FSL_ERRATUM_SRIO_A004034
 #define CONFIG_SYS_FSL_ERRATUM_A004849
+#define CONFIG_SYS_FSL_ISBC_VER		1
+#define CONFIG_SYS_FSL_ERRATUM_A005812
 #define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 #define CONFIG_SYS_FSL_A004447_SVR_REV	0x20
-#define CONFIG_SYS_FSL_ERRATUM_A005812
-#define CONFIG_SYS_FSL_ISBC_VER		1
 
 #elif defined(CONFIG_PPC_P4080) /* also supports P4040 */
 #define CONFIG_SYS_FSL_QORIQ_CHASSIS1
@@ -480,10 +466,10 @@
 #define CONFIG_SYS_FSL_ERRATUM_A004849
 #define CONFIG_SYS_FSL_ERRATUM_A004580
 #define CONFIG_SYS_P4080_ERRATUM_PCIE_A003
+#define CONFIG_SYS_FSL_ISBC_VER		1
+#define CONFIG_SYS_FSL_ERRATUM_A005812
 #define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 #define CONFIG_SYS_FSL_A004447_SVR_REV	0x20
-#define CONFIG_SYS_FSL_ERRATUM_A005812
-#define CONFIG_SYS_FSL_ISBC_VER		1
 
 #elif defined(CONFIG_PPC_P5020) /* also supports P5010 */
 #define CONFIG_SYS_PPC64		/* 64-bit core */
@@ -517,9 +503,9 @@
 #define CONFIG_SYS_FSL_CORENET_SNOOPVEC_COREONLY 0xc0000000
 #define CONFIG_SYS_FSL_ERRATUM_SRIO_A004034
 #define CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
+#define CONFIG_SYS_FSL_ISBC_VER		1
 #define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
 #define CONFIG_SYS_FSL_A004447_SVR_REV	0x20
-#define CONFIG_SYS_FSL_ISBC_VER		1
 
 #elif defined(CONFIG_PPC_P5040)
 #define CONFIG_SYS_PPC64
@@ -593,6 +579,8 @@
 #define CONFIG_SYS_FSL_PCIE_COMPAT	"fsl,qoriq-pcie-v2.2"
 #define CONFIG_SYS_FSL_ISBC_VER		1
 #define CONFIG_SYS_FSL_ERRATUM_A005125
+#define CONFIG_SYS_FSL_ERRATUM_I2C_A004447
+#define CONFIG_SYS_FSL_A004447_SVR_REV	0x11
 
 #elif defined(CONFIG_PPC_T4240) || defined(CONFIG_PPC_T4160)
 #define CONFIG_E6500
@@ -679,6 +667,7 @@
 #define CONFIG_SYS_NUM_FMAN		1
 #define CONFIG_SYS_FSL_NUM_USB_CTRLS	1
 #define CONFIG_SYS_FSL_DDR_VER		FSL_DDR_VER_4_7
+#define CONFIG_SYS_FSL_IFC_BANK_COUNT	4
 #define CONFIG_SYS_FMAN_V3
 #define CONFIG_SYS_FSL_IFC_BANK_COUNT	4
 #define CONFIG_SYS_FM_MURAM_SIZE	0x60000
@@ -778,6 +767,19 @@
 #elif defined(CONFIG_C291)
 #define CONFIG_SYS_FSL_SEC_NUM		1
 #endif
+
+#elif defined(CONFIG_PPC_C29X)
+#define CONFIG_MAX_CPUS			1
+#define CONFIG_FSL_SDHC_V2_3
+#define CONFIG_SYS_FSL_NUM_LAWS		12
+#define CONFIG_SYS_PPC_E500_DEBUG_TLB	3
+#define CONFIG_TSECV2_1
+#define CONFIG_SYS_FSL_SEC_COMPAT	6
+#define CONFIG_SYS_FSL_ERRATUM_ESDHC111
+#define CONFIG_NUM_DDR_CONTROLLERS	1
+#define CONFIG_SYS_FSL_IFC_BANK_COUNT	8
+#define CONFIG_SYS_CCSRBAR_DEFAULT	0xff700000
+#define CONFIG_SYS_FSL_ERRATUM_A005125
 
 #else
 #error Processor type not defined for this platform

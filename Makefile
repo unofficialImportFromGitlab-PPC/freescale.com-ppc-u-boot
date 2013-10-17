@@ -1,28 +1,12 @@
 #
-# (C) Copyright 2000-2012
+# (C) Copyright 2000-2013
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 #
-# See file CREDITS for list of people who contributed to this
-# project.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundatio; either version 2 of
-# the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307 USA
+# SPDX-License-Identifier:	GPL-2.0+
 #
 
 VERSION = 2013
-PATCHLEVEL = 07
+PATCHLEVEL = 10
 SUBLEVEL =
 EXTRAVERSION =
 ifneq "$(SUBLEVEL)" ""
@@ -61,13 +45,13 @@ endif
 
 #########################################################################
 #
-# U-boot build supports producing a object files to the separate external
+# U-boot build supports generating object files in a separate external
 # directory. Two use cases are supported:
 #
 # 1) Add O= to the make command line
 # 'make O=/tmp/build all'
 #
-# 2) Set environement variable BUILD_DIR to point to the desired location
+# 2) Set environment variable BUILD_DIR to point to the desired location
 # 'export BUILD_DIR=/tmp/build'
 # 'make'
 #
@@ -75,7 +59,7 @@ endif
 # 'export BUILD_DIR=/tmp/build'
 # './MAKEALL'
 #
-# Command line 'O=' setting overrides BUILD_DIR environent variable.
+# Command line 'O=' setting overrides BUILD_DIR environment variable.
 #
 # When none of the above methods is used the local build is performed and
 # the object files are placed in the source directory.
@@ -300,6 +284,7 @@ LIBS-y += drivers/pci/libpci.o
 LIBS-y += drivers/pcmcia/libpcmcia.o
 LIBS-y += drivers/power/libpower.o \
 	drivers/power/fuel_gauge/libfuel_gauge.o \
+	drivers/power/mfd/libmfd.o \
 	drivers/power/pmic/libpmic.o \
 	drivers/power/battery/libbattery.o
 LIBS-y += drivers/spi/libspi.o
@@ -340,7 +325,7 @@ LIBS-y += post/libpost.o
 LIBS-y += drivers/sec/libsec.o
 LIBS-y += test/libtest.o
 
-ifneq ($(CONFIG_AM33XX)$(CONFIG_OMAP34XX)$(CONFIG_OMAP44XX)$(CONFIG_OMAP54XX)$(CONFIG_TI814X),)
+ifneq ($(CONFIG_OMAP_COMMON),)
 LIBS-y += $(CPUDIR)/omap-common/libomap-common.o
 endif
 
@@ -415,6 +400,7 @@ ALL-y += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map
 ALL-$(CONFIG_NAND_U_BOOT) += $(obj)u-boot-nand.bin
 ALL-$(CONFIG_ONENAND_U_BOOT) += $(obj)u-boot-onenand.bin
 ALL-$(CONFIG_SPL) += $(obj)spl/u-boot-spl.bin
+ALL-$(CONFIG_SPL_FRAMEWORK) += $(obj)u-boot.img
 ALL-$(CONFIG_TPL) += $(obj)tpl/u-boot-tpl.bin
 ALL-$(CONFIG_OF_SEPARATE) += $(obj)u-boot.dtb $(obj)u-boot-dtb.bin
 ifneq ($(CONFIG_SPL_TARGET),)
@@ -432,7 +418,7 @@ endif
 
 all:		$(ALL-y) $(SUBDIR_EXAMPLES)
 
-$(obj)u-boot.dtb:	$(obj)u-boot
+$(obj)u-boot.dtb:	checkdtc $(obj)u-boot
 		$(MAKE) -C dts binary
 		mv $(obj)dts/dt.dtb $@
 
@@ -703,6 +689,12 @@ checkgcc4:
 		false; \
 	fi
 
+checkdtc:
+	@if test $(call dtc-version) -lt 0104; then \
+		echo '*** Your dtc is too old, please upgrade to dtc 1.4 or newer'; \
+		false; \
+	fi
+
 #
 # Auto-generate the autoconf.mk file (which is included by all makefiles)
 #
@@ -848,7 +840,7 @@ unconfig:
 
 sinclude $(obj).boards.depend
 $(obj).boards.depend:	boards.cfg
-	@awk '(NF && $$1 !~ /^#/) { print $$1 ": " $$1 "_config; $$(MAKE)" }' $< > $@
+	@awk '(NF && $$1 !~ /^#/) { print $$7 ": " $$7 "_config; $$(MAKE)" }' $< > $@
 
 #
 # Functions to generate common board directory names
@@ -877,7 +869,7 @@ clean:
 	       $(obj)tools/gdb/{astest,gdbcont,gdbsend}			  \
 	       $(obj)tools/gen_eth_addr    $(obj)tools/img2srec		  \
 	       $(obj)tools/mk{env,}image   $(obj)tools/mpc86x_clk	  \
-	       $(obj)tools/mk{smdk5250,}spl				  \
+	       $(obj)tools/mk{$(BOARD),}spl				  \
 	       $(obj)tools/mxsboot					  \
 	       $(obj)tools/ncb		   $(obj)tools/ubsha1		  \
 	       $(obj)tools/kernel-doc/docproc				  \

@@ -1,23 +1,7 @@
 /*
  * Copyright 2011-2012 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef __CONFIG_H
@@ -34,6 +18,15 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0xfffffffc
 #define CONFIG_PBLPBI_CONFIG $(SRCTREE)/board/freescale/b4860qds/b4_pbi.cfg
 #define CONFIG_PBLRCW_CONFIG $(SRCTREE)/board/freescale/b4860qds/b4_rcw.cfg
+#endif
+
+#ifdef CONFIG_SRIO_PCIE_BOOT_SLAVE
+/* Set 1M boot space */
+#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR (CONFIG_SYS_TEXT_BASE & 0xfff00000)
+#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS \
+		(0x300000000ull | CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR)
+#define CONFIG_RESET_VECTOR_ADDRESS 0xfffffffc
+#define CONFIG_SYS_NO_FLASH
 #endif
 
 #ifdef CONFIG_SRIO_PCIE_BOOT_SLAVE
@@ -611,7 +604,7 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_SYS_DPAA_FMAN
 
-#define CONFIG_SYS_DPAA_RMAN		/* RMan */
+#define CONFIG_SYS_DPAA_RMAN
 
 /* Default address of microcode for the Linux Fman driver */
 #if defined(CONFIG_SPIFLASH)

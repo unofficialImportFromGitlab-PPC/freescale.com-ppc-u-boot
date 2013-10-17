@@ -1,10 +1,7 @@
 /*
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -31,9 +28,10 @@ DECLARE_GLOBAL_DATA_PTR;
 int checkboard(void)
 {
 	struct cpu_type *cpu = gd->arch.cpu;
+	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
 
 	printf("Board: %sPCIe, ", cpu->name);
-	printf("CPLD Ver: 0x%02x\n", CPLD_READ(cpldver));
+	printf("CPLD Ver: 0x%02x\n", in_8(&cpld_data->cpldver));
 
 	return 0;
 }
@@ -66,7 +64,7 @@ int board_early_init_r(void)
 	disable_tlb(flash_esel);
 
 	set_tlb(1, flashbase, CONFIG_SYS_FLASH_BASE_PHYS,
-			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+			MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 			0, flash_esel, BOOKE_PAGESZ_64M, 1);
 
 	return 0;
@@ -112,10 +110,25 @@ int board_eth_init(bd_t *bis)
 #endif
 
 #if defined(CONFIG_OF_BOARD_SETUP)
+void fdt_del_sec(void *blob, int offset)
+{
+	int nodeoff = 0;
+
+	while ((nodeoff = fdt_node_offset_by_compat_reg(blob, "fsl,sec-v6.0",
+			CONFIG_SYS_CCSRBAR_PHYS + CONFIG_SYS_FSL_SEC_OFFSET
+			+ offset * 0x20000)) >= 0) {
+		fdt_del_node(blob, nodeoff);
+		offset++;
+	}
+}
+
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	phys_addr_t base;
 	phys_size_t size;
+	struct cpu_type *cpu;
+
+	cpu = gd->arch.cpu;
 
 	ft_cpu_setup(blob, bd);
 
@@ -127,5 +140,9 @@ void ft_board_setup(void *blob, bd_t *bd)
 #endif
 
 	fdt_fixup_memory(blob, (u64)base, (u64)size);
+	if (cpu->soc_ver == SVR_C291)
+		fdt_del_sec(blob, 1);
+	else if (cpu->soc_ver == SVR_C292)
+		fdt_del_sec(blob, 2);
 }
 #endif

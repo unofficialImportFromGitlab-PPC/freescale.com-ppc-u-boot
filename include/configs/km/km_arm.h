@@ -9,23 +9,7 @@
  * (C) Copyright 2010-2011
  * Heiko Schocher, DENX Software Engineering, hs@denx.de.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /*
@@ -295,7 +279,8 @@ int get_scl(void);
 #else
 #define CONFIG_KM_NEW_ENV						\
 	"newenv=setenv addr 0x100000 && "				\
-		"i2c dev 1; mw.b ${addr} 0 4 && "			\
+		"i2c dev " __stringify(CONFIG_I2C_ENV_EEPROM_BUS) "; "  \
+		"mw.b ${addr} 0 4 && "					\
 		"eeprom write " __stringify(CONFIG_SYS_DEF_EEPROM_ADDR)	\
 		" ${addr} " __stringify(CONFIG_ENV_OFFSET) " 4 && "	\
 		"eeprom write " __stringify(CONFIG_SYS_DEF_EEPROM_ADDR)	\
@@ -309,7 +294,6 @@ int get_scl(void);
 	CONFIG_KM_DEF_ENV						\
 	CONFIG_KM_NEW_ENV						\
 	"arch=arm\0"							\
-	"EEprom_ivm=" __stringify(KM_IVM_BUS) "\0"			\
 	""
 
 #if defined(CONFIG_SYS_NO_FLASH)

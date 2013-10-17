@@ -1,23 +1,7 @@
 /*
  * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 /*
@@ -54,6 +38,27 @@
 #define CONFIG_SYS_EXTRA_ENV_RELOC
 #define CONFIG_SYS_TEXT_BASE		0x11000000
 #define CONFIG_RESET_VECTOR_ADDRESS	0x1107fffc
+#endif
+
+#ifdef CONFIG_NAND
+#define CONFIG_SPL
+#define CONFIG_SPL_INIT_MINIMAL
+#define CONFIG_SPL_SERIAL_SUPPORT
+#define CONFIG_SPL_NAND_SUPPORT
+#define CONFIG_SPL_NAND_MINIMAL
+#define CONFIG_SPL_FLUSH_IMAGE
+#define CONFIG_SPL_TARGET		"u-boot-with-spl.bin"
+
+#define CONFIG_SYS_TEXT_BASE		0x00201000
+#define CONFIG_SPL_TEXT_BASE		0xFFFFE000
+#define CONFIG_SPL_MAX_SIZE		8192
+#define CONFIG_SPL_RELOC_TEXT_BASE	0x00100000
+#define CONFIG_SPL_RELOC_STACK		0x00100000
+#define CONFIG_SYS_NAND_U_BOOT_SIZE	((512 << 10) - 0x2000)
+#define CONFIG_SYS_NAND_U_BOOT_DST	(0x00200000 - CONFIG_SPL_MAX_SIZE)
+#define CONFIG_SYS_NAND_U_BOOT_START	0x00200000
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	0
+#define CONFIG_SYS_LDSCRIPT	"arch/powerpc/cpu/mpc85xx/u-boot-nand.lds"
 #endif
 
 #ifdef CONFIG_NAND

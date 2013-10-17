@@ -2,23 +2,7 @@
  * (C) Copyright 2007-2011
  * Heiko Schocher, DENX Software Engineering, hs@denx.de.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef __CONFIG_H
@@ -212,7 +196,6 @@
 #define	CONFIG_EXTRA_ENV_SETTINGS					\
 	CONFIG_KM_BOARD_EXTRA_ENV					\
 	CONFIG_KM_DEF_ENV						\
-	"EEprom_ivm=1\0"						\
 	"unlock=yes\0"							\
 	"newenv="							\
 		"prot off 0xFE0C0000 +0x40000 && "			\
@@ -253,6 +236,8 @@
 			{0, {{I2C_MUX_PCA9542, 0x70, 0} } }, \
 			{0, {{I2C_MUX_PCA9542, 0x70, 1} } } }
 
+#define CONFIG_KM_IVM_BUS		1	/* I2C2 (Mux-Port 1)*/
+
 /*
  * Software (bit-bang) I2C driver configuration
  */
@@ -286,7 +271,6 @@ int get_scl(void);
 #define CONFIG_DTT_LM75			/* ON Semi's LM75		*/
 #define CONFIG_DTT_SENSORS	{0}	/* Sensor addresses		*/
 #define CONFIG_SYS_DTT_MAX_TEMP	70
-#define CONFIG_SYS_DTT_LOW_TEMP	-30
 #define CONFIG_SYS_DTT_HYSTERESIS	3
 #define CONFIG_SYS_DTT_BUS_NUM		2
 

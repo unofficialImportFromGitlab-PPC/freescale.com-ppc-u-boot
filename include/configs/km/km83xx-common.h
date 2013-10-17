@@ -2,10 +2,7 @@
  * (C) Copyright 2010
  * Heiko Schocher, DENX Software Engineering, hs@denx.de.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #ifndef __CONFIG_KM83XX_H
@@ -220,11 +217,12 @@
 		{0, {{I2C_MUX_PCA9547, 0x70, 1} } }, \
 		{1, {I2C_NULL_HOP} } }
 
+#define CONFIG_KM_IVM_BUS		2	/* I2C2 (Mux-Port 1)*/
+
 /* I2C SYSMON (LM75, AD7414 is almost compatible) */
 #define CONFIG_DTT_LM75		/* ON Semi's LM75 */
 #define CONFIG_DTT_SENSORS	{0, 1, 2, 3}	/* Sensor addresses */
 #define CONFIG_SYS_DTT_MAX_TEMP	70
-#define CONFIG_SYS_DTT_LOW_TEMP	-30
 #define CONFIG_SYS_DTT_HYSTERESIS	3
 #define CONFIG_SYS_DTT_BUS_NUM		1
 
@@ -322,7 +320,6 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_KM_DEF_ENV						\
 	CONFIG_KM_DEF_ARCH						\
-	"EEprom_ivm=2\0"						\
 	"newenv="							\
 		"prot off 0xF00C0000 +0x40000 && "			\
 		"era 0xF00C0000 +0x40000\0"				\
