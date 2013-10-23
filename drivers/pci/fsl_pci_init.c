@@ -65,6 +65,10 @@ static void set_inbound_window(volatile pit_t *pi,
 	u32 flag = PIWAR_EN | PIWAR_LOCAL |
 			PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005434
+	flag = PIWAR_EN | PIWAR_READ_SNOOP | PIWAR_WRITE_SNOOP;
+#endif
+
 	out_be32(&pi->pitar, r->phys_start >> 12);
 	out_be32(&pi->piwbar, r->bus_start >> 12);
 #ifdef CONFIG_SYS_PCI_64BIT
