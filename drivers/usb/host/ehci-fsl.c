@@ -29,52 +29,19 @@
 #include <hwconfig.h>
 
 #include "ehci.h"
-#include <asm/fsl_usb.h>
 
 static bool has_erratum_a005275(void);
 
 /* Check USB PHY clock valid */
-static int usb_phy_clk_valid(struct usb_ehci *ehci, const char *phy_type)
+static int usb_phy_clk_valid(struct usb_ehci *ehci)
 {
-	int ret = 0;
-
-	if (!strncmp(phy_type, "utmi", 4)) {
-		if (!(in_be32(&ehci->control) & PHY_CLK_VALID)) {
-			ret = -EINVAL;
-#ifdef CONFIG_SYS_FSL_ERRATUM_A005728
-			if (has_erratum_a005728()) {
-				int retry = UTMI_PHY_CLK_VALID_CHK_RETRY;
-
-				while (retry--) {
-					clrbits_be32(&ehci->control,
-								UTMI_PHY_EN);
-					setbits_be32(&ehci->control,
-								UTMI_PHY_EN);
-					/* delay required for PHY Clk
-								to appear */
-					udelay(1000);
-					if ((in_be32(&ehci->control) &
-							PHY_CLK_VALID)) {
-						ret = 0;
-						break;
-					}
-				}
-			}
-#endif
-		}
-	} else if (!strncmp(phy_type, "ulpi", 4)) {
-		if (!((in_be32(&ehci->control) & PHY_CLK_VALID) ||
-						in_be32(&ehci->prictrl)))
-			ret = -EINVAL;
-	} else {
-		printf("USB PHY %s invalid!\n", phy_type);
-		return -ENODEV;
-	}
-
-	if (ret)
+	if (!((in_be32(&ehci->control) & PHY_CLK_VALID) ||
+				in_be32(&ehci->prictrl))) {
 		printf("USB PHY clock invalid!\n");
-
-	return ret;
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 
@@ -91,7 +58,6 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	struct usb_ehci *ehci = NULL;
 	const char *phy_type = NULL;
 	size_t len;
-	int clk_ret = 0;
 #ifdef CONFIG_SYS_FSL_USB_INTERNAL_UTMI_PHY
 	char usb_phy[5];
 
@@ -145,16 +111,12 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 #endif
 		out_le32(&(*hcor)->or_portsc[0], PORT_PTS_UTMI);
 		setbits_be32(&ehci->control, USB_EN);
-		clk_ret = usb_phy_clk_valid(ehci, phy_type);
-		if (clk_ret)
-			return clk_ret;
 	} else {
 		setbits_be32(&ehci->control, PHY_CLK_SEL_ULPI);
 		clrsetbits_be32(&ehci->control, UTMI_PHY_EN, USB_EN);
 		udelay(1000); /* delay required for PHY Clk to appear */
-		clk_ret = usb_phy_clk_valid(ehci, phy_type);
-		if (clk_ret)
-			return clk_ret;
+		if (!usb_phy_clk_valid(ehci))
+			return -EINVAL;
 		out_le32(&(*hcor)->or_portsc[0], PORT_PTS_ULPI);
 	}
 
@@ -243,39 +205,3 @@ bool has_erratum_a006261(void)
 	return false;
 }
 #endif
-
-/* PHY_CLK_VALID bit in USBDR not set even if PHY is providing valid clock */
-bool has_erratum_a005728(void)
-{
-	u32 svr = get_svr();
-	u32 soc = SVR_SOC_VER(svr);
-
-	switch (soc) {
-	case SVR_8536:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_P1020:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_P1022:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_P1023:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_P4080:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0);
-	case SVR_P2020:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0) ||
-							IS_SVR_REV(svr, 2, 1);
-	case SVR_P5020:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1) ||
-							IS_SVR_REV(svr, 2, 0);
-	case SVR_P1010:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_T1040:
-		return IS_SVR_REV(svr, 1, 0);
-	case SVR_9131:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	case SVR_9132:
-		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
-	}
-
-	return false;
-}

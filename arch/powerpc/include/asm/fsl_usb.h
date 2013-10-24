@@ -105,12 +105,6 @@ struct ccsr_usb_phy {
 
 #endif
 
-#ifdef CONFIG_SYS_FSL_ERRATUM_A005728
-/* Retry count for checking UTMI PHY CLK validity */
-#define UTMI_PHY_CLK_VALID_CHK_RETRY 5
-extern bool has_erratum_a005728(void);
-#endif
-
 #ifdef CONFIG_SYS_FSL_ERRATUM_A006261
 extern bool has_erratum_a006261(void);
 #endif
