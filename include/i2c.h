@@ -107,7 +107,7 @@ struct i2c_adapter {
 
 #define U_BOOT_I2C_ADAP_COMPLETE(_name, _init, _probe, _read, _write, \
 			_set_speed, _speed, _slaveaddr, _hwadapnr) \
-	ll_entry_declare(struct i2c_adapter, _name, i2c, i2c) = \
+	ll_entry_declare(struct i2c_adapter, _name, i2c) = \
 	U_BOOT_I2C_MKENT_COMPLETE(_init, _probe, _read, _write, \
 		 _set_speed, _speed, _slaveaddr, _hwadapnr, _name);
 

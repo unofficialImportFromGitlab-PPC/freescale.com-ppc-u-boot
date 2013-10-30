@@ -23,8 +23,6 @@
 
 #########################################################################
 
-include $(TOPDIR)/helper.mk
-
 ifeq ($(CONFIG_TPL_BUILD),y)
 SPL_BIN := u-boot-tpl
 else
