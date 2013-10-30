@@ -227,21 +227,6 @@ int checkcpu (void)
 	puts("\n");
 #endif
 
-#ifdef CONFIG_FSL_CORENET
-	/* Display the RCW, so that no one gets confused as to what RCW
-	 * we're actually using for this boot.
-	 */
-	puts("Reset Configuration Word (RCW):");
-	for (i = 0; i < ARRAY_SIZE(gur->rcwsr); i++) {
-		u32 rcw = in_be32(&gur->rcwsr[i]);
-
-		if ((i % 4) == 0)
-			printf("\n       %08x:", i * 4);
-		printf(" %08x", rcw);
-	}
-	puts("\n");
-#endif
-
 	return 0;
 }
 
