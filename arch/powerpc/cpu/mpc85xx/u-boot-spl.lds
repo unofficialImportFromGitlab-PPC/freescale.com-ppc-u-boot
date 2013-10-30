@@ -64,8 +64,6 @@ SECTIONS
 	. = ALIGN(4);
 	.u_boot_list : {
 		#include <u-boot.lst>
-		_u_boot_list_env_clbk__start = .;
-		_u_boot_list_env_clbk__end = .;
 	}
 
 	. = .;
