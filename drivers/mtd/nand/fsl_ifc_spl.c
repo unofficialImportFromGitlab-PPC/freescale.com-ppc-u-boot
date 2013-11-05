@@ -101,7 +101,11 @@ static inline int bad_block(uchar *marker, int port_size)
 		return __raw_readw((u16 *)marker) != 0xffff;
 }
 
+#ifdef CONFIG_TPL_BUILD
+void nand_spl_load_image(uint32_t offs, int uboot_size, void *vdst)
+#else
 static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
+#endif
 {
 	struct fsl_ifc *ifc = IFC_BASE_ADDR;
 	uchar *buf = (uchar *)CONFIG_SYS_NAND_BASE;
@@ -118,6 +122,9 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 
 	int sram_addr;
 	int pg_no;
+#ifdef CONFIG_TPL_BUILD
+	char *dst = vdst;
+#endif
 
 	/* Get NAND Flash configuration */
 	csor = CONFIG_SYS_NAND_CSOR;
@@ -224,6 +231,15 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 }
 
 /*
+ * Defines a static function nand_load_image() here, because non-static makes
+ * the code too large for certain SPLs(minimal SPL, maximum size <= 4Kbytes)
+ */
+#ifndef CONFIG_TPL_BUILD
+#define nand_spl_load_image(offs, uboot_size, dst) \
+	nand_load(offs, uboot_size, dst)
+#endif
+
+/*
  * Main entrypoint for NAND Boot. It's necessary that SDRAM is already
  * configured and available since this code loads the main U-boot image
  * from NAND into SDRAM and starts from there.
@@ -231,19 +247,21 @@ static void nand_load(unsigned int offs, int uboot_size, uchar *dst)
 void nand_boot(void)
 {
 	__attribute__((noreturn)) void (*uboot)(void);
+
 	/*
 	 * Load U-Boot image from NAND into RAM
 	 */
-	nand_load(CONFIG_SYS_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
-		  (uchar *)CONFIG_SYS_NAND_U_BOOT_DST);
+	nand_spl_load_image(CONFIG_SYS_NAND_U_BOOT_OFFS,
+			    CONFIG_SYS_NAND_U_BOOT_SIZE,
+			    (uchar *)CONFIG_SYS_NAND_U_BOOT_DST);
 
 #ifdef CONFIG_NAND_ENV_DST
-	nand_load(CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE,
-		  (uchar *)CONFIG_NAND_ENV_DST);
+	nand_spl_load_image(CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE,
+			    (uchar *)CONFIG_NAND_ENV_DST);
 
 #ifdef CONFIG_ENV_OFFSET_REDUND
-	nand_load(CONFIG_ENV_OFFSET_REDUND, CONFIG_ENV_SIZE,
-		  (uchar *)CONFIG_NAND_ENV_DST + CONFIG_ENV_SIZE);
+	nand_spl_load_image(CONFIG_ENV_OFFSET_REDUND, CONFIG_ENV_SIZE,
+			    (uchar *)CONFIG_NAND_ENV_DST + CONFIG_ENV_SIZE);
 #endif
 #endif
 	/*
