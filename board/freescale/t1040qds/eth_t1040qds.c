@@ -1,38 +1,7 @@
 /*
- * Copyright 2012 Freescale Semiconductor, Inc.
- * Author: Sandeep Kumar Singh <sandeep@freescale.com>
+ * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
- */
-
-/* This file is based on board/freescale/b4860qds/eth_b4860qds.c */
-
-/*
- * This file handles the board muxing between the Fman Ethernet MACs and
- * the RGMII/SGMII/XGMII PHYs on a Freescale B4860 "Centaur". The SGMII
- * PHYs are the two on-board 1Gb ports. There are no RGMII PHY on board.
- * The 10Gb XGMII PHY is provided via the XAUI riser card. There is only
- * one Fman device on B4860. The SERDES configuration is used to determine
- * where the SGMII and XAUI cards exist, and also which Fman MACs are routed
- * to which PHYs. So for a given Fman MAC, there is one and only PHY it
- * connects to. MACs cannot be routed to PHYs dynamically. This configuration
- * is done at boot time by reading SERDES protocol from RCW.
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>

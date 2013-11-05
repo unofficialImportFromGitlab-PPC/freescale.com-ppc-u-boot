@@ -1,23 +1,7 @@
 /*
- * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
@@ -46,12 +30,12 @@ struct fsl_e_tlb_entry tlb_table[] = {
 	/* *I*** - Covers boot page */
 #if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L3_ADDR)
 	/*
-	 * *I*G - L3SRAM. When L3 is used as 1M SRAM, the address of the
-	 * SRAM is at 0xfff00000, it covered the 0xfffff000.
+	 * *I*G - L3SRAM. When L3 is used as 256K SRAM, the address of the
+	 * SRAM is at 0xfffc0000, it covered the 0xfffff000.
 	 */
 	SET_TLB_ENTRY(1, CONFIG_SYS_INIT_L3_ADDR, CONFIG_SYS_INIT_L3_ADDR,
-			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-			0, 0, BOOKE_PAGESZ_256K, 1),
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 0, BOOKE_PAGESZ_256K, 1),
 #else
 	SET_TLB_ENTRY(1, 0xfffff000, 0xfffff000,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
@@ -110,12 +94,14 @@ struct fsl_e_tlb_entry tlb_table[] = {
 	 * in cpu_init_f, so we use entry 16 for nand.
 	 */
 	SET_TLB_ENTRY(1, CONFIG_SYS_NAND_BASE, CONFIG_SYS_NAND_BASE_PHYS,
-			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-			0, 10, BOOKE_PAGESZ_64K, 1),
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 10, BOOKE_PAGESZ_64K, 1),
 #endif
+#ifdef QIXIS_BASE
 	SET_TLB_ENTRY(1, QIXIS_BASE, QIXIS_BASE_PHYS,
 		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 		      0, 11, BOOKE_PAGESZ_4K, 1),
+#endif
 
 };
 

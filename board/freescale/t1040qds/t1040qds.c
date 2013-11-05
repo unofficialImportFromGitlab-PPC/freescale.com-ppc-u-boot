@@ -1,27 +1,12 @@
 /*
- * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2013 Freescale Semiconductor, Inc.
  *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
+ * SPDX-License-Identifier:	GPL-2.0+
  */
 
 #include <common.h>
 #include <command.h>
+#include <i2c.h>
 #include <netdev.h>
 #include <linux/compiler.h>
 #include <asm/mmu.h>
@@ -38,9 +23,6 @@
 #include "t1040qds.h"
 #include "t1040qds_qixis.h"
 
-#define CLK_MUX_SEL_MASK	0x4
-#define ETH_PHY_CLK_OUT		0x4
-
 DECLARE_GLOBAL_DATA_PTR;
 
 int checkboard(void)
@@ -54,7 +36,7 @@ int checkboard(void)
 
 	printf("Board: %sQDS, ", cpu->name);
 	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x, ",
-		QIXIS_READ(id), QIXIS_READ(arch));
+	       QIXIS_READ(id), QIXIS_READ(arch));
 
 	sw = QIXIS_READ(brdcfg[0]);
 	sw = (sw & QIXIS_LBMAP_MASK) >> QIXIS_LBMAP_SHIFT;
@@ -71,8 +53,8 @@ int checkboard(void)
 		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
 
 	printf("FPGA: v%d (%s), build %d",
-		(int)QIXIS_READ(scver), qixis_read_tag(buf),
-		(int)qixis_read_minor());
+	       (int)QIXIS_READ(scver), qixis_read_tag(buf),
+	       (int)qixis_read_minor());
 	/* the timestamp string contains "\n" at the end */
 	printf(" on %s", qixis_read_time(buf));
 
@@ -94,8 +76,22 @@ int checkboard(void)
 	return 0;
 }
 
+int select_i2c_ch_pca9547(u8 ch)
+{
+	int ret;
+
+	ret = i2c_write(I2C_MUX_PCA_ADDR_PRI, 0, 1, &ch, 1);
+	if (ret) {
+		puts("PCA: failed to select proper channel\n");
+		return ret;
+	}
+
+	return 0;
+}
+
 int board_early_init_r(void)
 {
+#ifdef CONFIG_SYS_FLASH_BASE
 	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
 	const u8 flash_esel = find_tlb_idx((void *)flashbase, 1);
 
@@ -112,13 +108,14 @@ int board_early_init_r(void)
 	disable_tlb(flash_esel);
 
 	set_tlb(1, flashbase, CONFIG_SYS_FLASH_BASE_PHYS,
-			MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
-			0, flash_esel, BOOKE_PAGESZ_256M, 1);
-
+		MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		0, flash_esel, BOOKE_PAGESZ_256M, 1);
+#endif
 	set_liodns();
 #ifdef CONFIG_SYS_DPAA_QBMAN
 	setup_portals();
 #endif
+	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
 
 	return 0;
 }
@@ -163,18 +160,17 @@ unsigned long get_board_ddr_clk(void)
 	return 66666666;
 }
 
-#define NUM_PLL	2
+#define NUM_SRDS_BANKS	2
 int misc_init_r(void)
 {
 	u8 sw;
 	serdes_corenet_t *srds_regs =
 		(void *)CONFIG_SYS_FSL_CORENET_SERDES_ADDR;
-	u32 actual[NUM_PLL] = { 0 };
+	u32 actual[NUM_SRDS_BANKS] = { 0 };
 	int i;
-	u32 pllcr0, pllcr1, expected;
 
 	sw = QIXIS_READ(brdcfg[2]);
-	for (i = 0; i < NUM_PLL; i++) {
+	for (i = 0; i < NUM_SRDS_BANKS; i++) {
 		unsigned int clock = (sw >> (6 - 2 * i)) & 3;
 		switch (clock) {
 		case 0:
@@ -189,22 +185,16 @@ int misc_init_r(void)
 		}
 	}
 
-	pllcr0 = srds_regs->bank[0].pllcr0;
-	expected = pllcr0 & SRDS_PLLCR0_RFCK_SEL_MASK;
-	if (expected != actual[0]) {
-		printf("SERDES1 expects ref clk1 %sMHz, but actual is %sMHz\n",
-		       serdes_clock_to_string(expected),
-		       serdes_clock_to_string(actual[0]));
+	puts("SerDes1");
+	for (i = 0; i < NUM_SRDS_BANKS; i++) {
+		u32 pllcr0 = srds_regs->bank[i].pllcr0;
+		u32 expected = pllcr0 & SRDS_PLLCR0_RFCK_SEL_MASK;
+		if (expected != actual[i]) {
+			printf("expects ref clk%d %sMHz, but actual is %sMHz\n",
+			       i + 1, serdes_clock_to_string(expected),
+			       serdes_clock_to_string(actual[i]));
+		}
 	}
-
-	pllcr1 = srds_regs->bank[0].pllcr1;
-	expected = pllcr1 & SRDS_PLLCR0_RFCK_SEL_MASK;
-	if (expected != actual[1]) {
-		printf("SERDES1 expects ref clk2 %sMHz, but actual is %sMHz\n",
-		       serdes_clock_to_string(expected),
-		       serdes_clock_to_string(actual[1]));
-	}
-
 
 	return 0;
 }
@@ -233,6 +223,19 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 #ifdef CONFIG_SYS_DPAA_FMAN
 	fdt_fixup_fman_ethernet(blob);
-	fdt_fixup_board_enet(blob);
 #endif
+}
+
+void qixis_dump_switch(void)
+{
+	int i, nr_of_cfgsw;
+
+	QIXIS_WRITE(cms[0], 0x00);
+	nr_of_cfgsw = QIXIS_READ(cms[1]);
+
+	puts("DIP switch settings dump:\n");
+	for (i = 1; i <= nr_of_cfgsw; i++) {
+		QIXIS_WRITE(cms[0], i);
+		printf("SW%d = (0x%02x)\n", i, QIXIS_READ(cms[1]));
+	}
 }

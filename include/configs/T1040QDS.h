@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2013 Freescale Semiconductor, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -120,6 +120,8 @@ unsigned long get_board_ddr_clk(void);
  * These can be toggled for performance analysis, otherwise use default.
  */
 #define CONFIG_SYS_CACHE_STASHING
+#define CONFIG_BACKSIDE_L2_CACHE
+#define CONFIG_SYS_INIT_L2CSR0		L2CSR0_L2E
 #define CONFIG_BTB			/* toggle branch predition */
 #define CONFIG_DDR_ECC
 #ifdef CONFIG_DDR_ECC
@@ -140,7 +142,7 @@ unsigned long get_board_ddr_clk(void);
 /*
  *  Config the L3 Cache as L3 SRAM
  */
-#define CONFIG_SYS_INIT_L3_ADDR		CONFIG_RAMBOOT_TEXT_BASE
+#define CONFIG_SYS_INIT_L3_ADDR		0xFFFC0000
 
 #define CONFIG_SYS_DCSRBAR		0xf0000000
 #define CONFIG_SYS_DCSRBAR_PHYS		0xf00000000ull
@@ -166,7 +168,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CHIP_SELECTS_PER_CTRL	(4 * CONFIG_DIMM_SLOTS_PER_CTLR)
 
 #define CONFIG_DDR_SPD
-#define CONFIG_SYS_DDR_RAW_TIMING
 #define CONFIG_FSL_DDR3
 #define CONFIG_FSL_DDR_INTERACTIVE
 
@@ -409,16 +410,21 @@ unsigned long get_board_ddr_clk(void);
 
 /* I2C */
 #define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_FSL
+#define CONFIG_SYS_I2C_FSL		/* Use FSL common I2C driver */
 #define CONFIG_SYS_FSL_I2C_SPEED	400000	/* I2C speed in Hz */
 #define CONFIG_SYS_FSL_I2C_SLAVE	0x7F
-#define CONFIG_SYS_FSL_I2C_OFFSET	0x118000
 #define CONFIG_SYS_FSL_I2C2_SPEED	400000	/* I2C speed in Hz */
 #define CONFIG_SYS_FSL_I2C2_SLAVE	0x7F
+#define CONFIG_SYS_FSL_I2C_OFFSET	0x118000
 #define CONFIG_SYS_FSL_I2C2_OFFSET	0x119000
 
+#define I2C_MUX_PCA_ADDR		0x77
+#define I2C_MUX_PCA_ADDR_PRI		0x77 /* Primary Mux*/
+
+
 /* I2C bus multiplexer */
-#define I2C_MUX_PCA_ADDR                0x77
+#define I2C_MUX_CH_DEFAULT      0x8
+
 /*
  * RTC configuration
  */
@@ -432,6 +438,8 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_FSL_ESPI
 #define CONFIG_SPI_FLASH
 #define CONFIG_SPI_FLASH_STMICRO
+#define CONFIG_SPI_FLASH_SST
+#define CONFIG_SPI_FLASH_EON
 #define CONFIG_CMD_SF
 #define CONFIG_SF_DEFAULT_SPEED         10000000
 #define CONFIG_SF_DEFAULT_MODE          0
@@ -685,11 +693,11 @@ unsigned long get_board_ddr_clk(void);
 /* default location for tftp and bootm */
 #define CONFIG_LOADADDR		1000000
 
-#define CONFIG_BOOTDELAY 	10	/* -1 disables auto-boot */
+#define CONFIG_BOOTDELAY	10	/* -1 disables auto-boot */
 
 #define CONFIG_BAUDRATE	115200
 
-#define __USB_PHY_TYPE	ulpi
+#define __USB_PHY_TYPE	utmi
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"hwconfig=fsl_ddr:ctlr_intlv=cacheline,"		\
@@ -706,49 +714,19 @@ unsigned long get_board_ddr_clk(void);
 	"cmp.b $loadaddr $ubootaddr $filesize\0"		\
 	"consoledev=ttyS0\0"					\
 	"ramdiskaddr=2000000\0"					\
-	"ramdiskfile=b4860qds/ramdisk.uboot\0"			\
+	"ramdiskfile=t1040qds/ramdisk.uboot\0"			\
 	"fdtaddr=c00000\0"					\
-	"fdtfile=b4860qds/b4860qds.dtb\0"				\
+	"fdtfile=t1040qds/t1040qds.dtb\0"			\
 	"bdev=sda3\0"						\
 	"c=ffe\0"
 
-/* For emulation this causes u-boot to jump to the start of the proof point
-   app code automatically */
-#define CONFIG_PROOF_POINTS			\
- "setenv bootargs root=/dev/$bdev rw "		\
- "console=$consoledev,$baudrate $othbootargs;"	\
- "cpu 1 release 0x29000000 - - -;"              \
- "cpu 2 release 0x29000000 - - -;"              \
- "cpu 3 release 0x29000000 - - -;"              \
- "cpu 4 release 0x29000000 - - -;"              \
- "cpu 5 release 0x29000000 - - -;"              \
- "cpu 6 release 0x29000000 - - -;"              \
- "cpu 7 release 0x29000000 - - -;"              \
- "go 0x29000000"
-
-#define CONFIG_HVBOOT	\
- "setenv bootargs config-addr=0x60000000; "	\
- "bootm 0x01000000 - 0x00f00000"
-
-#define CONFIG_ALU                     \
- "setenv bootargs root=/dev/$bdev rw "          \
- "console=$consoledev,$baudrate $othbootargs;"  \
- "cpu 1 release 0x01000000 - - -;"              \
- "cpu 2 release 0x01000000 - - -;"              \
- "cpu 3 release 0x01000000 - - -;"              \
- "cpu 4 release 0x01000000 - - -;"              \
- "cpu 5 release 0x01000000 - - -;"              \
- "cpu 6 release 0x01000000 - - -;"              \
- "cpu 7 release 0x01000000 - - -;"              \
- "go 0x01000000"
-
 #define CONFIG_LINUX                       \
- "setenv bootargs root=/dev/ram rw "            \
- "console=$consoledev,$baudrate $othbootargs;"  \
- "setenv ramdiskaddr 0x02000000;"                       \
- "setenv fdtaddr 0x00c00000;"                           \
- "setenv loadaddr 0x1000000;"				\
- "bootm $loadaddr $ramdiskaddr $fdtaddr"
+	"setenv bootargs root=/dev/ram rw "            \
+	"console=$consoledev,$baudrate $othbootargs;"  \
+	"setenv ramdiskaddr 0x02000000;"               \
+	"setenv fdtaddr 0x00c00000;"		       \
+	"setenv loadaddr 0x1000000;"		       \
+	"bootm $loadaddr $ramdiskaddr $fdtaddr"
 
 #define CONFIG_HDBOOT					\
 	"setenv bootargs root=/dev/$bdev rw "		\
@@ -776,6 +754,8 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_BOOTCOMMAND		CONFIG_LINUX
 
+#ifdef CONFIG_SECURE_BOOT
 #include <asm/fsl_secure_boot.h>
+#endif
 
 #endif	/* __CONFIG_H */
