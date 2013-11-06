@@ -156,8 +156,10 @@ static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
 					int start_offset)
 {
 	const char *prop_erratum_a005275 = "fsl,no-erratum-a005275";
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
 	const char *prop_erratum_a006918 = "fail-erratum-a006918";
 	const char *prop_type = "status";
+#endif
 	int node_offset, err;
 	const char *node_type = NULL;
 
@@ -175,6 +177,7 @@ static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
 		}
 	}
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006918
 	if (!strcmp(erratum, "erratum_a006918")) {
 		err = fdt_setprop(blob, node_offset, prop_type,
 				prop_erratum_a006918,
@@ -185,6 +188,7 @@ static int fdt_fixup_usb_erratum(void *blob, const char *erratum,
 					fdt_strerror(err));
 		}
 	}
+#endif
 
 	return node_offset;
 }
