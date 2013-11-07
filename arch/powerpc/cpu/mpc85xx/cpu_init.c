@@ -871,6 +871,22 @@ skip_l2:
 	}
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A005754
+	if (SVR_SOC_VER(svr) == SVR_P5040) {
+#define PCVTRPEX1CR0_FOR_PCIE1	(CONFIG_SYS_DCSRBAR + 0xea100)
+#define PCVTRPEX2CR0_FOR_PCIE2	(CONFIG_SYS_DCSRBAR + 0xea140)
+#define PCVTRPEX3CR0_FOR_PCIE3	(CONFIG_SYS_DCSRBAR + 0xea180)
+#define PCVTRPEXnCR0_COMMA_NUM	0x00000007
+		void *pci1 = (void *)PCVTRPEX1CR0_FOR_PCIE1;
+		void *pci2 = (void *)PCVTRPEX2CR0_FOR_PCIE2;
+		void *pci3 = (void *)PCVTRPEX3CR0_FOR_PCIE3;
+
+		clrbits_be32(pci1, PCVTRPEXnCR0_COMMA_NUM);
+		clrbits_be32(pci2, PCVTRPEXnCR0_COMMA_NUM);
+		clrbits_be32(pci3, PCVTRPEXnCR0_COMMA_NUM);
+	}
+#endif
+
 #ifdef CONFIG_FMAN_ENET
 	fman_enet_init();
 #endif
