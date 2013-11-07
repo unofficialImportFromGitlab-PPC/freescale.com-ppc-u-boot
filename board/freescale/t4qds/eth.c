@@ -291,6 +291,7 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 		 * fix the dtb accordingly.
 		 */
 		int media_type = 0;
+		struct fixed_link f_link;
 
 		switch (port) {
 		case FM1_10GEC1:
@@ -325,8 +326,17 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 			break;
 		}
 
-		if (!media_type)
+		if (!media_type) {
+			/* fixed-link is used for XFI fiber cable */
 			fdt_delprop(blob, offset, "phy-handle");
+			f_link.phy_id = port;
+			f_link.duplex = 1;
+			f_link.link_speed = 10000;
+			f_link.pause = 0;
+			f_link.asym_pause = 0;
+			fdt_setprop(blob, offset, "fixed-link", &f_link,
+				    sizeof(f_link));
+		}
 	}
 }
 
@@ -641,15 +651,18 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM1_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
-			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57))
-				break;
-			lane = serdes_get_first_lane(FSL_SRDS_1,
+			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57)) {
+				/* A fake PHY address to make U-boot happy */
+				fm_info_set_phy_address(i, i);
+			} else {
+				lane = serdes_get_first_lane(FSL_SRDS_1,
 						XAUI_FM1_MAC9 + idx);
-			if (lane < 0)
-				break;
-			slot = lane_to_slot_fsm1[lane];
-			if (QIXIS_READ(present2) & (1 << (slot - 1)))
-				fm_disable_port(i);
+				if (lane < 0)
+					break;
+				slot = lane_to_slot_fsm1[lane];
+				if (QIXIS_READ(present2) & (1 << (slot - 1)))
+					fm_disable_port(i);
+			}
 			mdio_mux[i] = EMI2;
 			fm_info_set_mdio(i, mii_dev_for_muxval(mdio_mux[i]));
 			break;
@@ -805,15 +818,18 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM2_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
-			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57))
-				break;
-			lane = serdes_get_first_lane(FSL_SRDS_2,
+			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57)) {
+				/* A fake PHY address to make U-boot happy */
+				fm_info_set_phy_address(i, i);
+			} else {
+				lane = serdes_get_first_lane(FSL_SRDS_2,
 						XAUI_FM2_MAC9 + idx);
-			if (lane < 0)
-				break;
-			slot = lane_to_slot_fsm2[lane];
-			if (QIXIS_READ(present2) & (1 << (slot - 1)))
-				fm_disable_port(i);
+				if (lane < 0)
+					break;
+				slot = lane_to_slot_fsm2[lane];
+				if (QIXIS_READ(present2) & (1 << (slot - 1)))
+					fm_disable_port(i);
+			}
 			mdio_mux[i] = EMI2;
 			fm_info_set_mdio(i, mii_dev_for_muxval(mdio_mux[i]));
 			break;
