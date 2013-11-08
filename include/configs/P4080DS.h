@@ -21,6 +21,12 @@
 #define CONFIG_SRIO2			/* SRIO port 2 */
 #define CONFIG_SRIO_PCIE_BOOT_MASTER
 
+#define CONFIG_CMD_SATA
+#define CONFIG_SATA_SIL
+#define CONFIG_SYS_SATA_MAX_DEVICE  2
+#define CONFIG_LIBATA
+#define CONFIG_LBA48
+
 #define CONFIG_SYS_DPAA_PME
 
 #define CONFIG_ICS307_REFCLK_HZ		33333000  /* ICS307 ref clk freq */
