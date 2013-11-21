@@ -78,6 +78,8 @@ COBJS-$(CONFIG_PPC_T1040)	+= ddr-gen3.o
 COBJS-$(CONFIG_PPC_T1042)	+= ddr-gen3.o
 COBJS-$(CONFIG_PPC_T1020)	+= ddr-gen3.o
 COBJS-$(CONFIG_PPC_T1022)	+= ddr-gen3.o
+COBJS-$(CONFIG_PPC_T2080)	+= ddr-gen3.o
+COBJS-$(CONFIG_PPC_T2081)	+= ddr-gen3.o
 
 COBJS-$(CONFIG_CPM2)	+= ether_fcc.o
 COBJS-$(CONFIG_OF_LIBFDT) += fdt.o
@@ -100,6 +102,8 @@ COBJS-$(CONFIG_PPC_T1040) += t1040_ids.o
 COBJS-$(CONFIG_PPC_T1042) += t1040_ids.o
 COBJS-$(CONFIG_PPC_T1020) += t1040_ids.o
 COBJS-$(CONFIG_PPC_T1022) += t1040_ids.o
+COBJS-$(CONFIG_PPC_T2080) += t2080_ids.o
+COBJS-$(CONFIG_PPC_T2081) += t2080_ids.o
 
 COBJS-$(CONFIG_QE)	+= qe_io.o
 COBJS-$(CONFIG_CPM2)	+= serial_scc.o
@@ -144,6 +148,8 @@ COBJS-$(CONFIG_PPC_T1040) += t1040_serdes.o
 COBJS-$(CONFIG_PPC_T1042) += t1040_serdes.o
 COBJS-$(CONFIG_PPC_T1020) += t1040_serdes.o
 COBJS-$(CONFIG_PPC_T1022) += t1040_serdes.o
+COBJS-$(CONFIG_PPC_T2080) += t2080_serdes.o
+COBJS-$(CONFIG_PPC_T2081) += t2080_serdes.o
 
 COBJS-y	+= cpu.o
 COBJS-y	+= cpu_init.o
