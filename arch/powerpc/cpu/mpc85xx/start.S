@@ -224,15 +224,58 @@ _start_e500:
 	/* ISBC creates a LAW 0 entry for non PBL platforms,
 	 * which is not disabled before transferring the control to uboot.
 	 * Disable the LAW 0 entry here.
-	 * TLB entry for CONFIG_SYS_CCSRBAR_DEFAULT is already created
-	 * by the BOOT ROM code.
 	 */
+
+	/* create a temp TLB mapping for CCSRBAR  */
+	lis     r6,FSL_BOOKE_MAS0(1, 15, 0)@h
+	ori     r6,r6,FSL_BOOKE_MAS0(1, 15, 0)@l
+
+	lis     r7,FSL_BOOKE_MAS1(1, 0, 0, 0, BOOKE_PAGESZ_1M)@h
+	ori     r7,r7,FSL_BOOKE_MAS1(1, 0, 0, 0, BOOKE_PAGESZ_1M)@l
+
+	lis     r8,FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR_DEFAULT,
+						(MAS2_I|MAS2_G))@h
+	ori     r8,r8,FSL_BOOKE_MAS2(CONFIG_SYS_CCSRBAR_DEFAULT,
+						(MAS2_I|MAS2_G))@l
+
+	lis     r9,FSL_BOOKE_MAS3(CONFIG_SYS_CCSRBAR_DEFAULT, 0,
+						(MAS3_SW|MAS3_SR))@h
+	ori     r9,r9,FSL_BOOKE_MAS3(CONFIG_SYS_CCSRBAR_DEFAULT, 0,
+						(MAS3_SW|MAS3_SR))@l
+
+	mtspr   MAS0,r6
+	mtspr   MAS1,r7
+	mtspr   MAS2,r8
+	mtspr   MAS3,r9
+	isync
+	msync
+	tlbwe
+
+	/* Clear the LAW 0 entry */
 	lis     r3, CONFIG_SYS_CCSRBAR_DEFAULT@h
 	ori     r3, r3, CONFIG_SYS_CCSRBAR_DEFAULT@l
 	li	r4, 0x0
 
 	stw     r4, 0xc10(r3)	/* LAWAR0 */
 	sync
+
+	/* clear the TLB mapping for CCSRBAR  */
+	lis     r6,FSL_BOOKE_MAS0(1, 15, 0)@h
+	ori     r6,r6,FSL_BOOKE_MAS0(1, 15, 0)@l
+
+	lis     r7,FSL_BOOKE_MAS1(0, 0, 0, 0, 0)@h
+	ori     r7,r7,FSL_BOOKE_MAS1(0, 0, 0, 0, 0)@l
+
+	li	r8, 0x0
+	li	r9, 0x0
+
+	mtspr   MAS0,r6
+	mtspr   MAS1,r7
+	mtspr   MAS2,r8
+	mtspr   MAS3,r9
+	isync
+	msync
+	tlbwe
 #endif
 
 #if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_E500MC) && \
