@@ -227,6 +227,9 @@ void get_sys_info (sys_info_t * sysInfo)
 	case 4:
 		sysInfo->freqFMan[1] = freqCC_PLL[4] / 4;
 		break;
+	case 5:
+		sysInfo->freqFMan[1] = sysInfo->freqSystemBus;
+		break;
 	case 6:
 		sysInfo->freqFMan[1] = freqCC_PLL[3] / 2;
 		break;
