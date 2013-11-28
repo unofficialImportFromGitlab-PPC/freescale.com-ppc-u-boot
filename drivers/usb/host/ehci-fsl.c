@@ -30,6 +30,7 @@
 
 #include "ehci.h"
 
+static void set_txfifothresh(struct usb_ehci *, u32);
 static bool has_erratum_a005275(void);
 
 /* Check USB PHY clock valid */
@@ -141,6 +142,10 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 		ehci_ctrl->has_fsl_erratum_a005275 = 0;
 	}
 
+	if (SVR_SOC_VER(get_svr()) == SVR_T4240
+			&& IS_SVR_REV(get_svr(), 2, 0))
+		set_txfifothresh(ehci, TXFIFOTHRESH);
+
 	return 0;
 }
 
@@ -178,4 +183,18 @@ static bool has_erratum_a005275(void)
 	}
 
 	return false;
+}
+
+/*
+ * Setting the value of TXFIFO_THRESH field in TXFILLTUNING register
+ * to counter DDR latencies in writing data into Tx buffer.
+ * This prevents Tx buffer from getting underrun
+ */
+static void set_txfifothresh(struct usb_ehci *ehci, u32 txfifo_thresh)
+{
+	u32 cmd;
+	cmd = ehci_readl(&ehci->txfilltuning);
+	cmd &= ~TXFIFO_THRESH_MASK;
+	cmd |= TXFIFO_THRESH(txfifo_thresh);
+	ehci_writel(&ehci->txfilltuning, cmd);
 }
