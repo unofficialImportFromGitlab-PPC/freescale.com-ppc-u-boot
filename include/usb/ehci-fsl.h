@@ -163,6 +163,8 @@
 #define CONFIG_SYS_FSL_USB2_ADDR	0
 #endif
 
+#define TXFIFOTHRESH		4
+
 /*
  * USB Registers
  */
