@@ -58,11 +58,14 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	struct usb_ehci *ehci = NULL;
 	const char *phy_type = NULL;
 	size_t len;
+	char current_usb_controller[5];
 #ifdef CONFIG_SYS_FSL_USB_INTERNAL_UTMI_PHY
 	char usb_phy[5];
 
 	usb_phy[0] = '\0';
 #endif
+	memset(current_usb_controller, '\0', 5);
+	snprintf(current_usb_controller, 4, "usb%d", index+1);
 
 	switch (index) {
 	case 0:
@@ -87,8 +90,9 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	out_be32(&ehci->snoop2, 0x80000000 | SNOOP_SIZE_2GB);
 
 	/* Init phy */
-	if (hwconfig_sub("usb1", "phy_type"))
-		phy_type = hwconfig_subarg("usb1", "phy_type", &len);
+	if (hwconfig_sub(current_usb_controller, "phy_type"))
+		phy_type = hwconfig_subarg(current_usb_controller,
+				"phy_type", &len);
 	else
 		phy_type = getenv("usb_phy_type");
 
