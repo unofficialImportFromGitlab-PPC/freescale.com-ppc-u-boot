@@ -188,17 +188,15 @@ void config_8560_ioports (volatile ccsr_cpm_t * cpm)
 #endif
 
 #ifdef CONFIG_SYS_FSL_CPC
-static void enable_cpc(void)
+
+#if defined(CONFIG_RAMBOOT_PBL) || defined(CONFIG_SECURE_HKAREA_CPC)
+static void disable_cpc_sram(void)
 {
 	int i;
-	u32 size = 0;
 
 	cpc_corenet_t *cpc = (cpc_corenet_t *)CONFIG_SYS_FSL_CPC_ADDR;
 
 	for (i = 0; i < CONFIG_SYS_NUM_CPC; i++, cpc++) {
-		u32 cpccfg0 = in_be32(&cpc->cpccfg0);
-		size += CPC_CFG0_SZ_K(cpccfg0);
-#if defined(CONFIG_RAMBOOT_PBL) || defined(CONFIG_SECURE_HKAREA_CPC)
 		if (in_be32(&cpc->cpcsrcr0) & CPC_SRCR0_SRAMEN) {
 			/* find and disable LAW of SRAM */
 			struct law_entry law = find_law(CONFIG_SYS_INIT_L3_ADDR);
@@ -213,7 +211,20 @@ static void enable_cpc(void)
 			out_be32(&cpc->cpccsr0, 0);
 			out_be32(&cpc->cpcsrcr0, 0);
 		}
+	}
+}
 #endif
+
+static void enable_cpc(void)
+{
+	int i;
+	u32 size = 0;
+
+	cpc_corenet_t *cpc = (cpc_corenet_t *)CONFIG_SYS_FSL_CPC_ADDR;
+
+	for (i = 0; i < CONFIG_SYS_NUM_CPC; i++, cpc++) {
+		u32 cpccfg0 = in_be32(&cpc->cpccfg0);
+		size += CPC_CFG0_SZ_K(cpccfg0);
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_CPC_A002
 		setbits_be32(&cpc->cpchdbcr0, CPC_HDBCR0_TAG_ECC_SCRUB_DIS);
@@ -399,6 +410,10 @@ void cpu_init_f (void)
 	law = find_law(CONFIG_SYS_PBI_FLASH_BASE);
 	if (law.index != -1)
 		disable_law(law.index);
+
+#if defined(CONFIG_SECURE_HKAREA_CPC)
+	disable_cpc_sram();
+#endif
 #endif
 
 #ifdef CONFIG_CPM2
@@ -712,6 +727,9 @@ skip_l2:
 	puts("disabled\n");
 #endif
 
+#if defined(CONFIG_RAMBOOT_PBL)
+	disable_cpc_sram();
+#endif
 	enable_cpc();
 
 #ifndef CONFIG_SYS_FSL_NO_SERDES
