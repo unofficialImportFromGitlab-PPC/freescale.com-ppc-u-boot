@@ -525,9 +525,14 @@ static int esdhc_getcd(struct mmc *mmc)
 	struct fsl_esdhc *regs = (struct fsl_esdhc *)cfg->esdhc_base;
 	int timeout = 1000;
 
-/* Card detecting pin is not functional on T4240QDS */
+/*
+ * Card detecting pin is not functional on T4240QDS with rev 1.0 SoC.
+ * Presuming card is present.
+ */
 #if defined(CONFIG_T4240QDS)
-	return 1;
+	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC) ||
+			IS_SVR_REV(get_svr(), 1, 0))
+		return 1;
 #endif
 	while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_CINS) && --timeout)
 		udelay(1000);
@@ -611,6 +616,19 @@ int fsl_esdhc_initialize(bd_t *bis, struct fsl_esdhc_cfg *cfg)
 #if defined(CONFIG_T4240QDS)
 	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC_WIDTH8))
 		mmc->host_caps &= ~MMC_MODE_8BIT;
+
+	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC) &&
+	    !(esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL) &&
+	    (readb(QIXIS_BASE + QIXIS_FPGA_REV) < 7)) {
+		ccsr_gur_t *gur;
+
+		/*
+		 * eMMC card on T4240QDS with Rev2.0 SoC need to invert the
+		 * write protect pin to unlock the card, for FPGA ver < 7.
+		 */
+		gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+		gur->sdhcpcr |= SDHCDCR_WP_INV;
+	}
 #endif
 
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
