@@ -476,6 +476,56 @@ fsl_i2c_write(struct i2c_adapter *adap, u8 dev, uint addr, int alen,
 
 	return -1;
 }
+/* To perform any generic transaction on a I2C slave which involves
+
+   START: Address: Write bytes(cmd + data): clock extension:
+   RESTART: Address: Read bytes (data + status): STOP
+
+   This is different from standard I2C devices which are supported
+   in existing i2c_read and i2c_write functions.
+   */
+int
+fsl_i2c_write_read(struct i2c_adapter *adap, u8 dev, u8 *wdata, int wlength,
+		   u8 *rdata, int rlength)
+{
+	struct fsl_i2c *device = (struct fsl_i2c *)i2c_dev[adap->hwadapnr];
+
+	int i = -1; /* signal error */
+
+	if (i2c_wait4bus(adap))
+		return -1;
+
+/* Generate a START and send the Address and the Tx Bytes to the slave.
+ * "START: Address: Write bytes wdata[wlength]"
+ */
+	if (i2c_write_addr(adap, dev, I2C_WRITE_BIT, 0) != 0)
+		i = __i2c_write(adap, wdata, wlength);
+
+	if (i != wlength)
+		return -1;
+
+/* Now issue a READ by generating a RESTART condition
+ * "RESTART: Address: Read bytes rdata[rlength]"
+ * Some slaves may also do clock stretching and keep the SCL low until
+ * they finish some command processing at their end. The I2C controller
+ * will wait for the clock stretching period to get over before generating
+ * the RESTART condition on the bus.
+ */
+	if (rlength
+	    && i2c_write_addr(adap, dev, I2C_READ_BIT, 1) != 0)
+		i = __i2c_read(adap, rdata, rlength);
+
+/* Generate STOP */
+	writeb(I2C_CR_MEN, &device->cr);
+
+	if (i2c_wait4bus(adap)) /* Wait until STOP */
+		debug("i2c_write_read: wait4bus timed out\n");
+
+	if (i != rlength)
+		return -1;
+
+	return 0;
+}
 
 static int
 fsl_i2c_probe(struct i2c_adapter *adap, uchar chip)
@@ -507,12 +557,12 @@ static unsigned int fsl_i2c_set_bus_speed(struct i2c_adapter *adap,
  * Register fsl i2c adapters
  */
 U_BOOT_I2C_ADAP_COMPLETE(fsl_0, fsl_i2c_init, fsl_i2c_probe, fsl_i2c_read,
-			 fsl_i2c_write, fsl_i2c_set_bus_speed,
-			 CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE,
-			 0);
+			 fsl_i2c_write, fsl_i2c_write_read,
+			 fsl_i2c_set_bus_speed, CONFIG_SYS_I2C_SPEED,
+			 CONFIG_SYS_I2C_SLAVE,  0);
 #ifdef CONFIG_SYS_I2C2_OFFSET
 U_BOOT_I2C_ADAP_COMPLETE(fsl_1, fsl_i2c_init, fsl_i2c_probe, fsl_i2c_read,
-			 fsl_i2c_write, fsl_i2c_set_bus_speed,
-			 CONFIG_SYS_I2C2_SPEED, CONFIG_SYS_I2C2_SLAVE,
-			 1);
+			 fsl_i2c_write, fsl_i2c_write_read,
+			 fsl_i2c_set_bus_speed, CONFIG_SYS_I2C2_SPEED,
+			 CONFIG_SYS_I2C2_SLAVE, 1);
 #endif

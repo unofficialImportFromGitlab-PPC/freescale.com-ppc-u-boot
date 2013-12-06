@@ -352,6 +352,13 @@ int i2c_write(uint8_t chip, unsigned int addr, int alen,
 	return I2C_ADAP->write(I2C_ADAP, chip, addr, alen, buffer, len);
 }
 
+int i2c_write_read(uchar chip, uint8_t *wbuffer, int wlen, uint8_t *rbuffer,
+								int rlen)
+{
+	return I2C_ADAP->write_read(I2C_ADAP, chip, wbuffer, wlen,
+				    rbuffer, rlen);
+}
+
 int i2c_set_bus_speed(unsigned int speed)
 {
 	int ret;

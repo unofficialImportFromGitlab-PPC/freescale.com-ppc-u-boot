@@ -81,6 +81,9 @@ struct i2c_adapter {
 	int		(*write)(struct i2c_adapter *adap, uint8_t chip,
 				uint addr, int alen, uint8_t *buffer,
 				int len);
+	int		(*write_read)(struct i2c_adapter *adap, uint8_t chip,
+				uint8_t *wbuffer, int wlength, uint8_t *rbuffer,
+				int rlength);
 	uint		(*set_bus_speed)(struct i2c_adapter *adap,
 				uint speed);
 	int		speed;
@@ -90,13 +93,14 @@ struct i2c_adapter {
 	char		*name;
 };
 
-#define U_BOOT_I2C_MKENT_COMPLETE(_init, _probe, _read, _write, \
+#define U_BOOT_I2C_MKENT_COMPLETE(_init, _probe, _read, _write, _write_read, \
 		_set_speed, _speed, _slaveaddr, _hwadapnr, _name) \
 	{ \
 		.init		=	_init, \
 		.probe		=	_probe, \
 		.read		=	_read, \
 		.write		=	_write, \
+		.write_read	=	_write_read, \
 		.set_bus_speed	=	_set_speed, \
 		.speed		=	_speed, \
 		.slaveaddr	=	_slaveaddr, \
@@ -105,10 +109,11 @@ struct i2c_adapter {
 		.name		=	#_name \
 };
 
-#define U_BOOT_I2C_ADAP_COMPLETE(_name, _init, _probe, _read, _write, \
-			_set_speed, _speed, _slaveaddr, _hwadapnr) \
-	ll_entry_declare(struct i2c_adapter, _name, i2c) = \
-	U_BOOT_I2C_MKENT_COMPLETE(_init, _probe, _read, _write, \
+#define U_BOOT_I2C_ADAP_COMPLETE(_name, _init, _probe, _read, _write,	\
+			_write_read, _set_speed, _speed, _slaveaddr,	\
+			_hwadapnr)					\
+	ll_entry_declare(struct i2c_adapter, _name, i2c) =		\
+	U_BOOT_I2C_MKENT_COMPLETE(_init, _probe, _read, _write,  _write_read, \
 		 _set_speed, _speed, _slaveaddr, _hwadapnr, _name);
 
 struct i2c_adapter *i2c_get_adapter(int index);
@@ -278,6 +283,8 @@ int i2c_read(uint8_t chip, unsigned int addr, int alen,
 
 int i2c_write(uint8_t chip, unsigned int addr, int alen,
 				uint8_t *buffer, int len);
+int i2c_write_read(uint8_t chip, uchar *wbuffer, int wlen, uchar *rbuffer,
+								int rlen);
 
 /*
  * Utility routines to read/write registers.
@@ -334,6 +341,8 @@ int i2c_probe(uchar chip);
  */
 int i2c_read(uchar chip, uint addr, int alen, uchar *buffer, int len);
 int i2c_write(uchar chip, uint addr, int alen, uchar *buffer, int len);
+int i2c_write_read(uchar chip, uchar *wbuffer, int wlen, uchar *rbuffer,
+								int rlen);
 
 /*
  * Utility routines to read/write registers.
