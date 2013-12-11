@@ -165,6 +165,8 @@ unsigned long get_board_ddr_clk(void);
 #define QIXIS_RCFG_CTL_RECONFIG_IDLE	0x20
 #define QIXIS_RCFG_CTL_RECONFIG_START	0x21
 #define QIXIS_RCFG_CTL_WATCHDOG_ENBLE	0x08
+#define QIXIS_BRDCFG5			0x55
+#define QIXIS_MUX_SDHC			2
 #define QIXIS_BASE_PHYS		(0xf00000000ull | QIXIS_BASE)
 
 #define CONFIG_SYS_CSPR3_EXT	(0xf)

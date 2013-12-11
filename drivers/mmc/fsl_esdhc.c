@@ -506,6 +506,15 @@ static int esdhc_getcd(struct mmc *mmc)
 	struct fsl_esdhc *regs = (struct fsl_esdhc *)cfg->esdhc_base;
 	int timeout = 1000;
 
+	/*
+	 * Card detecting pin is not functional on T4240QDS with rev 1.0 SoC.
+	 * Presuming card is present.
+	 */
+#if defined(CONFIG_T4240QDS)
+	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC) ||
+	    IS_SVR_REV(get_svr(), 1, 0))
+		return 1;
+#endif
 	while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_CINS) && --timeout)
 		udelay(1000);
 
