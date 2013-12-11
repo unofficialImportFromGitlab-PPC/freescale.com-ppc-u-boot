@@ -605,6 +605,11 @@ int fsl_esdhc_initialize(bd_t *bis, struct fsl_esdhc_cfg *cfg)
 			mmc->host_caps &= ~MMC_MODE_4BIT;
 	}
 
+	/* Detect if the upper 4 pins are used for ESDHC */
+#if defined(CONFIG_T4240QDS)
+	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC_WIDTH8))
+		mmc->host_caps &= ~MMC_MODE_8BIT;
+#endif
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
 		mmc->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 
