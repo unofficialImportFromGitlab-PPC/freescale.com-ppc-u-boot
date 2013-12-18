@@ -2565,6 +2565,7 @@ typedef struct ccsr_gur {
 #endif
 
 #define SDHCDCR_CD_INV		0x80000000 /* invert SDHC card detect */
+#define SDHCDCR_WP_INV		0x40000000 /* Invert SDHC write protect */
 
 #ifdef CONFIG_SYS_FSL_QORIQ_CHASSIS2
 #define MAX_SERDES 4

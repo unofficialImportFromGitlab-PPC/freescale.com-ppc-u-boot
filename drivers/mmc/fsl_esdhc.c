@@ -609,6 +609,20 @@ int fsl_esdhc_initialize(bd_t *bis, struct fsl_esdhc_cfg *cfg)
 #if defined(CONFIG_T4240QDS)
 	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC_WIDTH8))
 		mmc->host_caps &= ~MMC_MODE_8BIT;
+
+	if (!(readb(QIXIS_BASE + QIXIS_BRDCFG5) & QIXIS_MUX_SDHC) &&
+	    !(esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL) &&
+	    (readb(QIXIS_BASE + QIXIS_FPGA_REV) < 7)) {
+		ccsr_gur_t *gur;
+
+		/*
+		 * eMMC card on T4240QDS with Rev2.0 SoC need to invert the
+		 * write protect pin to unlock the card, for FPGA ver < 7.
+		 */
+		gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+		setbits_be32(&gur->sdhcpcr, in_be32(&gur->sdhcpcr) |
+				SDHCDCR_WP_INV);
+	}
 #endif
 	if (caps & ESDHC_HOSTCAPBLT_HSS)
 		mmc->host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;

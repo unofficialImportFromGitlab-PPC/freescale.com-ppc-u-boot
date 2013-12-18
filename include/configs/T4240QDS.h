@@ -168,6 +168,7 @@ unsigned long get_board_ddr_clk(void);
 #define QIXIS_BRDCFG5			0x55
 #define QIXIS_MUX_SDHC			2
 #define QIXIS_MUX_SDHC_WIDTH8		1
+#define QIXIS_FPGA_REV			0x002
 #define QIXIS_BASE_PHYS		(0xf00000000ull | QIXIS_BASE)
 
 #define CONFIG_SYS_CSPR3_EXT	(0xf)
