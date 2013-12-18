@@ -151,6 +151,14 @@ void fm_disable_port(enum fm_port port)
 	fman_disable_port(port);
 }
 
+void fm_enable_port(enum fm_port port)
+{
+	int i = fm_port_to_index(port);
+
+	fm_info[i].enabled = 1;
+	fman_enable_port(port);
+}
+
 void fm_info_set_mdio(enum fm_port port, struct mii_dev *bus)
 {
 	int i = fm_port_to_index(port);
@@ -284,7 +292,7 @@ static int ft_fixup_xgec(void *blob, struct fm_eth_info *info)
 						    FM1_10GEC3_RX_PORT_ADDR +
 						    i * 0x1000);
 		if (off > 0) {
-			fdt_setprop(blob, off, "cell-index", &ci, 4);
+			fdt_setprop(blob, off, "cell-index", &ci, sizeof(int));
 			fdt_setprop(blob, off, "compatible",
 				    "fsl,fman-port-10g-rx", 20);
 		} else {
@@ -295,7 +303,7 @@ static int ft_fixup_xgec(void *blob, struct fm_eth_info *info)
 						    FM1_10GEC3_TX_PORT_ADDR +
 						    i * 0x1000);
 		if (off > 0) {
-			fdt_setprop(blob, off, "cell-index", &ci, 4);
+			fdt_setprop(blob, off, "cell-index", &ci, sizeof(int));
 			fdt_setprop(blob, off, "compatible",
 				    "fsl,fman-port-10g-tx", 20);
 		} else {
@@ -306,7 +314,7 @@ static int ft_fixup_xgec(void *blob, struct fm_eth_info *info)
 						    FM1_10GEC3_MAC_ADDR +
 						    i * 0x2000);
 		if (off > 0)
-			fdt_setprop(blob, off, "cell-index", &ci, 4);
+			fdt_setprop(blob, off, "cell-index", &ci, sizeof(int));
 		else
 			goto err;
 	}

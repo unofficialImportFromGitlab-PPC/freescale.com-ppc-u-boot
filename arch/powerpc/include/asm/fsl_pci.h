@@ -18,13 +18,7 @@
 /* Freescale-specific PCI config registers */
 #define FSL_PCI_PBFR		0x44
 
-#ifndef CONFIG_SYS_FSL_PCI_VER_3_X
-/* Currently only the PCIe capability is used, so hardcode the offset.
- * if more capabilities need to be justified, the capability link method
- * should be applied here
- */
 #define FSL_PCIE_CFG_RDY	0x4b0
-#endif
 #define FSL_PCI_CFG_READY	1 /* Endpoint: allow inbound configuration */
 #define FSL_PROG_IF_AGENT	0x1
 

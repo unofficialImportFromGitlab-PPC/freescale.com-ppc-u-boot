@@ -7,12 +7,12 @@
 #include <common.h>
 #include <i2c.h>
 #include <asm/fsl_law.h>
-#include <asm/fsl_ddr_sdram.h>
-#include <asm/fsl_ddr_dimm_params.h>
+#include <fsl_ddr_sdram.h>
+#include <fsl_ddr_dimm_params.h>
 
 #include "cpld.h"
-#define C29XPCIE_HARDWARE_REVA 0x40
 
+#define C29XPCIE_HARDWARE_REVA	0x40
 /*
  * Micron MT41J128M16HA-15E
  * */
@@ -31,7 +31,7 @@ dimm_params_t ddr_raw_timing = {
 	.burst_lengths_bitmask = 0x0c,
 
 	.tckmin_x_ps = 1650,
-	.caslat_x = 0x7e << 4,  /* 5,6,7,8,9,10 */
+	.caslat_x = 0x7e << 4,	/* 5,6,7,8,9,10 */
 	.taa_ps = 14050,
 	.twr_ps = 15000,
 	.trcd_ps = 13500,
@@ -65,8 +65,8 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 				dimm_params_t *pdimm,
 				unsigned int ctrl_num)
 {
-	int i;
 	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
+	int i;
 
 	popts->clk_adjust = 4;
 	popts->cpo_override = 0x1f;
@@ -94,13 +94,14 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	}
 }
 
-void get_spd(generic_spd_eeprom_t *spd, u8 i2c_addr)
+void get_spd(generic_spd_eeprom_t *spd, u8 i2c_address)
 {
-	int ret = i2c_read(i2c_addr, 0, 2, (uchar *)spd,
+	int ret = i2c_read(i2c_address, 0, 2, (uint8_t *)spd,
 				sizeof(generic_spd_eeprom_t));
 
 	if (ret) {
-		printf("DDR: failed to read SPD from address %u\n", i2c_addr);
+		printf("DDR: failed to read SPD from address %u\n",
+				i2c_address);
 		memset(spd, 0, sizeof(generic_spd_eeprom_t));
 	}
 }

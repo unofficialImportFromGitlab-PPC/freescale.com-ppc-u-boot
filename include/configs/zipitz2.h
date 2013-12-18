@@ -117,7 +117,6 @@ unsigned char zipitz2_spi_read(void);
  */
 #ifdef	CONFIG_CMD_KGDB
 #define	CONFIG_KGDB_BAUDRATE		230400		/* speed to run kgdb serial port */
-#define	CONFIG_KGDB_SER_INDEX		2		/* which serial port to use */
 #endif
 
 /*
@@ -128,8 +127,6 @@ unsigned char zipitz2_spi_read(void);
 #define	CONFIG_SYS_LONGHELP				/* undef to save memory	*/
 #ifdef	CONFIG_SYS_HUSH_PARSER
 #define	CONFIG_SYS_PROMPT		"$ "		/* Monitor Command Prompt */
-#else
-#define	CONFIG_SYS_PROMPT		"=> "		/* Monitor Command Prompt */
 #endif
 #define	CONFIG_SYS_CBSIZE		256		/* Console I/O Buffer Size */
 #define	CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)	/* Print Buffer Size */

@@ -103,7 +103,7 @@
 #define CONFIG_PANIC_HANG
 
 /* DDR Setup */
-#define CONFIG_FSL_DDR3
+#define CONFIG_SYS_FSL_DDR3
 #define CONFIG_DDR_SPD
 #define CONFIG_SYS_SPD_BUS_NUM		0
 #define SPD_EEPROM_ADDRESS		0x50
@@ -191,13 +191,14 @@
 				| CSPR_MSEL_NAND \
 				| CSPR_V)
 #define CONFIG_SYS_NAND_AMASK	IFC_AMASK(64*1024)
+#define CONFIG_SYS_NAND_OOBSIZE	0x00000280	/* 640b */
 #define CONFIG_SYS_NAND_CSOR	(CSOR_NAND_ECC_ENC_EN	/* ECC on encode */ \
 				| CSOR_NAND_ECC_DEC_EN	/* ECC on decode */ \
 				| CSOR_NAND_ECC_MODE_4	/* 4-bit ECC */ \
-				| CSOR_NAND_RAL_2	/* RAL = 2 Bytes */ \
-				| CSOR_NAND_PGS_2K	/* Page Size = 2k */ \
-				| CSOR_NAND_SPRZ_64	/* Spare size = 64 */ \
-				| CSOR_NAND_PB(64))	/* 64 Pages Per Block */
+				| CSOR_NAND_RAL_3	/* RAL = 3 Bytes */ \
+				| CSOR_NAND_PGS_8K	/* Page Size = 8K */ \
+				| CSOR_NAND_SPRZ_CSOR_EXT /*oob in csor_ext*/\
+				| CSOR_NAND_PB(128))	/*128 Pages Per Block*/
 #define CONFIG_SYS_NAND_FTIM0	(FTIM0_NAND_TCCST(0x01) | \
 				FTIM0_NAND_TWP(0x0c)   | \
 				FTIM0_NAND_TWCHT(0x08) | \
@@ -224,6 +225,7 @@
 #define CONFIG_SYS_CSPR1		CONFIG_SYS_NAND_CSPR
 #define CONFIG_SYS_AMASK1		CONFIG_SYS_NAND_AMASK
 #define CONFIG_SYS_CSOR1		CONFIG_SYS_NAND_CSOR
+#define CONFIG_SYS_CSOR1_EXT		CONFIG_SYS_NAND_OOBSIZE
 #define CONFIG_SYS_CS1_FTIM0		CONFIG_SYS_NAND_FTIM0
 #define CONFIG_SYS_CS1_FTIM1		CONFIG_SYS_NAND_FTIM1
 #define CONFIG_SYS_CS1_FTIM2		CONFIG_SYS_NAND_FTIM2
@@ -396,14 +398,12 @@
 #define CONFIG_CMDLINE_EDITING			/* Command-line editing */
 #define CONFIG_AUTO_COMPLETE			/* add autocompletion support */
 #define CONFIG_SYS_LOAD_ADDR	0x2000000	/* default load address */
-#define CONFIG_SYS_PROMPT	"=> "		/* Monitor Command Prompt */
 
 #define CONFIG_SYS_CBSIZE	256		/* Console I/O Buffer Size */
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
 						/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS	16		/* max number of command args */
 #define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE/* Boot Argument Buffer Size */
-#define CONFIG_SYS_HZ		1000		/* dec freq: 1ms ticks */
 
 /*
  * For booting Linux, the board info and command line data
@@ -432,6 +432,8 @@
 #define CONFIG_BOOTDELAY	-1	/* -1 disables auto-boot */
 
 #define CONFIG_BAUDRATE		115200
+
+#define CONFIG_DEF_HWCONFIG	fsl_ddr:ecc=on
 
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"hwconfig=" __stringify(CONFIG_DEF_HWCONFIG)  "\0"	\

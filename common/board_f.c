@@ -249,7 +249,11 @@ void dram_init_banksize(void)
 static int init_func_i2c(void)
 {
 	puts("I2C:   ");
+#ifdef CONFIG_SYS_I2C
+	i2c_init_all();
+#else
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
+#endif
 	puts("ready\n");
 	return 0;
 }
@@ -1006,6 +1010,7 @@ void board_init_f(ulong boot_flags)
 #endif
 
 	gd->flags = boot_flags;
+	gd->have_console = 0;
 
 	if (initcall_run_list(init_sequence_f))
 		hang();

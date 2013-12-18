@@ -18,6 +18,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+
 #ifndef CONFIG_SYS_FSL_NUM_CC_PLLS
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	6
 #endif
@@ -85,10 +86,11 @@ void get_sys_info(sys_info_t *sys_info)
 	mem_pll_rat = (in_be32(&gur->rcwsr[0]) >>
 			FSL_CORENET_RCWSR0_MEM_PLL_RAT_SHIFT)
 			& FSL_CORENET_RCWSR0_MEM_PLL_RAT_MASK;
-	/* T4240 Rev2.0 MEM_PLL_RAT uses a value which is half of
-	 * T4240 Rev1.0. eg. It's 12 in Rev1.0, however, for Rev2.0 it uses 6
+	/* T4240/T4160 Rev2.0 MEM_PLL_RAT uses a value which is half of
+	 * T4240/T4160 Rev1.0. eg. It's 12 in Rev1.0, however, for Rev2.0
+	 * it uses 6.
 	 */
-#ifdef CONFIG_PPC_T4240
+#if defined(CONFIG_PPC_T4240) || defined(CONFIG_PPC_T4160)
 	if (SVR_MAJ(get_svr()) >= 2)
 		mem_pll_rat *= 2;
 #endif
@@ -172,6 +174,7 @@ void get_sys_info(sys_info_t *sys_info)
 	}
 #else
 	sys_info->freq_pme = sys_info->freq_systembus / CONFIG_SYS_PME_CLK;
+
 #endif
 #endif
 
@@ -226,6 +229,9 @@ void get_sys_info(sys_info_t *sys_info)
 		break;
 	case 4:
 		sys_info->freq_fman[1] = freq_c_pll[CONFIG_SYS_FM2_CLK + 1] / 4;
+		break;
+	case 5:
+		sys_info->freq_fman[1] = sys_info->freq_systembus;
 		break;
 	case 6:
 		sys_info->freq_fman[1] = freq_c_pll[CONFIG_SYS_FM2_CLK] / 2;

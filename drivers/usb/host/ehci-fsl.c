@@ -37,7 +37,8 @@ static int usb_phy_clk_valid(struct usb_ehci *ehci)
  *
  * Excerpts from linux ehci fsl driver.
  */
-int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
+int ehci_hcd_init(int index, enum usb_init_type init,
+		struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 {
 	struct ehci_ctrl *ehci_ctrl = container_of(hccr,
 					struct ehci_ctrl, hccr);

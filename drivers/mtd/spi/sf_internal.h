@@ -28,7 +28,7 @@
 #define CMD_PAGE_PROGRAM		0x02
 #define CMD_WRITE_DISABLE		0x04
 #define CMD_READ_STATUS			0x05
-#define CMD_FLAG_STATUS			0x70
+#define CMD_READ_STATUS1		0x35
 #define CMD_WRITE_ENABLE		0x06
 #define CMD_READ_CONFIG			0x35
 #define CMD_FLAG_STATUS			0x70
@@ -143,14 +143,6 @@ int spi_flash_write_common(struct spi_flash *flash, const u8 *cmd,
  */
 int spi_flash_cmd_write_ops(struct spi_flash *flash, u32 offset,
 		size_t len, const void *buf);
-
-#ifdef CONFIG_SPI_FLASH_BAR
-/* Program the bank address register */
-int spi_flash_cmd_bankaddr_write(struct spi_flash *flash, u8 bank_sel);
-
-/* Configure the BAR - discover the bank cmds */
-int spi_flash_bank_config(struct spi_flash *flash, u8 idcode0);
-#endif
 
 /*
  * Same as spi_flash_cmd_read() except it also claims/releases the SPI
