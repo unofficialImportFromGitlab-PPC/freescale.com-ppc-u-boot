@@ -115,8 +115,10 @@ static int do_mmcinfo(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	mmc = find_mmc_device(curr_device);
 
 	if (mmc) {
-		if (!mmc_init(mmc))
-			print_mmcinfo(mmc);
+		if (mmc_init(mmc))
+			return 1;
+
+		print_mmcinfo(mmc);
 		return 0;
 	} else {
 		printf("no mmc device at slot %x\n", curr_device);
@@ -188,10 +190,12 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			return 1;
 		}
 
-		if (mmc_init(mmc))
+		if (mmc_init(mmc)) {
+			mmc->has_init = 0;
 			return 1;
-		else
+		} else {
 			return 0;
+		}
 	} else if (strncmp(argv[1], "part", 4) == 0) {
 		block_dev_desc_t *mmc_dev;
 		struct mmc *mmc;
@@ -414,6 +418,13 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			break;
 		default:
 			BUG();
+		}
+
+		if (state == MMC_ERASE) {
+			printf("%d blocks %s: %s\n",
+			       n ? n : 0, argv[1],
+			       n ? "OK" : "ERROR");
+			return !n;
 		}
 
 		printf("%d blocks %s: %s\n",
