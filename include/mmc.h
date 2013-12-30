@@ -53,6 +53,7 @@
 #define COMM_ERR		-18 /* Communications Error */
 #define TIMEOUT			-19
 #define IN_PROGRESS		-20 /* operation is in progress */
+#define NOT_SUPPORT		-21 /* Operation is not support */
 
 #define MMC_CMD_GO_IDLE_STATE		0
 #define MMC_CMD_SEND_OP_COND		1
@@ -104,6 +105,39 @@
 #define OCR_HCS			0x40000000
 #define OCR_VOLTAGE_MASK	0x007FFF80
 #define OCR_ACCESS_MODE		0x60000000
+
+/*
+ * Card Command Classes (CCC)
+ *
+ * (0) Basic protocol functions (CMD0,1,2,3,4,7,9,10,12,13,15)
+ * (and for SPI, CMD58,59)
+ * (1) Stream read commands (CMD11)
+ * (2) Block read commands (CMD16,17,18)
+ * (3) Stream write commands (CMD20)
+ * (4) Block write commands (CMD16,24,25,26,27)
+ * (5) Ability to erase blocks (CMD32,33,34,35,36,37,38,39)
+ * (6) Able to write protect blocks (CMD28,29,30)
+ * (7) Able to lock down card (CMD16,CMD42)
+ * (8) Application specific (CMD55,56,57,ACMD*)
+ * (9) I/O mode (CMD5,39,40,52,53)
+ * (10) High speed switch (CMD6,34,35,36,37,50)
+ */
+#define CCC_BASIC		(1<<0)
+#define CCC_STREAM_READ		(1<<1)
+#define CCC_BLOCK_READ		(1<<2)
+#define CCC_STREAM_WRITE	(1<<3)
+#define CCC_BLOCK_WRITE		(1<<4)
+#define CCC_ERASE		(1<<5)
+#define CCC_WRITE_PROT		(1<<6)
+#define CCC_LOCK_CARD		(1<<7)
+#define CCC_APP_SPEC		(1<<8)
+#define CCC_IO_MODE		(1<<9)
+#define CCC_SWITCH		(1<<10)
+
+#define MMC_ERASE_ARG           0x00000000
+#define MMC_SECURE_ERASE_ARG    0x80000000
+#define MMC_TRIM_ARG            0x00000001
+#define MMC_DISCARD_ARG         0x00000003
 
 #define SECURE_ERASE		0x80000000
 
@@ -160,8 +194,12 @@
 #define EXT_CSD_CARD_TYPE		196	/* RO */
 #define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
 #define EXT_CSD_HC_WP_GRP_SIZE		221	/* RO */
+#define EXT_CSD_REL_WR_SEC_C		222	/* RO */
+#define EXT_CSD_ERASE_TIMEOUT_MULT	223	/* RO */
 #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
 #define EXT_CSD_BOOT_MULT		226	/* RO */
+#define EXT_CSD_SEC_ERASE_MULT		230	/* RO */
+#define EXT_CSD_SEC_FEATURE_SUPPORT	231	/* RO */
 
 /*
  * EXT_CSD field definitions
@@ -178,6 +216,12 @@
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
 
+/* SEC_FEATURE_SUPPORT[231] Field definitions */
+#define EXT_CSD_SEC_ER_EN	(1<<0)
+#define EXT_CSD_SEC_BD_BLK_EN	(1<<2)
+#define EXT_CSD_SEC_GB_CL_EN	(1<<4)
+#define EXT_CSD_SEC_SANITIZE	(1<<6)	/* v4.5 later */
+
 #define EXT_CSD_BOOT_ACK_ENABLE			(1 << 6)
 #define EXT_CSD_BOOT_PARTITION_ENABLE		(1 << 3)
 #define EXT_CSD_PARTITION_ACCESS_ENABLE		(1 << 0)
@@ -186,7 +230,6 @@
 #define EXT_CSD_BOOT_ACK(x)		(x << 6)
 #define EXT_CSD_BOOT_PART_NUM(x)	(x << 3)
 #define EXT_CSD_PARTITION_ACCESS(x)	(x << 0)
-
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
@@ -270,10 +313,15 @@ struct mmc {
 	ushort rca;
 	char part_config;
 	char part_num;
+	ushort cmdclass;
 	uint tran_speed;
 	uint read_bl_len;
 	uint write_bl_len;
 	uint erase_grp_size;
+	uint erase_timeout_mult;
+	char sec_feature_support;
+	uint sec_erase_mult;
+	uint sec_erase_timeout;
 	u64 capacity;
 	u64 capacity_user;
 	u64 capacity_boot;
