@@ -276,7 +276,8 @@ static int ft_fixup_xgec(void *blob, struct fm_eth_info *info)
 #define FM1_10GEC3_TX_PORT_ADDR	(CONFIG_SYS_CCSRBAR_PHYS + 0x4a8000)
 #define FM1_10GEC3_MAC_ADDR	(CONFIG_SYS_CCSRBAR_PHYS + 0x4e0000)
 
-	if ((info->port == FM1_10GEC3) || (info->port == FM1_10GEC4)) {
+	if (((info->port == FM1_10GEC3) || (info->port == FM1_10GEC4)) &&
+	    info->enabled) {
 		ci = (info->port == FM1_10GEC3) ? 2 : 3;
 		i = (info->port == FM1_10GEC3) ? 0 : 1;
 
