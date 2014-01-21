@@ -32,12 +32,14 @@ void construct_pamu_addr_table(struct pamu_addr_tbl *tbl, int *num_entries)
 	tbl->end_addr[i] = tbl->start_addr[i] +  tbl->size[i] - 1;
 
 	i++;
+#ifdef CONFIG_SYS_FLASH_BASE_PHYS
 	tbl->start_addr[i] =
 		(uint64_t)virt_to_phys((void *)CONFIG_SYS_FLASH_BASE_PHYS);
 	tbl->size[i] = 256 * 1024 * 1024; /* 256MB flash */
 	tbl->end_addr[i] = tbl->start_addr[i] +  tbl->size[i] - 1;
 
 	i++;
+#endif
 #ifdef DEBUG
 	int j;
 	printf("address\t\t\tsize\n");

@@ -29,24 +29,6 @@
 #define CONFIG_SYS_NO_FLASH
 #endif
 
-#ifdef CONFIG_SRIO_PCIE_BOOT_SLAVE
-/* Set 1M boot space */
-#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR (CONFIG_SYS_TEXT_BASE & 0xfff00000)
-#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS \
-		(0x300000000ull | CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR)
-#define CONFIG_RESET_VECTOR_ADDRESS 0xfffffffc
-#define CONFIG_SYS_NO_FLASH
-#endif
-
-#ifdef CONFIG_SRIO_PCIE_BOOT_SLAVE
-/* Set 1M boot space */
-#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR (CONFIG_SYS_TEXT_BASE & 0xfff00000)
-#define CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR_PHYS \
-		(0x300000000ull | CONFIG_SYS_SRIO_PCIE_BOOT_SLAVE_ADDR)
-#define CONFIG_RESET_VECTOR_ADDRESS 0xfffffffc
-#define CONFIG_SYS_NO_FLASH
-#endif
-
 /* High Level Configuration Options */
 #define CONFIG_BOOKE
 #define CONFIG_E500			/* BOOKE e500 family */
@@ -211,7 +193,7 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_DDR_SPD
 #define CONFIG_SYS_DDR_RAW_TIMING
-#define CONFIG_FSL_DDR3
+#define CONFIG_SYS_FSL_DDR3
 #define CONFIG_FSL_DDR_INTERACTIVE
 
 #define CONFIG_SYS_SPD_BUS_NUM	0
@@ -740,7 +722,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CMDLINE_EDITING			/* Command-line editing */
 #define CONFIG_AUTO_COMPLETE			/* add autocompletion support */
 #define CONFIG_SYS_LOAD_ADDR	0x2000000	/* default load address */
-#define CONFIG_SYS_PROMPT	"=> "		/* Monitor Command Prompt */
 #ifdef CONFIG_CMD_KGDB
 #define CONFIG_SYS_CBSIZE	1024		/* Console I/O Buffer Size */
 #else
@@ -749,7 +730,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)
 #define CONFIG_SYS_MAXARGS	16		/* max number of command args */
 #define CONFIG_SYS_BARGSIZE	CONFIG_SYS_CBSIZE/* Boot Argument Buffer Size */
-#define CONFIG_SYS_HZ		1000		/* decrementer freq: 1ms ticks*/
 
 /*
  * For booting Linux, the board info and command line data
@@ -761,7 +741,6 @@ unsigned long get_board_ddr_clk(void);
 
 #ifdef CONFIG_CMD_KGDB
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */
-#define CONFIG_KGDB_SER_INDEX	2	/* which serial port to use */
 #endif
 
 /*

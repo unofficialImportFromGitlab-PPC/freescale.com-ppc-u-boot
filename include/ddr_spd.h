@@ -126,8 +126,8 @@ typedef struct ddr2_spd_eeprom_s {
 	unsigned char tdqsq;       /* 44 Max DQS to DQ skew (tDQSQ max) */
 	unsigned char tqhs;        /* 45 Max Read DataHold skew (tQHS) */
 	unsigned char pll_relock;  /* 46 PLL Relock time */
-	unsigned char t_casemax;   /* 47 Tcasemax */
-	unsigned char psi_ta_dram; /* 48 Thermal Resistance of DRAM Package from
+	unsigned char t_casemax;    /* 47 Tcasemax */
+	unsigned char psi_ta_dram;  /* 48 Thermal Resistance of DRAM Package from
 					 Top (Case) to Ambient (Psi T-A DRAM) */
 	unsigned char dt0_mode;    /* 49 DRAM Case Temperature Rise from Ambient
 					 due to Activate-Precharge/Mode Bits
@@ -155,7 +155,7 @@ typedef struct ddr2_spd_eeprom_s {
 					 Auto-Precharge (DT7) */
 	unsigned char psi_ta_pll;  /* 58 Thermal Resistance of PLL Package form
 					 Top (Case) to Ambient (Psi T-A PLL) */
-	unsigned char psi_ta_reg;  /* 59 Thermal Reisitance of Register Package
+	unsigned char psi_ta_reg;    /* 59 Thermal Reisitance of Register Package
 					 from Top (Case) to Ambient
 					 (Psi T-A Register) */
 	unsigned char dtpllactive; /* 60 PLL Case Temperature Rise from Ambient

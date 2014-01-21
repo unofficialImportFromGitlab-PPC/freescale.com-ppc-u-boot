@@ -654,7 +654,6 @@ int fsl_pci_init_port(struct fsl_pci_info *pci_info,
 	printf("PCI%s%x: Bus %02x - %02x\n", pcie_cap == PCI_CAP_ID_EXP ?
 		"e" : "", pci_info->pci_num,
 		hose->first_busno, hose->last_busno);
-
 	return(hose->last_busno + 1);
 }
 
@@ -668,6 +667,7 @@ void fsl_pci_config_unlock(struct pci_controller *hose)
 
 	if (!fsl_is_pci_agent(hose))
 		return;
+
 	pcie_cap_pos = pci_hose_find_capability(hose, dev, PCI_CAP_ID_EXP);
 	pci_hose_read_config_byte(hose, dev, pcie_cap_pos, &pcie_cap);
 	if (pcie_cap != 0x0) {

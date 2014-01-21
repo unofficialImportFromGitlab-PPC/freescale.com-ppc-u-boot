@@ -21,26 +21,5 @@
 # MA 02111-1307 USA
 #
 
-include $(TOPDIR)/config.mk
+obj-$(CONFIG_SECURE_BOOT) += jr.o sha.o rsa_sec.o jobdesc.o error.o rng.o
 
-LIB	:= $(obj)libsec.o
-
-COBJS-$(CONFIG_SECURE_BOOT) += jr.o sha.o rsa_sec.o jobdesc.o error.o rng.o
-
-COBJS	:= $(COBJS-y)
-SRCS	:= $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(COBJS))
-
-all:	$(LIB)
-
-$(LIB):	$(obj).depend $(OBJS)
-	$(call cmd_link_o_target, $(OBJS))
-
-#########################################################################
-
-# defines $(obj).depend target
-include $(SRCTREE)/rules.mk
-
-sinclude $(obj).depend
-
-#########################################################################

@@ -13,7 +13,6 @@
 #include <asm/processor.h>
 #include <asm/immap_85xx.h>
 #include <asm/fsl_law.h>
-#include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_serdes.h>
 #include <asm/fsl_portals.h>
 #include <asm/fsl_liodn.h>
