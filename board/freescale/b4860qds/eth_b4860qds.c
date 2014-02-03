@@ -82,6 +82,7 @@ static void initialize_lane_to_slot(void)
 			serdes2_prtcl);
 
 	switch (serdes2_prtcl) {
+	case 0x17:
 	case 0x18:
 		/*
 		 * Configuration:
@@ -127,7 +128,9 @@ static void initialize_lane_to_slot(void)
 		 * Lanes: A,B,C,D: PCI
 		 * Lanes: E,F,G,H: XAUI2
 		 */
+	case 0xb1:
 	case 0xb2:
+	case 0x8c:
 	case 0x8d:
 		/*
 		 * Configuration:
@@ -213,6 +216,7 @@ int board_eth_init(bd_t *bis)
 	fm_info_set_phy_address(FM1_DTSEC6, CONFIG_SYS_FM1_ONBOARD_PHY2_ADDR);
 
 	switch (serdes1_prtcl) {
+	case 0x29:
 	case 0x2a:
 		/* Serdes 1: A-B SGMII, Configuring DTSEC 5 and 6 */
 		debug("Setting phy addresses for FM1_DTSEC5: %x and"
@@ -224,6 +228,7 @@ int board_eth_init(bd_t *bis)
 				CONFIG_SYS_FM1_ONBOARD_PHY2_ADDR);
 		break;
 #ifdef CONFIG_PPC_B4420
+	case 0x17:
 	case 0x18:
 		/* Serdes 1: A-D SGMII, Configuring on board dual SGMII Phy */
 		debug("Setting phy addresses for FM1_DTSEC3: %x and"
@@ -243,6 +248,7 @@ int board_eth_init(bd_t *bis)
 		break;
 	}
 	switch (serdes2_prtcl) {
+	case 0x17:
 	case 0x18:
 		debug("Setting phy addresses on SGMII Riser card for"
 				"FM1_DTSEC1: %x\n",
@@ -256,6 +262,7 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC4,
 				CONFIG_SYS_FM1_DTSEC4_RISER_PHY_ADDR);
 		break;
+	case 0x48:
 	case 0x49:
 		debug("Setting phy addresses on SGMII Riser card for"
 				"FM1_DTSEC1: %x\n",
@@ -267,7 +274,9 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC3,
 				CONFIG_SYS_FM1_DTSEC3_RISER_PHY_ADDR);
 		break;
+	case 0xb1:
 	case 0xb2:
+	case 0x8c:
 	case 0x8d:
 		debug("Setting phy addresses on SGMII Riser card for"
 				"FM1_DTSEC1: %x\n",
@@ -420,16 +429,22 @@ void board_ft_fman_fixup_port(void *fdt, char *compat, phys_addr_t addr,
 	} else if (fm_info_get_enet_if(port) == PHY_INTERFACE_MODE_XGMII) {
 		/* check if it's XFI interface for 10g */
 		switch (prtcl2) {
+		case 0x80:
 		case 0x81:
 		case 0x82:
+		case 0x83:
 		case 0x84:
 		case 0x85:
+		case 0x86:
 		case 0x87:
 		case 0x88:
+		case 0x89:
 		case 0x8a:
 		case 0x8b:
+		case 0x8c:
 		case 0x8d:
 		case 0x8e:
+		case 0xb1:
 		case 0xb2:
 			f_link.phy_id = port;
 			f_link.duplex = 1;

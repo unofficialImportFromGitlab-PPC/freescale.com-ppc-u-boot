@@ -371,6 +371,7 @@ int configure_vsc3316_3308(void)
 	debug("Using SERDES2 Protocol: 0x%x:\n", serdes2_prtcl);
 
 	switch (serdes1_prtcl) {
+	case 0x29:
 	case 0x2a:
 	case 0x2C:
 	case 0x2D:
@@ -402,15 +403,18 @@ int configure_vsc3316_3308(void)
 		}
 		break;
 
+	case 0x01:
 	case 0x02:
 	case 0x04:
 	case 0x05:
 	case 0x06:
+	case 0x07:
 	case 0x08:
 	case 0x09:
 	case 0x0A:
 	case 0x0B:
 	case 0x0C:
+	case 0x2F:
 	case 0x30:
 	case 0x32:
 	case 0x33:
@@ -450,6 +454,7 @@ int configure_vsc3316_3308(void)
 		break;
 
 #ifdef CONFIG_PPC_B4420
+	case 0x17:
 	case 0x18:
 			/*
 			 * Configuration:
@@ -510,8 +515,10 @@ int configure_vsc3316_3308(void)
 	case 0x9E:
 	case 0x9A:
 	case 0x98:
+	case 0x48:
 	case 0x49:
 	case 0x4E:
+	case 0x79:
 	case 0x7A:
 		if (!ret) {
 			ret = vsc3308_config(VSC3308_TX_ADDRESS,
@@ -526,16 +533,22 @@ int configure_vsc3316_3308(void)
 			return ret;
 		}
 		break;
+	case 0x80:
 	case 0x81:
 	case 0x82:
+	case 0x83:
 	case 0x84:
 	case 0x85:
+	case 0x86:
 	case 0x87:
 	case 0x88:
+	case 0x89:
 	case 0x8a:
 	case 0x8b:
+	case 0x8c:
 	case 0x8d:
 	case 0x8e:
+	case 0xb1:
 	case 0xb2:
 		if (!ret) {
 			/*
@@ -801,19 +814,23 @@ int config_serdes1_refclks(void)
 	 * to 122.88MHz
 	 */
 	switch (serdes1_prtcl) {
+	case 0x29:
 	case 0x2A:
 	case 0x2C:
 	case 0x2D:
 	case 0x2E:
+	case 0x01:
 	case 0x02:
 	case 0x04:
 	case 0x05:
 	case 0x06:
+	case 0x07:
 	case 0x08:
 	case 0x09:
 	case 0x0A:
 	case 0x0B:
 	case 0x0C:
+	case 0x2F:
 	case 0x30:
 	case 0x32:
 	case 0x33:
@@ -928,6 +945,7 @@ int config_serdes2_refclks(void)
 	switch (serdes2_prtcl) {
 	case 0x9E:
 	case 0x9A:
+	case 0xb1:
 	case 0xb2:
 		debug("Configuring IDT for PCIe SATA for srds_prctl:%x\n",
 			serdes2_prtcl);

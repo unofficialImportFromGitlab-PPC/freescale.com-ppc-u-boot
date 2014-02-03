@@ -81,16 +81,22 @@ phy_interface_t fman_port_enet_if(enum fm_port port)
 	if (serdes2_prtcl) {
 		serdes2_prtcl >>= FSL_CORENET2_RCWSR4_SRDS2_PRTCL_SHIFT;
 		switch (serdes2_prtcl) {
+		case 0x80:
 		case 0x81:
 		case 0x82:
+		case 0x83:
 		case 0x84:
 		case 0x85:
+		case 0x86:
 		case 0x87:
 		case 0x88:
+		case 0x89:
 		case 0x8a:
 		case 0x8b:
+		case 0x8c:
 		case 0x8d:
 		case 0x8e:
+		case 0xb1:
 		case 0xb2:
 			/*
 			 * Extract hwconfig from environment since environment
