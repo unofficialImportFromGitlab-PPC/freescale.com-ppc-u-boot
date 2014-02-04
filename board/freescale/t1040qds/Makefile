@@ -6,7 +6,6 @@
 
 obj-y	+= t1040qds.o
 obj-y	+= ddr.o
-obj-$(CONFIG_T1040QDS)+= eth_t1040qds.o
 obj-$(CONFIG_PCI)     += pci.o
 obj-y	+= law.o
 obj-y	+= tlb.o
