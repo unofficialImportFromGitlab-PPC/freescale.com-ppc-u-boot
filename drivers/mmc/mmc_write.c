@@ -17,6 +17,10 @@ static ulong mmc_erase_t(struct mmc *mmc, ulong start, lbaint_t blkcnt)
 	struct mmc_cmd cmd;
 	ulong end;
 	int err, start_cmd, end_cmd;
+	uint arg = 0;
+
+	if (!(mmc->cmdclass & CCC_ERASE))
+		return NOT_SUPPORT;
 
 	if (mmc->high_capacity) {
 		end = start + blkcnt - 1;
@@ -48,8 +52,15 @@ static ulong mmc_erase_t(struct mmc *mmc, ulong start, lbaint_t blkcnt)
 	if (err)
 		goto err_out;
 
+	/* SD card only support %MMC_ERASE_ARG */
+	if (!IS_SD(mmc) &&
+	    (mmc->sec_feature_support & EXT_CSD_SEC_ER_EN))
+		arg = MMC_SECURE_ERASE_ARG;
+	else
+		arg = MMC_ERASE_ARG;
+
 	cmd.cmdidx = MMC_CMD_ERASE;
-	cmd.cmdarg = SECURE_ERASE;
+	cmd.cmdarg = arg;
 	cmd.resp_type = MMC_RSP_R1b;
 
 	err = mmc_send_cmd(mmc, &cmd, NULL);
@@ -65,30 +76,49 @@ err_out:
 
 unsigned long mmc_berase(int dev_num, lbaint_t start, lbaint_t blkcnt)
 {
-	int err = 0;
 	struct mmc *mmc = find_mmc_device(dev_num);
-	lbaint_t blk = 0, blk_r = 0;
+	lbaint_t blk = 0, end = 0;
 	int timeout = 1000;
+	bool align = true;
 
 	if (!mmc)
-		return -1;
+		return 0;
+
+	if (!(mmc->cmdclass & CCC_ERASE)) {
+		printf("\nErase operation is not support by card\n");
+		return 0;
+	}
 
 	if ((start % mmc->erase_grp_size) || (blkcnt % mmc->erase_grp_size))
+		align = false;
+
+	end = start + blkcnt;
+	if (start % mmc->erase_grp_size)
+		start += mmc->erase_grp_size -
+			(start % mmc->erase_grp_size);
+	end -= end % mmc->erase_grp_size;
+	if (start >= end) {
+		printf("\nErase size smaller than Erase group ");
+		printf("size [0x%x] is not support by the device.\n",
+		       mmc->erase_grp_size);
+		return 0;
+	}
+
+	if (!align)
 		printf("\n\nCaution! Your devices Erase group is 0x%x\n"
 		       "The erase range would be change to "
 		       "0x" LBAF "~0x" LBAF "\n\n",
-		       mmc->erase_grp_size, start & ~(mmc->erase_grp_size - 1),
-		       ((start + blkcnt + mmc->erase_grp_size)
-		       & ~(mmc->erase_grp_size - 1)) - 1);
+		       mmc->erase_grp_size, start, end);
 
-	while (blk < blkcnt) {
-		blk_r = ((blkcnt - blk) > mmc->erase_grp_size) ?
-			mmc->erase_grp_size : (blkcnt - blk);
-		err = mmc_erase_t(mmc, start + blk, blk_r);
-		if (err)
-			break;
+	blk = end - start;
+	while (start < end) {
+		if (mmc_erase_t(mmc, start, mmc->erase_grp_size)) {
+			printf("\nErase range from 0x" LBAF "~0x" LBAF
+			       " Failed\n", start, start + mmc->erase_grp_size);
+			return 0;
+		}
 
-		blk += blk_r;
+		start += mmc->erase_grp_size;
 
 		/* Waiting for the ready status */
 		if (mmc_send_status(mmc, timeout))
