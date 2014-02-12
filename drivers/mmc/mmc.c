@@ -871,6 +871,8 @@ static int mmc_startup(struct mmc *mmc)
 		}
 	}
 
+	mmc->cmdclass = (cmd.response[1] >> 20) & 0xfff;
+
 	/* divide frequency by 10, since the mults are 10x bigger */
 	freq = fbase[(cmd.response[0] & 0x7)];
 	mult = multipliers[((cmd.response[0] >> 3) & 0xf)];
@@ -934,17 +936,19 @@ static int mmc_startup(struct mmc *mmc)
 	mmc->part_config = MMCPART_NOAVAILABLE;
 	if (!IS_SD(mmc) && (mmc->version >= MMC_VERSION_4)) {
 		/* check  ext_csd version and capacity */
-		err = mmc_send_ext_csd(mmc, ext_csd);
-		if (!err && (ext_csd[EXT_CSD_REV] >= 2)) {
+		if (mmc_send_ext_csd(mmc, ext_csd))
+			return COMM_ERR;
+
+		if (ext_csd[EXT_CSD_REV] >= 2) {
 			/*
 			 * According to the JEDEC Standard, the value of
 			 * ext_csd's capacity is valid if the value is more
 			 * than 2GB
 			 */
 			capacity = ext_csd[EXT_CSD_SEC_CNT] << 0
-					| ext_csd[EXT_CSD_SEC_CNT + 1] << 8
-					| ext_csd[EXT_CSD_SEC_CNT + 2] << 16
-					| ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
+				| ext_csd[EXT_CSD_SEC_CNT + 1] << 8
+				| ext_csd[EXT_CSD_SEC_CNT + 2] << 16
+				| ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
 			capacity *= MMC_MAX_BLOCK_LEN;
 			if ((capacity >> 20) > 2 * 1024)
 				mmc->capacity_user = capacity;
@@ -983,8 +987,10 @@ static int mmc_startup(struct mmc *mmc)
 
 			/* Read out group size from ext_csd */
 			mmc->erase_grp_size =
-				ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] *
-					MMC_MAX_BLOCK_LEN * 1024;
+				ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] * 1024;
+			mmc->erase_timeout_mult = 300 *
+				ext_csd[EXT_CSD_ERASE_TIMEOUT_MULT];
+
 		} else {
 			/* Calculate the group size from the csd value. */
 			int erase_gsz, erase_gmul;
@@ -992,6 +998,16 @@ static int mmc_startup(struct mmc *mmc)
 			erase_gmul = (mmc->csd[2] & 0x000003e0) >> 5;
 			mmc->erase_grp_size = (erase_gsz + 1)
 				* (erase_gmul + 1);
+		}
+
+		if (ext_csd[EXT_CSD_REV] >= 4) {
+			mmc->sec_feature_support =
+				ext_csd[EXT_CSD_SEC_FEATURE_SUPPORT];
+			mmc->sec_erase_mult =
+				ext_csd[EXT_CSD_SEC_ERASE_MULT];
+			mmc->sec_erase_timeout = 300 *
+				ext_csd[EXT_CSD_SEC_ERASE_MULT] *
+				ext_csd[EXT_CSD_ERASE_TIMEOUT_MULT];
 		}
 
 		/* store the partition info of emmc */
