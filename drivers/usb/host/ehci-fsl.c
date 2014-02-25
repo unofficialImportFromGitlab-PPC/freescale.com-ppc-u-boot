@@ -14,6 +14,7 @@
 #include <asm/io.h>
 #include <usb/ehci-fsl.h>
 #include <hwconfig.h>
+#include <asm/fsl_errata.h>
 
 #include "ehci.h"
 
@@ -50,6 +51,14 @@ int ehci_hcd_init(int index, enum usb_init_type init,
 
 	usb_phy[0] = '\0';
 #endif
+	if (has_erratum_a007075())
+		/*
+		 * A 5ms delay is needed after applying soft-reset to the
+		 * controller to let external ULPI phy come out of reset.
+		 * This delay needs to be added before re-initializing
+		 * the controller after soft-resetting completes
+		 */
+		mdelay(5);
 
 	switch (index) {
 	case 0:
