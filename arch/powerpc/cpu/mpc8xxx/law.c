@@ -244,15 +244,6 @@ void init_laws(void)
 			gd->arch.used_laws |= (1 << i);
 	}
 
-#if (defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL)) || \
-	(defined(CONFIG_SPL) && !defined(CONFIG_SPL_BUILD))
-	/*
-	 * in SPL boot we've already parsed the law_table and setup those LAWs
-	 * so don't do it again.
-	 */
-	return;
-#endif
-
 	for (i = 0; i < num_law_entries; i++) {
 		if (law_table[i].index == -1)
 			set_next_law(law_table[i].addr, law_table[i].size,
