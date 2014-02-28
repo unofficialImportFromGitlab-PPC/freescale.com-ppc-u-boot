@@ -26,7 +26,7 @@ struct cpld_data {
 	u8 misc_ctl_status;	/* 0x17 - Miscellanies ctrl & status register*/
 	u8 boot_override;	/* 0x18 - Boot override register */
 	u8 boot_config1;	/* 0x19 - Boot config override register*/
-	u8 boot_confi2;		/* 0x1A - Boot config override register*/
+	u8 boot_config2;	/* 0x1A - Boot config override register*/
 } cpld_data_t;
 
 
