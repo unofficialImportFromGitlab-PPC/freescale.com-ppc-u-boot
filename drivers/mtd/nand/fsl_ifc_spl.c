@@ -88,7 +88,7 @@ static inline int bad_block(uchar *marker, int port_size)
 		return __raw_readw((u16 *)marker) != 0xffff;
 }
 
-#ifdef CONFIG_TPL_BUILD
+#if defined(CONFIG_TPL_BUILD) || defined(CONFIG_SPL_BUILD)
 int nand_spl_load_image(uint32_t offs, unsigned int uboot_size, void *vdst)
 #else
 static int nand_load(uint32_t offs, unsigned int uboot_size, void *vdst)
@@ -221,7 +221,7 @@ static int nand_load(uint32_t offs, unsigned int uboot_size, void *vdst)
  * Defines a static function nand_load_image() here, because non-static makes
  * the code too large for certain SPLs(minimal SPL, maximum size <= 4Kbytes)
  */
-#ifndef CONFIG_TPL_BUILD
+#if !defined(CONFIG_TPL_BUILD) && !defined(CONFIG_SPL_BUILD)
 #define nand_spl_load_image(offs, uboot_size, vdst) \
 	nand_load(offs, uboot_size, vdst)
 #endif
