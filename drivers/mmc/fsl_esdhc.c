@@ -71,7 +71,8 @@ static uint esdhc_xfertyp(struct mmc_cmd *cmd, struct mmc_data *data)
 	if (data) {
 		xfertyp |= XFERTYP_DPSEL;
 #ifndef CONFIG_SYS_FSL_ESDHC_USE_PIO
-		xfertyp |= XFERTYP_DMAEN;
+		if (cmd->cmdidx != MMC_CMD_STOP_TRANSMISSION)
+			xfertyp |= XFERTYP_DMAEN;
 #endif
 		if (data->blocks > 1) {
 			xfertyp |= XFERTYP_MSBSEL;
@@ -126,14 +127,16 @@ esdhc_pio_read_write(struct mmc *mmc, struct mmc_data *data)
 			timeout = PIO_TIMEOUT;
 			size = data->blocksize;
 			irqstat = esdhc_read32(&regs->irqstat);
-			while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_BREN)
-				&& --timeout);
+			while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_BREN) &&
+				--timeout)
+				;
 			if (timeout <= 0) {
 				printf("\nData Read Failed in PIO Mode.");
 				return;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
-				udelay(100); /* Wait before last byte transfer complete */
+				/* Wait before last byte transfer complete */
+				udelay(100);
 				irqstat = esdhc_read32(&regs->irqstat);
 				databuf = in_le32(&regs->datport);
 				*((uint *)buffer) = databuf;
@@ -149,14 +152,16 @@ esdhc_pio_read_write(struct mmc *mmc, struct mmc_data *data)
 			timeout = PIO_TIMEOUT;
 			size = data->blocksize;
 			irqstat = esdhc_read32(&regs->irqstat);
-			while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_BWEN)
-				&& --timeout);
+			while (!(esdhc_read32(&regs->prsstat) & PRSSTAT_BWEN) &&
+				--timeout)
+				;
 			if (timeout <= 0) {
 				printf("\nData Write Failed in PIO Mode.");
 				return;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
-				udelay(100); /* Wait before last byte transfer complete */
+				/* Wait before last byte transfer complete */
+				udelay(100);
 				databuf = *((uint *)buffer);
 				buffer += 4;
 				size -= 4;
@@ -174,7 +179,7 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 	int timeout;
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	struct fsl_esdhc *regs = (struct fsl_esdhc *)cfg->esdhc_base;
-#ifdef CONFIG_SYS_FSL_ESDHC_USE_PIO
+#ifndef CONFIG_SYS_FSL_ESDHC_USE_PIO
 	uint wml_value;
 
 	wml_value = data->blocksize/4;
@@ -194,11 +199,12 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 			wml_value = WML_WR_WML_MAX_VAL;
 		if ((esdhc_read32(&regs->prsstat) & PRSSTAT_WPSPL) == 0) {
 			printf("\nThe SD card is locked. Can not write to a locked card.\n\n");
+
 			return TIMEOUT;
 		}
 
 		esdhc_clrsetbits32(&regs->wml, WML_WR_WML_MASK,
-					wml_value << 16);
+				   wml_value << 16);
 		esdhc_write32(&regs->dsaddr, (u32)data->src);
 	}
 #else	/* CONFIG_SYS_FSL_ESDHC_USE_PIO */
@@ -209,8 +215,9 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 			return TIMEOUT;
 		}
 		esdhc_write32(&regs->dsaddr, (u32)data->src);
-	} else
+	} else {
 		esdhc_write32(&regs->dsaddr, (u32)data->dest);
+	}
 #endif	/* CONFIG_SYS_FSL_ESDHC_USE_PIO */
 
 	esdhc_write32(&regs->blkattr, data->blocks << 16 | data->blocksize);
@@ -252,10 +259,10 @@ static int esdhc_setup_data(struct mmc *mmc, struct mmc_data *data)
 static void check_and_invalidate_dcache_range
 	(struct mmc_cmd *cmd,
 	 struct mmc_data *data) {
-	unsigned start = (unsigned)data->dest ;
+	unsigned start = (unsigned)data->dest;
 	unsigned size = roundup(ARCH_DMA_MINALIGN,
 				data->blocks*data->blocksize);
-	unsigned end = start+size ;
+	unsigned end = start+size;
 	invalidate_dcache_range(start, end);
 }
 /*
@@ -266,12 +273,12 @@ static int
 esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 {
 	uint	xfertyp;
-	uint	irqstat;
-	uint	mask, timeout;
+	uint    irqstat = 0, mask;
+	int ret = 0, timeout;
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 	volatile struct fsl_esdhc *regs = (struct fsl_esdhc *)cfg->esdhc_base;
 
-	esdhc_write32(&regs->irqstat, -1);
+	esdhc_write32(&regs->irqstat, 0xffffffffU);
 
 	sync();
 
@@ -281,28 +288,20 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		return 0;
 #else
-	/*
-	 * We shouldn't wait for data inihibit for stop commands,
-	 * even though they might use busy signaling
-	 */
 	if (cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		mask &= ~PRSSTAT_CIDHB;
 #endif
 
-	/*
-	 * Wait max 10ms for the bus to be idle
-	 * This redundancy check is intend to make sure the bus line
-	 * is ready to use and there is no other unknow err come from
-	 * the last command.
-	 */
-	timeout = 10;
+	/* Wait for the bus to be idle */
+	timeout = 1000;
 	while (esdhc_read32(&regs->prsstat) & mask) {
 		if (timeout == 0) {
-			printf("Controller never released inhibit bit(s).\n");
-			return COMM_ERR;
+			printf("\nController never released inhibit bit(s).\n");
+			ret = COMM_ERR;
+			goto reset;
 		}
 		timeout--;
-		udelay(1000);
+		mdelay(1);
 	}
 
 	/* Wait at least 8 SD clock cycles before the next command */
@@ -310,15 +309,13 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	 * Note: This is way more than 8 cycles, but 1ms seems to
 	 * resolve timing issues with some cards
 	 */
-	udelay(1000);
+	mdelay(1);
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
-		int err;
-
-		err = esdhc_setup_data(mmc, data);
-		if(err)
-			return err;
+		ret = esdhc_setup_data(mmc, data);
+		if (ret)
+			goto reset;
 	}
 
 	/* Figure out the transfer arguments */
@@ -331,55 +328,27 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	esdhc_write32(&regs->cmdarg, cmd->cmdarg);
 #if defined(CONFIG_FSL_USDHC)
 	esdhc_write32(&regs->mixctrl,
-	(esdhc_read32(&regs->mixctrl) & 0xFFFFFF80) | (xfertyp & 0x7F));
+		      (esdhc_read32(&regs->mixctrl) & 0xFFFFFF80)
+		      | (xfertyp & 0x7F));
 	esdhc_write32(&regs->xfertyp, xfertyp & 0xFFFF0000);
 #else
 	esdhc_write32(&regs->xfertyp, xfertyp);
 #endif
 
 	/* Wait for the command to complete */
-	while (!(esdhc_read32(&regs->irqstat) & (IRQSTAT_CC | IRQSTAT_CTOE)))
+	while (!(esdhc_read32(&regs->irqstat) & (IRQSTAT_CC | CMD_ERR)))
 		;
 
 	irqstat = esdhc_read32(&regs->irqstat);
 
-	/* Reset CMD and DATA portions on error */
-	if (irqstat & (CMD_ERR | IRQSTAT_CTOE)) {
-		esdhc_write32(&regs->sysctl, esdhc_read32(&regs->sysctl) |
-			      SYSCTL_RSTC);
-		while (esdhc_read32(&regs->sysctl) & SYSCTL_RSTC)
-			;
-
-		if (data) {
-			esdhc_write32(&regs->sysctl,
-				      esdhc_read32(&regs->sysctl) |
-				      SYSCTL_RSTD);
-			while ((esdhc_read32(&regs->sysctl) & SYSCTL_RSTD))
-				;
-		}
+	if (irqstat & IRQSTAT_CTOE) {
+		ret = TIMEOUT;
+		goto reset;
 	}
 
-	if (irqstat & CMD_ERR)
-		return COMM_ERR;
-
-	if (irqstat & IRQSTAT_CTOE)
-		return TIMEOUT;
-
-	/* Workaround for ESDHC errata ENGcm03648 */
-	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
-		int timeout = 2500;
-
-		/* Poll on DATA0 line for cmd with busy signal for 250 ms */
-		while (timeout > 0 && !(esdhc_read32(&regs->prsstat) &
-					PRSSTAT_DAT0)) {
-			udelay(100);
-			timeout--;
-		}
-
-		if (timeout <= 0) {
-			printf("Timeout waiting for DAT0 to go high!\n");
-			return TIMEOUT;
-		}
+	if (irqstat & CMD_ERR) {
+		ret = COMM_ERR;
+		goto reset;
 	}
 
 	/* Copy the response to the response buffer */
@@ -394,10 +363,24 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 		cmd->response[1] = (cmdrsp2 << 8) | (cmdrsp1 >> 24);
 		cmd->response[2] = (cmdrsp1 << 8) | (cmdrsp0 >> 24);
 		cmd->response[3] = (cmdrsp0 << 8);
-	} else
+	} else {
 		cmd->response[0] = esdhc_read32(&regs->cmdrsp0);
+	}
 
-	/* Wait until all of the blocks are transferred */
+	/*
+	 * At 50 Mhz SD_CLK period, the max busy timeout
+	 * value or data transfer time need was about
+	 * = 2^27 * SD_CLK period ~= 2.69 sec.
+	 * So wait max 10 sec for data transfer complete or busy
+	 * state release.
+	 */
+	timeout = 10000;
+
+	/*
+	 * eSDHC host V2.3 has response busy interrupt, so
+	 * we should wait for busy state to be released and data
+	 * was out of programing state before next command send.
+	 */
 	if (data) {
 #ifdef CONFIG_SYS_FSL_ESDHC_USE_PIO
 		esdhc_pio_read_write(mmc, data);
@@ -405,20 +388,77 @@ esdhc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 		do {
 			irqstat = esdhc_read32(&regs->irqstat);
 
-			if (irqstat & IRQSTAT_DTOE)
-				return TIMEOUT;
+			if (irqstat & IRQSTAT_DTOE) {
+				ret = TIMEOUT;
+				break;
+			}
 
-			if (irqstat & DATA_ERR)
-				return COMM_ERR;
-		} while ((irqstat & DATA_COMPLETE) != DATA_COMPLETE);
+			if (irqstat & DATA_ERR) {
+				ret = COMM_ERR;
+				break;
+			}
+
+			if (timeout <= 0) {
+				ret = TIMEOUT;
+				break;
+			}
+			mdelay(1);
+			timeout--;
+		} while (((irqstat & DATA_COMPLETE) != DATA_COMPLETE) &&
+				(esdhc_read32(&regs->prsstat) & PRSSTAT_DLA));
+
+
 #endif
 		if (data->flags & MMC_DATA_READ)
 			check_and_invalidate_dcache_range(cmd, data);
 	}
 
-	esdhc_write32(&regs->irqstat, -1);
+	/* Workaround for ESDHC errata ENGcm03648 */
+	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
+		int timeout = 5000;
+
+		/* Poll on DATA0 line for cmd with busy signal for 5 sec */
+		while (timeout > 0 && !(esdhc_read32(&regs->prsstat) &
+					PRSSTAT_DAT0)) {
+			mdelay(1);
+			timeout--;
+		}
+
+		if (timeout <= 0) {
+			printf("\nTimeout waiting for DAT0 to go high!\n");
+			ret = TIMEOUT;
+			goto reset;
+		}
+	}
+
+	if (esdhc_read32(&regs->irqstat) & (DATA_ERR | CMD_ERR))
+		ret = COMM_ERR;
+
+	if (ret)
+		goto reset;
+
+	esdhc_write32(&regs->irqstat, 0xffffffffU);
 
 	return 0;
+reset:
+
+	/* Reset CMD and DATA portions on error */
+	esdhc_write32(&regs->sysctl, esdhc_read32(&regs->sysctl) |
+			SYSCTL_RSTC);
+	while (esdhc_read32(&regs->sysctl) & SYSCTL_RSTC)
+		;
+
+	if (data || (cmd->resp_type & MMC_RSP_BUSY)) {
+		esdhc_write32(&regs->sysctl,
+			      esdhc_read32(&regs->sysctl) |
+			      SYSCTL_RSTD);
+		while ((esdhc_read32(&regs->sysctl) & SYSCTL_RSTD))
+			;
+	}
+
+	esdhc_write32(&regs->irqstat, 0xffffffffU);
+
+	return ret;
 }
 
 static void set_sysctl(struct mmc *mmc, uint clock)
@@ -436,8 +476,9 @@ static void set_sysctl(struct mmc *mmc, uint clock)
 		for (pre_div = 2; pre_div < 256; pre_div *= 2)
 			if ((sdhc_clk / pre_div) <= (clock * 16))
 				break;
-	} else
+	} else {
 		pre_div = 2;
+	}
 
 	for (div = 1; div <= 16; div++)
 		if ((sdhc_clk / (div * pre_div)) <= clock)
@@ -474,7 +515,6 @@ static void esdhc_set_ios(struct mmc *mmc)
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_4);
 	else if (mmc->bus_width == 8)
 		esdhc_setbits32(&regs->proctl, PROCTL_DTW_8);
-
 }
 
 static int esdhc_init(struct mmc *mmc)
@@ -665,7 +705,7 @@ void fdt_fixup_esdhc(void *blob, bd_t *bd)
 #ifdef CONFIG_FSL_ESDHC_PIN_MUX
 	if (!hwconfig("esdhc")) {
 		do_fixup_by_compat(blob, compat, "status", "disabled",
-				8 + 1, 1);
+				   8 + 1, 1);
 		return;
 	}
 #endif
