@@ -35,6 +35,10 @@
 #define CONFIG_RESET_VECTOR_ADDRESS	0xfffffffc
 #endif
 
+/* support deep sleep */
+#define CONFIG_DEEP_SLEEP
+#define CONFIG_SILENT_CONSOLE
+
 /* High Level Configuration Options */
 #define CONFIG_BOOKE
 #define CONFIG_E500			/* BOOKE e500 family */
