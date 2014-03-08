@@ -493,6 +493,11 @@ The following options need to be configured:
 		PBI commands can be used to configure SoC before it starts the execution.
 		Please refer doc/README.pblimage for more details
 
+		CONFIG_RAMBOOT_SPLPBL
+		It adds a target to create boot binary having SPL binary in PBI format
+		concatenated with u-boot binary.
+
+
 - Intel Monahans options:
 		CONFIG_SYS_MONAHANS_RUN_MODE_OSC_RATIO
 

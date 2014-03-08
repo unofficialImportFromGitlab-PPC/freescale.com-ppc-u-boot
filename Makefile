@@ -341,7 +341,11 @@ ALL-y += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map
 
 ALL-$(CONFIG_NAND_U_BOOT) += $(obj)u-boot-nand.bin
 ALL-$(CONFIG_ONENAND_U_BOOT) += $(obj)u-boot-onenand.bin
+ifeq ($(CONFIG_RAMBOOT_SPLPBL),y)
+ALL-$(CONFIG_RAMBOOT_PBL) += $(obj)u-boot-with-spl-pbl.bin
+else
 ALL-$(CONFIG_RAMBOOT_PBL) += $(obj)u-boot.pbl
+endif
 ALL-$(CONFIG_SPL) += $(obj)spl/u-boot-spl.bin
 ALL-$(CONFIG_SPL_FRAMEWORK) += $(obj)u-boot.img
 ALL-$(CONFIG_TPL) += $(obj)tpl/u-boot-tpl.bin
@@ -448,6 +452,14 @@ $(obj)u-boot-with-spl.bin: $(obj)spl/u-boot-spl.bin $(SPL_PAYLOAD)
 
 $(obj)tpl/u-boot-with-tpl.bin: $(obj)tpl/u-boot-tpl.bin $(obj)u-boot.bin
 		$(call SPL_PAD_APPEND,$<,$(obj)u-boot.bin,tpl/u-boot-tpl-pad.bin,$(CONFIG_TPL_PAD_TO))
+
+$(obj)u-boot-with-spl-pbl.bin: $(obj)spl/u-boot-spl.bin $(obj)u-boot.bin
+		$(obj)tools/mkimage -n $(CONFIG_SYS_FSL_PBL_RCW) \
+		-R $(CONFIG_SYS_FSL_PBL_PBI) -T pblimage \
+		-d $< $@
+		$(OBJCOPY) -I binary -O binary \
+			--pad-to=$(CONFIG_SPL_PAD_TO) --gap-fill=0xff $@
+		cat $(obj)u-boot.bin >> $@
 
 $(obj)u-boot-with-spl.imx: $(obj)spl/u-boot-spl.bin $(obj)u-boot.bin
 		$(MAKE) $(build) $(SRCTREE)/arch/arm/imx-common \
