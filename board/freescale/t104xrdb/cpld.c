@@ -106,8 +106,8 @@ U_BOOT_CMD(
 	cpld, CONFIG_SYS_MAXARGS, 1, do_cpld,
 	"Reset the board or alternate bank",
 	"reset - hard reset to default bank\n"
-	"cpld_cmd reset altbank - reset to alternate bank\n"
+	"cpld reset altbank - reset to alternate bank\n"
 #ifdef DEBUG
-	"cpld_cmd dump - display the CPLD registers\n"
+	"cpld dump - display the CPLD registers\n"
 #endif
 	);
