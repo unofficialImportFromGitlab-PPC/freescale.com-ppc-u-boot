@@ -30,18 +30,8 @@
 
 #define CONFIG_CMD_ESBC_VALIDATE
 
-#if CONFIG_SYS_FSL_ISBC_VER > 1
-#define CONFIG_SECURE_HKAREA_CPC
-#undef CONFIG_SYS_INIT_L3_ADDR
-#define CONFIG_SYS_INIT_L3_ADDR		0xbff00000
-#endif
 
-/* The bootscript header address is different for B4860 because the NOR
- * mapping is different on B4 due to reduced NOR size.
- */
-#if defined(CONFIG_B4860QDS)
-#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xecc00000
-#elif defined(CONFIG_FSL_CORENET)
+#if defined(CONFIG_FSL_CORENET)
 #define CONFIG_BOOTSCRIPT_HDR_ADDR	0xe8e00000
 #elif defined(CONFIG_BSC9132QDS)
 #define CONFIG_BOOTSCRIPT_HDR_ADDR	0x88020000

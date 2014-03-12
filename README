@@ -426,9 +426,6 @@ The following options need to be configured:
 		CONFIG_SYS_FSL_SFP_VER_3_0
 		This indicates that the version of SFP block on the platform is 3.0
 
-		CONFIG_SYS_FSL_ISBC_VER
-		This value indicates the major ISBC version on the platform.
-
 		CONFIG_SYS_FSL_SINGLE_SOURCE_CLK
 		Single Source Clock is clocking mode present in some of FSL SoC's.
 		In this mode, a single differential clock is used to supply
