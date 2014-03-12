@@ -41,34 +41,33 @@ int mmc_get_env_addr(struct mmc *mmc, int copy, u32 *env_addr)
 	/* Get the code size from offset 0x48 */
 	code_len = *(u32 *)(tmp_buf + ESDHC_BOOT_IMAGE_SIZE);
 
+#ifdef CONFIG_ESDHC_HC_BLK_ADDR
 	/*
-	 * On soc BSC9131, BSC9132:
+	 * On soc BSC9131, BSC9132 and P1010:
 	 * In High Capacity SD Cards (> 2 GBytes), the 32-bit source address and
 	 * code length of these soc specify the memory address in block address
 	 * format. Block length is fixed to 512 bytes as per the SD High
 	 * Capacity specification.
 	 */
-	if ((SVR_SOC_VER(get_svr()) == SVR_9131) ||
-	    (SVR_SOC_VER(get_svr()) == SVR_9132)) {
-		u64 tmp;
+	u64 tmp;
 
-		if (mmc->high_capacity) {
-			tmp = (u64)code_offset * blklen;
-			tmp += code_len * blklen;
-		} else {
-			tmp = code_offset + code_len;
-		}
-
-		if ((tmp + CONFIG_ENV_SIZE > mmc->capacity) ||
-		    (tmp > 0xFFFFFFFFU))
-			*env_addr = ESDHC_DEFAULT_ENVADDR;
-		else
-			*env_addr = tmp;
-
-		free(tmp_buf);
-
-		return 0;
+	if (mmc->high_capacity) {
+		tmp = (u64)code_offset * blklen;
+		tmp += code_len * blklen;
+	} else {
+		tmp = code_offset + code_len;
 	}
+
+	if ((tmp + CONFIG_ENV_SIZE > mmc->capacity) ||
+	    (tmp > 0xFFFFFFFFU))
+		*env_addr = ESDHC_DEFAULT_ENVADDR;
+	else
+		*env_addr = tmp;
+
+	free(tmp_buf);
+
+	return 0;
+#endif
 
 	*env_addr = code_offset + code_len;
 
