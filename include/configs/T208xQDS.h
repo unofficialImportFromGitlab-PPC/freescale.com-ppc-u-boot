@@ -206,13 +206,15 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CHIP_SELECTS_PER_CTRL	(4 * CONFIG_DIMM_SLOTS_PER_CTLR)
 #define CONFIG_DDR_SPD
 #define CONFIG_SYS_FSL_DDR3
-#undef CONFIG_FSL_DDR_INTERACTIVE
+#define CONFIG_FSL_DDR_INTERACTIVE
 #define CONFIG_SYS_SPD_BUS_NUM	0
 #define CONFIG_SYS_SDRAM_SIZE	2048	/* for fixed parameter use */
 #define SPD_EEPROM_ADDRESS1	0x51
 #define SPD_EEPROM_ADDRESS2	0x52
 #define SPD_EEPROM_ADDRESS	SPD_EEPROM_ADDRESS1
 #define CTRL_INTLV_PREFERED	cacheline
+#define CONFIG_SYS_MEMTEST_START	0x01000000  /* memtest works on */
+#define CONFIG_SYS_MEMTEST_END		0x01ffffff
 
 /*
  * IFC Definitions
@@ -727,6 +729,8 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_PING
+#define CONFIG_CMD_MEMTEST
+#define CONFIG_CMD_EEPROM
 #define CONFIG_CMD_SETEXPR
 #define CONFIG_CMD_REGINFO
 #define CONFIG_CMD_BDI
