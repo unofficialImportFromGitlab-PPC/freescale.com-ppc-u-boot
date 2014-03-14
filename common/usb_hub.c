@@ -86,12 +86,16 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 	int i;
 	struct usb_device *dev;
 	unsigned pgood_delay = hub->desc.bPwrOn2PwrGood * 2;
+
+#ifdef CONFIG_USB_XHCI
 	ALLOC_CACHE_ALIGN_BUFFER(struct usb_port_status, portsts, 1);
 	unsigned short portstatus;
 	int ret;
+#endif
 
 	dev = hub->pusb_dev;
 
+#ifdef CONFIG_USB_XHCI
 	/*
 	 * Enable power to the ports:
 	 * Here we Power-cycle the ports: aka,
@@ -128,6 +132,7 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 			continue;
 		}
 	}
+#endif
 
 	for (i = 0; i < dev->maxchild; i++) {
 		usb_set_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
