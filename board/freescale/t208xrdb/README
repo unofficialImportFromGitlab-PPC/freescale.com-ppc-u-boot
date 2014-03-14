@@ -164,10 +164,10 @@ Software configurations and board settings
 2. NAND Boot:
    a. build PBL image for NAND boot
 	$ make T2080RDB_NAND_config
-	$ make u-boot.pbl
-   b. program u-boot.pbl to NAND flash
-	=> tftp 1000000 u-boot.pbl
-	=> nand erase 0 d0000
+	$ make u-boot-with-spl-pbl.bin
+   b. program u-boot-with-spl-pbl.bin to NAND flash
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> nand erase 0 c0000
 	=> nand write 1000000 0 $filesize
 	set SW1[1:8] = '10000010', SW2[1] = '1', SW3[4] = '1' for NAND boot
 

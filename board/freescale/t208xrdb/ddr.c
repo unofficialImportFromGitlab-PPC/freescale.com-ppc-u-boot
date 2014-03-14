@@ -102,11 +102,14 @@ phys_size_t initdram(int board_type)
 
 	puts("Initializing....using SPD\n");
 
+#if defined(CONFIG_SPL_BUILD) || !defined(CONFIG_RAMBOOT_PBL)
 	dram_size = fsl_ddr_sdram();
 
 	dram_size = setup_ddr_tlbs(dram_size / 0x100000);
 	dram_size *= 0x100000;
-
-	puts("    DDR: ");
+#else
+	puts("DDR has been initialised by first stage boot loader\n");
+	dram_size =  0x80000000;
+#endif
 	return dram_size;
 }
