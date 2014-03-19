@@ -204,6 +204,7 @@
 #define CPLD_LBMAP_DFLTBANK		0x40 /* BANK OR | BANK0 */
 #define CPLD_LBMAP_RESET		0xFF
 #define CPLD_LBMAP_SHIFT		0x03
+#define CPLD_DIU_SEL_DFP		0x80
 
 #define CONFIG_SYS_CPLD_BASE	0xffdf0000
 #define CONFIG_SYS_CPLD_BASE_PHYS	(0xf00000000ull | CONFIG_SYS_CPLD_BASE)
@@ -359,6 +360,22 @@
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
 
+/* Video */
+#define CONFIG_FSL_DIU_FB
+
+#ifdef CONFIG_FSL_DIU_FB
+#define CONFIG_FSL_DIU_CH7301
+#define CONFIG_SYS_DIU_ADDR	(CONFIG_SYS_CCSRBAR + 0x180000)
+#define CONFIG_VIDEO
+#define CONFIG_CMD_BMP
+#define CONFIG_CFB_CONSOLE
+#define CONFIG_CFB_CONSOLE_ANSI
+#define CONFIG_VIDEO_SW_CURSOR
+#define CONFIG_VGA_AS_SINGLE_DEVICE
+#define CONFIG_VIDEO_LOGO
+#define CONFIG_VIDEO_BMP_LOGO
+#endif
+
 /* pass open firmware flat tree */
 #define CONFIG_OF_LIBFDT
 #define CONFIG_OF_BOARD_SETUP
@@ -380,6 +397,10 @@
 
 /* I2C bus multiplexer */
 #define I2C_MUX_PCA_ADDR                0x70
+
+/* LDI/DVI Encoder for display */
+#define CONFIG_SYS_I2C_LDI_ADDR         0x38
+#define CONFIG_SYS_I2C_DVI_ADDR         0x75
 
 /*
  * RTC configuration
@@ -649,6 +670,7 @@
 	"usb1:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) ";"\
 	"usb2:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
+	"video-mode=fslfb:1024x768-32@60,monitor=dvi\0"		\
 	"uboot=" __stringify(CONFIG_UBOOTPATH) "\0"		\
 	"ubootaddr=" __stringify(CONFIG_SYS_TEXT_BASE) "\0"	\
 	"tftpflash=tftpboot $loadaddr $uboot && "		\
