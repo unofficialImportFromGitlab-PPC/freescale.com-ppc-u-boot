@@ -41,6 +41,9 @@
 #endif
 
 #include "../../../../drivers/block/fsl_sata.h"
+#ifdef CONFIG_U_QE
+#include "../../../../drivers/qe/qe.h"
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -52,7 +55,7 @@ struct jobring jr;
 bool     has_fsl_erratum_a006918;
 #endif
 
-#ifdef CONFIG_QE
+#if defined(CONFIG_QE) && !defined(CONFIG_U_QE)
 extern qe_iop_conf_t qe_iop_conf_tab[];
 extern void qe_config_iopin(u8 port, u8 pin, int dir,
 				int open_drain, int assign);
@@ -396,7 +399,7 @@ void cpu_init_f (void)
 #if defined(CONFIG_CPM2)
 	m8560_cpm_reset();
 #endif
-#ifdef CONFIG_QE
+#if defined(CONFIG_QE) && !defined(CONFIG_U_QE)
 	/* Config QE ioports */
 	config_qe_ioports();
 #endif
@@ -935,8 +938,13 @@ int sata_initialize(void)
 
 void cpu_secondary_init_r(void)
 {
-#ifdef CONFIG_QE
+#if defined(CONFIG_U_QE)
+	uint qe_base = CONFIG_SYS_IMMR + 0x00140000; /* QE immr base */
+#elif defined(CONFIG_QE)
 	uint qe_base = CONFIG_SYS_IMMR + 0x00080000; /* QE immr base */
+#endif
+
+#ifdef CONFIG_QE
 #ifdef CONFIG_SYS_QE_FMAN_FW_IN_NAND
 	int ret;
 	size_t fw_length = CONFIG_SYS_QE_FMAN_FW_LENGTH;
