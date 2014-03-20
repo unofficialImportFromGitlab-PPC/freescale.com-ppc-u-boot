@@ -23,6 +23,14 @@
 #include <fsl_secboot_types.h>
 #include <command.h>
 
+#ifdef CONFIG_KEY_REVOCATION
+/* Srk table and key revocation check */
+#define SRK_FLAG	0x01
+#define UNREVOCABLE_KEY	4
+#define ALIGN_REVOC_KEY 3
+#define MAX_KEY_ENTRIES 4
+#endif
+
 /* Barker code size in bytes */
 #define ESBC_BARKER_LEN	4	/* barker code length in ESBC uboot client */
 				/* header */
@@ -55,8 +63,24 @@
  */
 struct fsl_secboot_img_hdr {
 	u8 barker[ESBC_BARKER_LEN];	/* barker code */
-	u32 pkey;		/* public key offset */
-	u32 key_len;		/* pub key length in bytes */
+	union {
+		u32 pkey;		/* public key offset */
+#ifdef CONFIG_KEY_REVOCATION
+		u32 srk_tbl_off;
+#endif
+	};
+
+	union {
+		u32 key_len;		/* pub key length in bytes */
+#ifdef CONFIG_KEY_REVOCATION
+		struct {
+			u32 srk_table_flag:8;
+			u32 srk_sel:8;
+			u32 num_srk:16;
+		} len_kr;
+#endif
+	};
+
 	u32 psign;		/* signature offset */
 	u32 sign_len;		/* length of the signature in bytes */
 	union {
@@ -74,6 +98,12 @@ struct fsl_secboot_img_hdr {
 	u32 oem_uid;		/* OEM unique id */
 };
 
+#ifdef CONFIG_KEY_REVOCATION
+struct srk_table {
+	u32 key_len;
+	u8 pkey[2 * KEY_SIZE_BYTES];
+};
+#endif
 /*
  * SG table.
  * This struct contains the following fields
@@ -101,6 +131,9 @@ struct fsl_secboot_img_priv {
 	u8 img_key[2 * KEY_SIZE_BYTES];	/* ESBC client key */
 	u8 img_key_hash[32];	/* ESBC client key hash */
 
+#ifdef CONFIG_KEY_REVOCATION
+	struct srk_table srk_tbl[MAX_KEY_ENTRIES];
+#endif
 	u8 img_sign[KEY_SIZE_BYTES];		/* ESBC client signature */
 
 	u8 img_encoded_hash[KEY_SIZE_BYTES];	/* EM wrt RSA PKCSv1.5  */

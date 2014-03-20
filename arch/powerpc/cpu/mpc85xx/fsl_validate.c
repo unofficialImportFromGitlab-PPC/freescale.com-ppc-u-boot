@@ -58,6 +58,65 @@ void branch_to_self(void)
 	while (1);
 }
 
+#ifdef CONFIG_KEY_REVOCATION
+/* This function checks srk_table_flag in header and set/reset srk_flag.*/
+static u32 check_srk(struct fsl_secboot_img_priv *img)
+{
+	if (img->hdr.len_kr.srk_table_flag & SRK_FLAG)
+		return 1;
+
+	return 0;
+}
+
+/* This function returns ospr's key_revoc values.*/
+static u32 get_key_revoc(void)
+{
+	ccsr_sfp_regs_t *sfp_regs = (void *)(CONFIG_SYS_SFP_ADDR);
+	return (in_be32(&sfp_regs->ospr) & OSPR_KEY_REVOC_MASK) >>
+		OSPR_KEY_REVOC_SHIFT;
+}
+
+/* This function checks if selected key is revoked or not.*/
+static u32 is_key_revoked(u32 keynum, u32 rev_flag)
+{
+	if (keynum == UNREVOCABLE_KEY)
+		return 0;
+
+	if ((u32)(1 << (ALIGN_REVOC_KEY - keynum)) & rev_flag)
+		return 1;
+
+	return 0;
+}
+
+/* It validates srk_table key lengths.*/
+static u32 validate_srk_tbl(struct srk_table *tbl, u32 num_entries)
+{
+	int i = 0;
+	for (i = 0; i < num_entries; i++) {
+		if (!((tbl[i].key_len == 2 * KEY_SIZE_BYTES/4) ||
+		      (tbl[i].key_len == 2 * KEY_SIZE_BYTES/2) ||
+		      (tbl[i].key_len == 2 * KEY_SIZE_BYTES)))
+			return ERROR_ESBC_CLIENT_HEADER_INV_SRK_ENTRY_KEYLEN;
+	}
+	return 0;
+}
+#endif
+
+/* This function return length of public key.*/
+static u32 get_key_len(struct fsl_secboot_img_priv *img)
+{
+	u32 key_len;
+#ifdef CONFIG_KEY_REVOCATION
+	if (check_srk(img))
+		key_len = img->srk_tbl[img->hdr.len_kr.srk_sel - 1].key_len;
+	else
+		key_len = img->hdr.key_len;
+#else
+	key_len = img->hdr.key_len;
+#endif
+	return key_len;
+}
+
 /*
  * Handles the ESBC uboot client header verification failure.
  * This  function  handles all the errors which might occur in the
@@ -155,6 +214,12 @@ void fsl_secboot_handle_error(int error)
 	case ERROR_ESBC_CLIENT_HEADER_SIG_KEY_MOD:
 	case ERROR_ESBC_CLIENT_HEADER_SG_ESBC_EP:
 	case ERROR_ESBC_CLIENT_HEADER_SG_ENTIRES_BAD:
+#ifdef CONFIG_KEY_REVOCATION
+	case ERROR_ESBC_CLIENT_HEADER_KEY_REVOKED:
+	case ERROR_ESBC_CLIENT_HEADER_INVALID_SRK_NUM_ENTRY:
+	case ERROR_ESBC_CLIENT_HEADER_INVALID_KEY_NUM:
+	case ERROR_ESBC_CLIENT_HEADER_INV_SRK_ENTRY_KEYLEN:
+#endif
 		fsl_secboot_header_verification_failure();
 		break;
 	case ERROR_ESBC_SEC_RESET:
@@ -208,7 +273,15 @@ static int calc_img_key_hash(struct sha_ctx *ctx,
 
 	/* calc hash of the esbc key */
 	sha_init(ctx, &jr);
+#ifdef CONFIG_KEY_REVOCATION
+	if (check_srk(img))
+		sha_update(ctx, (u8 *)(img->ehdrloc + img->hdr.srk_tbl_off),
+			   img->hdr.len_kr.num_srk * sizeof(struct srk_table));
+	else
+		sha_update(ctx, img->img_key, img->hdr.key_len);
+#else
 	sha_update(ctx, img->img_key, img->hdr.key_len);
+#endif
 	ret = sha_final(ctx);
 	if (ret)
 		return ret;
@@ -238,7 +311,15 @@ static int calc_esbchdr_esbc_hash(struct sha_ctx *ctx,
 	sha_init(ctx, &jr);
 	sha_update(ctx, (u8 *) &img->hdr,
 		sizeof(struct fsl_secboot_img_hdr));
+#ifdef CONFIG_KEY_REVOCATION
+	if (check_srk(img))
+		sha_update(ctx, (u8 *)(img->ehdrloc + img->hdr.srk_tbl_off),
+			   img->hdr.len_kr.num_srk * sizeof(struct srk_table));
+	else
+		sha_update(ctx, img->img_key, img->hdr.key_len);
+#else
 	sha_update(ctx, img->img_key, img->hdr.key_len);
+#endif
 
 	if (img->hdr.sg_flag) {
 		/* calculate hash of the SG table */
@@ -298,7 +379,7 @@ static void construct_img_encoded_hash_second(struct fsl_secboot_img_priv *img)
 	u8 *hash_id, *separator;
 	int i;
 
-	len = (img->hdr.key_len / 2) - 1;
+	len = (get_key_len(img) / 2) - 1;
 	representative = img->img_encoded_hash_second;
 	representative[0] = 0;
 	representative[1] = 1;  /* block type 1 */
@@ -335,6 +416,10 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 	struct fsl_secboot_img_hdr *hdr = &img->hdr;
 	void *esbc = (u8 *) img->ehdrloc;
 	u8 *k, *s;
+#ifdef CONFIG_KEY_REVOCATION
+	u32 ret;
+	u32 key_num, key_revoc_flag, size;
+#endif
 
 	/* check barker code */
 	if (memcmp(hdr->barker, barker_code, ESBC_BARKER_LEN))
@@ -346,14 +431,48 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 	if (!hdr->img_size)
 		return ERROR_ESBC_CLIENT_HEADER_IMG_SIZE;
 
-	/* key length should be twice of signature length */
-	if (hdr->key_len == 2 * hdr->sign_len) {
+	/* Key checking*/
+#ifdef CONFIG_KEY_REVOCATION
+	if (check_srk(img)) {
+		if ((hdr->len_kr.num_srk == 0) ||
+		    (hdr->len_kr.num_srk > MAX_KEY_ENTRIES))
+			return ERROR_ESBC_CLIENT_HEADER_INVALID_SRK_NUM_ENTRY;
+
+		key_num = hdr->len_kr.srk_sel;
+		if (key_num == 0 || key_num > hdr->len_kr.num_srk)
+			return ERROR_ESBC_CLIENT_HEADER_INVALID_KEY_NUM;
+
+		/* Get revoc key from sfp */
+		key_revoc_flag = get_key_revoc();
+		ret = is_key_revoked(key_num, key_revoc_flag);
+		if (ret)
+			return ERROR_ESBC_CLIENT_HEADER_KEY_REVOKED;
+
+		size = hdr->len_kr.num_srk * sizeof(struct srk_table);
+
+		memcpy(&img->srk_tbl, esbc + hdr->srk_tbl_off, size);
+		memcpy(&img->img_key, &(img->srk_tbl[key_num - 1].pkey),
+		       img->srk_tbl[key_num - 1].key_len);
+
+		ret = validate_srk_tbl(img->srk_tbl, hdr->len_kr.num_srk);
+
+		if (ret != 0)
+			return ret;
+
+	} else
+#endif
+	{
 		/* check key length */
 		if (!((hdr->key_len == 2 * KEY_SIZE_BYTES / 4) ||
 			(hdr->key_len == 2 * KEY_SIZE_BYTES / 2) ||
 			(hdr->key_len == 2 * KEY_SIZE_BYTES)))
 			return ERROR_ESBC_CLIENT_HEADER_KEY_LEN;
 
+		memcpy(&img->img_key, esbc + hdr->pkey, hdr->key_len);
+	}
+
+	/* check signaure */
+	if (get_key_len(img) == 2 * hdr->sign_len) {
 		/* check signature length */
 		if (!((hdr->sign_len == KEY_SIZE_BYTES / 4) ||
 			(hdr->sign_len == KEY_SIZE_BYTES / 2) ||
@@ -363,7 +482,6 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 		return ERROR_ESBC_CLIENT_HEADER_KEY_LEN_NOT_TWICE_SIG_LEN;
 	}
 
-	memcpy(&img->img_key, esbc + hdr->pkey, hdr->key_len);
 	memcpy(&img->img_sign, esbc + hdr->psign, hdr->sign_len);
 
 	/* No SG support */
@@ -377,7 +495,7 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 		return ERROR_ESBC_CLIENT_HEADER_KEY_MOD_1;
 
 	/* modulus value should be odd */
-	if ((k[hdr->key_len / 2 - 1] & 0x1) == 0)
+	if ((k[get_key_len(img) / 2 - 1] & 0x1) == 0)
 		return ERROR_ESBC_CLIENT_HEADER_KEY_MOD_2;
 
 	/* Check signature value < modulus value */
@@ -735,7 +853,7 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 	construct_img_encoded_hash_second(img);
 
 	ret = rsa_public_verif_sec(img->img_sign, img->img_encoded_hash,
-		img->img_key, img->hdr.key_len / 2, &rsa_ctx, &jr);
+		img->img_key, get_key_len(img) / 2, &rsa_ctx, &jr);
 	if (ret) {
 		fsl_secblk_handle_error(ret);
 		goto exit;

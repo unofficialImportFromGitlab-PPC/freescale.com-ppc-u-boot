@@ -2985,6 +2985,8 @@ typedef struct ccsr_sfp_regs {
 #endif
 #define ITS_MASK	0x00000004
 #define ITS_BIT		2
+#define OSPR_KEY_REVOC_SHIFT	13
+#define OSPR_KEY_REVOC_MASK	0x0000e000
 
 typedef struct ccsr_snvs_regs {
 	u8 reserved0[0x04];

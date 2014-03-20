@@ -32,6 +32,10 @@
 #define ERROR_ESBC_CLIENT_HEADER_BARKER				0x4
 #define ERROR_ESBC_CLIENT_HEADER_KEY_LEN			0x8
 #define ERROR_ESBC_CLIENT_HEADER_SIG_LEN			0x10
+#define ERROR_ESBC_CLIENT_HEADER_KEY_REVOKED			0x11
+#define ERROR_ESBC_CLIENT_HEADER_INVALID_SRK_NUM_ENTRY		0x12
+#define ERROR_ESBC_CLIENT_HEADER_INVALID_KEY_NUM		0x13
+#define ERROR_ESBC_CLIENT_HEADER_INV_SRK_ENTRY_KEYLEN		0x14
 #define ERROR_ESBC_CLIENT_HEADER_KEY_LEN_NOT_TWICE_SIG_LEN	0x20
 #define ERROR_ESBC_CLIENT_HEADER_KEY_MOD_1			0x40
 #define ERROR_ESBC_CLIENT_HEADER_KEY_MOD_2			0x80
@@ -105,7 +109,15 @@ static const struct fsl_secboot_errcode fsl_secboot_errcodes[] = {
 		"Failure in command/Unknown command/Wrong arguments," \
 		" Core in infinite loop"},
 	{ ERROR_ESBC_MISSING_BOOTM,
-		"Bootm command missing from bootscript"},
+		"Bootm command missing from bootscript" },
+	{ ERROR_ESBC_CLIENT_HEADER_KEY_REVOKED,
+		"Selected key is revoked" },
+	{ ERROR_ESBC_CLIENT_HEADER_INVALID_SRK_NUM_ENTRY,
+		"Wrong key entry" },
+	{ ERROR_ESBC_CLIENT_HEADER_INVALID_KEY_NUM,
+		"Wrong key is selected" },
+	{ ERROR_ESBC_CLIENT_HEADER_INV_SRK_ENTRY_KEYLEN,
+		"Wrong srk public key len in header" },
 	{ ERROR_ESBC_CLIENT_MAX, "NULL" }
 };
 
