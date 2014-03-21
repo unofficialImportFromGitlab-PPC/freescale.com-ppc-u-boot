@@ -10,3 +10,4 @@ obj-$(CONFIG_PCI)     += pci.o
 obj-y	+= law.o
 obj-y	+= tlb.o
 obj-y	+= eth.o
+obj-$(CONFIG_FSL_DIU_FB)	+= diu.o
