@@ -18,7 +18,6 @@
  */
 
 #include <asm/fsl_sfp_snvs.h>
-#include <configs/corenet_ds.h>
 #include <common.h>
 
 int change_sec_mon_state(u32 initial_state, u32 final_state)
