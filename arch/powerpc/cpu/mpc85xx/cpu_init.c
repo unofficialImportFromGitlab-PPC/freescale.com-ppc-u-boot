@@ -365,6 +365,7 @@ void cpu_init_f (void)
 #ifdef CONFIG_MPC8548
 	ccsr_local_ecm_t *ecm = (void *)(CONFIG_SYS_MPC85xx_ECM_ADDR);
 	uint svr = get_svr();
+	gd = (gd_t *)(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_GBL_DATA_OFFSET);
 
 	/*
 	 * CPU2 errata workaround: A core hang possible while executing
@@ -424,6 +425,12 @@ void cpu_init_f (void)
 	fsl_erratum_a007212_workaround();
 #endif
 
+#ifdef CONFIG_DEEP_SLEEP
+	/* disable the console if boot from deep sleep */
+	if (in_be32(&gur->scrtsr[0]) & (1 << 3))
+		gd->flags |= GD_FLG_SILENT |
+		    GD_FLG_DEEP_SLEEP | GD_FLG_DISABLE_CONSOLE;
+#endif
 }
 
 /* Implement a dummy function for those platforms w/o SERDES */

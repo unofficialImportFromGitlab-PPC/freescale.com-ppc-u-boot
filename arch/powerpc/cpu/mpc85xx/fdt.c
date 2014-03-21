@@ -35,6 +35,9 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 	u32 bootpg = determine_mp_bootpg(NULL);
 	u32 id = get_my_id();
 	const char *enable_method;
+#ifdef CONFIG_DEEP_SLEEP
+	ulong len;
+#endif
 
 	off = fdt_node_offset_by_prop_value(blob, -1, "device_type", "cpu", 4);
 	while (off != -FDT_ERR_NOTFOUND) {
@@ -77,6 +80,25 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 				"device_type", "cpu", 4);
 	}
 
+#ifdef CONFIG_DEEP_SLEEP
+	/*
+	 * reserve the memory space for deep sleep.
+	 * This space will be re-used next time when boot from deep sleep.
+	 * The space includes bd_t, gd_t, stack and uboot image.
+	 * Reserve 1K for stack.
+	 */
+	len = sizeof(bd_t) + sizeof(gd_t) + (1 << 10);
+	/* round up to 4K */
+	len = (len + (4096 - 1)) & ~(4096 - 1);
+
+	off = fdt_add_mem_rsv(blob, gd->relocaddr - len,
+			len + ((ulong)&__bss_end - gd->relocaddr));
+	if (off < 0)
+		printf("Failed to reserve memory for deep sleep: %s\n",
+		       fdt_strerror(off));
+
+#endif
+
 	/* Reserve the boot page so OSes dont use it */
 	if ((u64)bootpg < memory_limit) {
 		off = fdt_add_mem_rsv(blob, bootpg, (u64)4096);
@@ -100,6 +122,7 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 	}
 #endif
 
+#ifndef CONFIG_DEEP_SLEEP
 	/* Reserve spin table page */
 	if (spin_tbl_addr < memory_limit) {
 		off = fdt_add_mem_rsv(blob,
@@ -108,6 +131,7 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 			printf("Failed to reserve memory for spin table: %s\n",
 				fdt_strerror(off));
 	}
+#endif
 }
 #endif
 

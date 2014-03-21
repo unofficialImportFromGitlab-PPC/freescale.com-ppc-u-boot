@@ -14,6 +14,8 @@
 #include <asm/fsl_portals.h>
 #include <asm/fsl_liodn.h>
 
+DECLARE_GLOBAL_DATA_PTR;
+
 int get_dpaa_liodn(enum fsl_dpaa_dev dpaa_dev, u32 *liodns, int liodn_offset)
 {
 	liodns[0] = liodn_bases[dpaa_dev].id[0] + liodn_offset;
@@ -175,6 +177,8 @@ static void setup_rman_liodn_base(struct liodn_id_table *tbl, int size)
 
 void set_liodns(void)
 {
+	bool is_deepsleep = false;
+
 	/* setup general liodn offsets */
 	set_liodn(liodn_tbl, liodn_tbl_sz);
 
@@ -190,16 +194,25 @@ void set_liodns(void)
 	}
 
 	/* setup FMAN block(s) liodn bases & offsets if we have one */
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP)
+		is_deepsleep = true;
+#endif
+
 #ifdef CONFIG_SYS_DPAA_FMAN
-	set_liodn(fman1_liodn_tbl, fman1_liodn_tbl_sz);
-	setup_fman_liodn_base(FSL_HW_PORTAL_FMAN1, fman1_liodn_tbl,
-				fman1_liodn_tbl_sz);
+	if (!is_deepsleep) {
+		set_liodn(fman1_liodn_tbl, fman1_liodn_tbl_sz);
+		setup_fman_liodn_base(FSL_HW_PORTAL_FMAN1, fman1_liodn_tbl,
+				      fman1_liodn_tbl_sz);
+	}
+#endif
 
 #if (CONFIG_SYS_NUM_FMAN == 2)
-	set_liodn(fman2_liodn_tbl, fman2_liodn_tbl_sz);
-	setup_fman_liodn_base(FSL_HW_PORTAL_FMAN2, fman2_liodn_tbl,
-				fman2_liodn_tbl_sz);
-#endif
+	if (!is_deepsleep) {
+		set_liodn(fman2_liodn_tbl, fman2_liodn_tbl_sz);
+		setup_fman_liodn_base(FSL_HW_PORTAL_FMAN2, fman2_liodn_tbl,
+				      fman2_liodn_tbl_sz);
+	}
 #endif
 	/* setup PME liodn base */
 	setup_pme_liodn_base();

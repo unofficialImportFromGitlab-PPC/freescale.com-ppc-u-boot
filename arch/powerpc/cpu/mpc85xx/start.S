@@ -1814,6 +1814,15 @@ relocate_code:
 	 * Now relocate code
 	 */
 
+#ifdef CONFIG_DEEP_SLEEP
+	/* don't copy uboot again in warm reset case */
+	mr r0, r3
+	bl check_warmboot
+	cmpwi r3, 0
+	bne 7f
+	mr r3, r0
+#endif
+
 	cmplw	cr1,r3,r4
 	addi	r0,r5,3
 	srwi.	r0,r0,2

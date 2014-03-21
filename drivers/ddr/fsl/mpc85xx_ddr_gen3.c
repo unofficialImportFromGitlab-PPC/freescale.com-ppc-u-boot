@@ -19,6 +19,8 @@
 unsigned int picos_to_mclk(unsigned int picos);
 #endif
 
+DECLARE_GLOBAL_DATA_PTR;
+
 /*
  * regs has the to-be-set values for DDR controller registers
  * ctrl_num is the DDR controller number
@@ -125,7 +127,13 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	out_be32(&ddr->timing_cfg_0, regs->timing_cfg_0);
 	out_be32(&ddr->timing_cfg_1, regs->timing_cfg_1);
 	out_be32(&ddr->timing_cfg_2, regs->timing_cfg_2);
-	out_be32(&ddr->sdram_cfg_2, regs->ddr_sdram_cfg_2);
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP)
+		out_be32(&ddr->sdram_cfg_2,
+			 regs->ddr_sdram_cfg_2 & ~SDRAM_CFG2_D_INIT);
+	else
+#endif
+		out_be32(&ddr->sdram_cfg_2, regs->ddr_sdram_cfg_2);
 	out_be32(&ddr->sdram_mode, regs->ddr_sdram_mode);
 	out_be32(&ddr->sdram_mode_2, regs->ddr_sdram_mode_2);
 	out_be32(&ddr->sdram_mode_3, regs->ddr_sdram_mode_3);
@@ -138,8 +146,16 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	out_be32(&ddr->sdram_interval, regs->ddr_sdram_interval);
 	out_be32(&ddr->sdram_data_init, regs->ddr_data_init);
 	out_be32(&ddr->sdram_clk_cntl, regs->ddr_sdram_clk_cntl);
-	out_be32(&ddr->init_addr, regs->ddr_init_addr);
-	out_be32(&ddr->init_ext_addr, regs->ddr_init_ext_addr);
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP) {
+		out_be32(&ddr->init_addr, 0);
+		out_be32(&ddr->init_ext_addr, (1 << 31));
+	} else
+#endif
+	{
+		out_be32(&ddr->init_addr, regs->ddr_init_addr);
+		out_be32(&ddr->init_ext_addr, regs->ddr_init_ext_addr);
+	}
 
 	out_be32(&ddr->timing_cfg_4, regs->timing_cfg_4);
 	out_be32(&ddr->timing_cfg_5, regs->timing_cfg_5);
@@ -407,8 +423,22 @@ step2:
 	udelay(500);
 	asm volatile("sync;isync");
 
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP) {
+		/* enter self-refresh */
+		setbits_be32(&ddr->sdram_cfg_2, (1 << 31));
+		/* do board specific memory setup */
+		board_mem_sleep_setup();
+	}
+#endif
+
 	/* Let the controller go */
-	temp_sdram_cfg = in_be32(&ddr->sdram_cfg) & ~SDRAM_CFG_BI;
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP)
+		temp_sdram_cfg = (in_be32(&ddr->sdram_cfg) | SDRAM_CFG_BI);
+	else
+#endif
+		temp_sdram_cfg = (in_be32(&ddr->sdram_cfg) & ~SDRAM_CFG_BI);
 	out_be32(&ddr->sdram_cfg, temp_sdram_cfg | SDRAM_CFG_MEM_EN);
 	asm volatile("sync;isync");
 
@@ -564,4 +594,9 @@ step2:
 		clrbits_be32(&ddr->sdram_cfg, 0x2);
 	}
 #endif /* CONFIG_SYS_FSL_ERRATUM_DDR111_DDR134 */
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP)
+		/* exit self-refresh */
+		clrbits_be32(&ddr->sdram_cfg_2, (1 << 31));
+#endif
 }

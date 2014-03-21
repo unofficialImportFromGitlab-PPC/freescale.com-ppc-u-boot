@@ -350,6 +350,13 @@ unsigned long logbuffer_base(void)
 }
 #endif
 
+#ifdef CONFIG_DEEP_SLEEP
+int check_warmboot(void)
+{
+	return !!(gd->flags & GD_FLG_DEEP_SLEEP);
+}
+#endif
+
 void board_init_f(ulong bootflag)
 {
 	bd_t *bd;
@@ -477,10 +484,18 @@ void board_init_f(ulong bootflag)
 
 	/*
 	 * reserve memory for malloc() arena
+	 * don't reserve it in deep sleep case
 	 */
-	addr_sp = addr - TOTAL_MALLOC_LEN;
-	debug("Reserving %dk for malloc() at: %08lx\n",
-	      TOTAL_MALLOC_LEN >> 10, addr_sp);
+#ifdef CONFIG_DEEP_SLEEP
+	if (gd->flags & GD_FLG_DEEP_SLEEP)
+		addr_sp = addr;
+	else
+#endif
+	{
+		addr_sp = addr - TOTAL_MALLOC_LEN;
+		debug("Reserving %dk for malloc() at: %08lx\n",
+		      TOTAL_MALLOC_LEN >> 10, addr_sp);
+	}
 
 	/*
 	 * (permanently) allocate a Board Info struct
@@ -591,6 +606,14 @@ void board_init_r(gd_t *id, ulong dest_addr)
 {
 	bd_t *bd;
 	ulong malloc_start;
+#ifdef CONFIG_DEEP_SLEEP
+	u32 start;
+	int i;
+	struct ccsr_scfg *scfg = (void *)CONFIG_SYS_MPC85xx_SCFG;
+	u64 *src, *dst;
+	typedef void (*func_t)(void);
+	func_t kernel_resume;
+#endif
 
 #ifndef CONFIG_SYS_NO_FLASH
 	ulong flash_size;
@@ -600,6 +623,22 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	bd = gd->bd;
 
 	gd->flags |= GD_FLG_RELOC;	/* tell others: relocation done */
+
+#ifdef CONFIG_DEEP_SLEEP
+	/*
+	 * restore 128-byte memory space which corrupted
+	 * by DDRC training.
+	 */
+	if (gd->flags & GD_FLG_DEEP_SLEEP) {
+		src = (u64 *)in_be32(&scfg->sparecr[2]);
+		dst = (u64 *)(0);
+		for (i = 0; i < 128/sizeof(u64); i++) {
+			*dst = *src;
+			dst++;
+			src++;
+		}
+	}
+#endif
 
 	/* The Malloc area is immediately below the monitor copy in DRAM */
 	malloc_start = dest_addr - TOTAL_MALLOC_LEN;
@@ -639,7 +678,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	/*
 	 * Setup trap handlers
 	 */
-	trap_init(dest_addr);
+#ifdef CONFIG_DEEP_SLEEP
+	if ((gd->flags & GD_FLG_DEEP_SLEEP) == 0)
+#endif
+		trap_init(dest_addr);
 
 #ifdef CONFIG_ADDR_MAP
 	init_addr_map();
@@ -686,7 +728,10 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	asm("sync ; isync");
 
-	mem_malloc_init(malloc_start, TOTAL_MALLOC_LEN);
+#ifdef CONFIG_DEEP_SLEEP
+	if ((gd->flags & GD_FLG_DEEP_SLEEP) == 0)
+#endif
+		mem_malloc_init(malloc_start, TOTAL_MALLOC_LEN);
 
 #if !defined(CONFIG_SYS_NO_FLASH)
 	puts("Flash: ");
@@ -742,6 +787,15 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r();
+
+#ifdef CONFIG_DEEP_SLEEP
+	/* Jump to kernel in deep sleep case */
+	if (gd->flags & GD_FLG_DEEP_SLEEP) {
+		start = in_be32(&scfg->sparecr[1]);
+		kernel_resume = (func_t)start;
+		kernel_resume();
+	}
+#endif
 
 	WATCHDOG_RESET();
 
