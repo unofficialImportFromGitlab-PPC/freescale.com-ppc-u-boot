@@ -44,6 +44,10 @@
 #define CONFIG_MPC85xx			/* MPC85xx/PQ3 platform */
 #define CONFIG_MP			/* support multiple processors */
 
+/* support deep sleep */
+#define CONFIG_DEEP_SLEEP
+#define CONFIG_SILENT_CONSOLE
+
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE	0xeff40000
 #endif
