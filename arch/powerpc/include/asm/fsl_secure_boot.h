@@ -34,6 +34,7 @@
 #if defined(CONFIG_B4860QDS) || \
 	defined(CONFIG_T4240QDS) || \
 	defined(CONFIG_T2080QDS) || \
+	defined(CONFIG_T2080RDB) || \
 	defined(CONFIG_T1040QDS) || \
 	defined(CONFIG_T1040RDB)
 #define CONFIG_SYS_CPC_REINIT_F
