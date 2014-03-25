@@ -162,6 +162,9 @@ int env_import(const char *buf, int check)
 	if (himport_r(&env_htab, (char *)ep->data, ENV_SIZE, '\0', 0,
 			0, NULL)) {
 		gd->flags |= GD_FLG_ENV_READY;
+#ifdef CONFIG_SPL_BUILD
+		gd->env_addr = (unsigned long)ep->data;
+#endif
 		return 1;
 	}
 
