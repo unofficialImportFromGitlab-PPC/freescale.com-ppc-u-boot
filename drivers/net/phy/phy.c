@@ -648,9 +648,9 @@ static struct phy_device *get_phy_device_by_mask(struct mii_dev *bus,
 		return phydev;
 	/* Try Standard (ie Clause 22) access */
 	/* Otherwise we have to try Clause 45 */
-	for (i = 0; i < 6; i++) {
+	for (i = 0; i < 5; i++) {
 		phydev = create_phy_by_mask(bus, phy_mask,
-				i ? i - 1 : MDIO_DEVAD_NONE, interface);
+				i ? i : MDIO_DEVAD_NONE, interface);
 		if (IS_ERR(phydev))
 			return NULL;
 		if (phydev)
