@@ -242,7 +242,7 @@ int get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
 #if defined(CORTINA_PHY_ADDR1) || defined(CORTINA_PHY_ADDR2)
 	/* Cortina PHY has non-standard offset of PHY ID registers */
 	if (addr == CORTINA_PHY_ADDR1 || addr == CORTINA_PHY_ADDR2)
-		phy_reg = bus->read(bus, addr, devad, VILLA_GLOBAL_CHIP_ID_LSB);
+		phy_reg = bus->read(bus, addr, 0, VILLA_GLOBAL_CHIP_ID_LSB);
 	else
 #endif
 		phy_reg = bus->read(bus, addr, devad, MII_PHYSID1);
@@ -251,9 +251,12 @@ int get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
 		return -EIO;
 
 	*phy_id = (phy_reg & 0xffff) << 16;
+#if defined(CORTINA_PHY_ADDR1) || defined(CORTINA_PHY_ADDR2)
+	/* Cortina PHY has non-standard offset of PHY ID registers */
 	if (addr == CORTINA_PHY_ADDR1 || addr == CORTINA_PHY_ADDR2)
-		phy_reg = bus->read(bus, addr, devad, VILLA_GLOBAL_CHIP_ID_MSB);
+		phy_reg = bus->read(bus, addr, 0, VILLA_GLOBAL_CHIP_ID_MSB);
 	else
+#endif
 		phy_reg = bus->read(bus, addr, devad, MII_PHYSID2);
 
 	if (phy_reg < 0)
