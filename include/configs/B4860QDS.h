@@ -50,7 +50,6 @@
 #define CONFIG_SYS_CCSR_DO_NOT_RELOCATE
 #define CONFIG_SYS_NO_FLASH
 #endif
-#define CONFIG_RAMBOOT_TEXT_BASE	0xFFFE0000
 #endif
 #endif
 
@@ -464,7 +463,7 @@ unsigned long get_board_ddr_clk(void);
 					GENERATED_GBL_DATA_SIZE)
 #define CONFIG_SYS_INIT_SP_OFFSET	CONFIG_SYS_GBL_DATA_OFFSET
 
-#define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
+#define CONFIG_SYS_MONITOR_LEN		(768 * 1024)
 #define CONFIG_SYS_MALLOC_LEN		(4 * 1024 * 1024)
 
 /* Serial Port - controlled on board with jumper J8
