@@ -143,8 +143,6 @@ int board_early_init_r(void)
 #endif
 	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
 
-	qe_board_setup();
-
 	return 0;
 }
 
@@ -224,6 +222,7 @@ int misc_init_r(void)
 		}
 	}
 
+	qe_board_setup();
 	return 0;
 }
 
