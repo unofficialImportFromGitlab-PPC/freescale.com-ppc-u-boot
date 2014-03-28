@@ -221,6 +221,32 @@ int set_ddr_laws(u64 start, u64 sz, enum law_trgt_if id)
 }
 #endif /* not SPL */
 
+void disable_non_ddr_laws(void)
+{
+	int i;
+	int id;
+	for (i = 0; i < FSL_HW_NUM_LAWS; i++) {
+		u32 lawar = in_be32(LAWAR_ADDR(i));
+
+		if (lawar & LAW_EN) {
+			id = (lawar & ~LAW_EN) >> 20;
+			switch (id) {
+			case LAW_TRGT_IF_DDR_1:
+			case LAW_TRGT_IF_DDR_2:
+			case LAW_TRGT_IF_DDR_3:
+			case LAW_TRGT_IF_DDR_4:
+			case LAW_TRGT_IF_DDR_INTRLV:
+			case LAW_TRGT_IF_DDR_INTLV_34:
+			case LAW_TRGT_IF_DDR_INTLV_123:
+			case LAW_TRGT_IF_DDR_INTLV_1234:
+						continue;
+			default:
+						disable_law(i);
+			}
+		}
+	}
+}
+
 void init_laws(void)
 {
 	int i;
@@ -242,6 +268,13 @@ void init_laws(void)
 	disable_law(0);
 #endif
 
+#if !defined(CONFIG_SECURE_BOOT)
+	/*
+	 * if any non DDR LAWs has been created earlier, remove them before
+	 * LAW table is parsed.
+	*/
+	disable_non_ddr_laws();
+#endif
 
 	/*
 	 * Any LAWs that were set up before we booted assume they are meant to
