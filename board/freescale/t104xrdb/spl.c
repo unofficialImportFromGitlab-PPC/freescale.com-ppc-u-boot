@@ -33,7 +33,7 @@ unsigned long get_board_ddr_clk(void)
 void board_init_f(ulong bootflag)
 {
 	u32 plat_ratio, sys_clk, uart_clk;
-#ifdef CONFIG_NAND
+#ifdef CONFIG_SPL_NAND_BOOT
 	u32 porsr1, pinctl;
 #endif
 	ccsr_gur_t *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
@@ -62,7 +62,6 @@ void board_init_f(ulong bootflag)
 	sys_clk = get_board_sys_clk();
 	plat_ratio = (in_be32(&gur->rcwsr[0]) >> 25) & 0x1f;
 	uart_clk = sys_clk * plat_ratio / 2;
-	uart_clk = 600000000 / 2;
 
 	NS16550_init((NS16550_t)CONFIG_SYS_NS16550_COM1,
 		     uart_clk / 16 / CONFIG_BAUDRATE);
