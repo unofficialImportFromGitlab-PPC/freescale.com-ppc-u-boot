@@ -55,6 +55,52 @@ struct jobring jr;
 bool     has_fsl_erratum_a006918;
 #endif
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+void fsl_erratum_a006261_workaround(struct ccsr_usb_phy __iomem *usb_phy)
+{
+#ifdef CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE
+	u32 xcvrprg = in_be32(&usb_phy->port1.xcvrprg);
+
+	/* Increase Disconnect Threshold by 50mV */
+	xcvrprg &= ~CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_MASK |
+						INC_DCNT_THRESHOLD_50MV;
+	/* Enable programming of USB High speed Disconnect threshold */
+	xcvrprg |= CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_EN;
+	out_be32(&usb_phy->port1.xcvrprg, xcvrprg);
+
+	xcvrprg = in_be32(&usb_phy->port2.xcvrprg);
+	/* Increase Disconnect Threshold by 50mV */
+	xcvrprg &= ~CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_MASK |
+						INC_DCNT_THRESHOLD_50MV;
+	/* Enable programming of USB High speed Disconnect threshold */
+	xcvrprg |= CONFIG_SYS_FSL_USB_XCVRPRG_HS_DCNT_PROG_EN;
+	out_be32(&usb_phy->port2.xcvrprg, xcvrprg);
+#else
+	u32 temp = 0;
+	u32 status = in_be32(&usb_phy->status1);
+
+	u32 squelch_prog_rd_0_2 =
+		(status >> CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_0)
+			& CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK;
+
+	u32 squelch_prog_rd_3_5 =
+		(status >> CONFIG_SYS_FSL_USB_SQUELCH_PROG_RD_3)
+			& CONFIG_SYS_FSL_USB_SQUELCH_PROG_MASK;
+
+	setbits_be32(&usb_phy->config1,
+		     CONFIG_SYS_FSL_USB_HS_DISCNCT_INC);
+	setbits_be32(&usb_phy->config2,
+		     CONFIG_SYS_FSL_USB_RX_AUTO_CAL_RD_WR_SEL);
+
+	temp = squelch_prog_rd_0_2 << CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_0;
+	out_be32(&usb_phy->config2, in_be32(&usb_phy->config2) | temp);
+
+	temp = squelch_prog_rd_3_5 << CONFIG_SYS_FSL_USB_SQUELCH_PROG_WR_3;
+	out_be32(&usb_phy->config2, in_be32(&usb_phy->config2) | temp);
+#endif
+}
+#endif
+
 #if defined(CONFIG_QE) && !defined(CONFIG_U_QE)
 extern qe_iop_conf_t qe_iop_conf_tab[];
 extern void qe_config_iopin(u8 port, u8 pin, int dir,
@@ -793,6 +839,10 @@ skip_l2:
 	{
 		struct ccsr_usb_phy __iomem *usb_phy1 =
 			(void *)CONFIG_SYS_MPC85xx_USB1_PHY_ADDR;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy1);
+#endif
 		out_be32(&usb_phy1->usb_enable_override,
 				CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE);
 	}
@@ -801,6 +851,10 @@ skip_l2:
 	{
 		struct ccsr_usb_phy __iomem *usb_phy2 =
 			(void *)CONFIG_SYS_MPC85xx_USB2_PHY_ADDR;
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy2);
+#endif
 		out_be32(&usb_phy2->usb_enable_override,
 				CONFIG_SYS_FSL_USB_ENABLE_OVERRIDE);
 	}
@@ -851,7 +905,13 @@ skip_l2:
 		if (IS_SVR_REV(svr, 1, 0))
 			fsl_erratum_a006918_workaround();
 #endif
+
+#ifdef CONFIG_SYS_FSL_ERRATUM_A006261
+		if (has_erratum_a006261())
+			fsl_erratum_a006261_workaround(usb_phy);
 #endif
+
+#endif /* CONFIG_SYS_FSL_USB_DUAL_PHY_ENABLE */
 
 #ifdef CONFIG_SYS_FSL_ELBC_MULTIBIT_ECC
 	/*
