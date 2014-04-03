@@ -197,7 +197,7 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_INIT_L3_ADDR + 4 * 1024)
 #endif
 #define CONFIG_SPL_RELOC_MALLOC_ADDR	(CONFIG_SYS_INIT_L3_ADDR + 10 * 1024)
-#define CONFIG_SPL_RELOC_MALLOC_SIZE	(30 << 10)
+#define CONFIG_SPL_RELOC_MALLOC_SIZE	(50 << 10)
 #define CONFIG_SPL_RELOC_STACK		(CONFIG_SYS_INIT_L3_ADDR + 64 * 1024)
 #define CONFIG_SPL_RELOC_STACK_SIZE	(20 << 10)
 
@@ -585,6 +585,7 @@ unsigned long get_board_ddr_clk(void);
  * env, so we got 0x110000.
  */
 #define CONFIG_SYS_QE_FW_IN_SPIFLASH
+#define CONFIG_SYS_CORTINA_FW_IN_SPIFLASH
 #define CONFIG_SYS_FMAN_FW_ADDR		0x110000
 #define CONFIG_CORTINA_FW_ADDR		0x120000
 
@@ -595,6 +596,7 @@ unsigned long get_board_ddr_clk(void);
  * 0x2000 (16 blocks), 8 + 2048 + 16 = 2072, enlarge it to 2080.
  */
 #define CONFIG_SYS_QE_FMAN_FW_IN_MMC
+#define CONFIG_SYS_CORTINA_FW_IN_MMC
 #define CONFIG_SYS_FMAN_FW_ADDR		(512 * 0x820)
 #define CONFIG_CORTINA_FW_ADDR		(512 * 0x8a0)
 
@@ -611,10 +613,12 @@ unsigned long get_board_ddr_clk(void);
  * master LAW->the ucode address in master's memory space.
  */
 #define CONFIG_SYS_QE_FMAN_FW_IN_REMOTE
+#define CONFIG_SYS_CORTINA_FW_IN_REMOTE
 #define CONFIG_SYS_FMAN_FW_ADDR	0xFFE00000
 #define CONFIG_CORTINA_FW_ADDR		0xFFE10000
 #else
 #define CONFIG_SYS_QE_FMAN_FW_IN_NOR
+#define CONFIG_SYS_CORTINA_FW_IN_NOR
 #define CONFIG_SYS_FMAN_FW_ADDR	0xEFF00000
 #define CONFIG_CORTINA_FW_ADDR		0xEFE00000
 #endif
