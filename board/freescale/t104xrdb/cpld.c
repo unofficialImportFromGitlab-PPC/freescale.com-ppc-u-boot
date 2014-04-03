@@ -64,18 +64,17 @@ static void cpld_dump_regs(void)
 	printf("cpld_ver_sub	 = 0x%02x\n", CPLD_READ(cpld_ver_sub));
 	printf("hw_ver		 = 0x%02x\n", CPLD_READ(hw_ver));
 	printf("sw_ver		 = 0x%02x\n", CPLD_READ(sw_ver));
-	printf("reset_ctl[0]	 = 0x%02x\n", CPLD_READ(reset_ctl[0]));
-	printf("reset_ctl[1]	 = 0x%02x\n", CPLD_READ(reset_ctl[1]));
+	printf("reset_ctl1	 = 0x%02x\n", CPLD_READ(reset_ctl1));
+	printf("reset_ctl2	 = 0x%02x\n", CPLD_READ(reset_ctl2));
 	printf("int_status	 = 0x%02x\n", CPLD_READ(int_status));
-	printf("misc_ctl_status	 = 0x%02x\n", CPLD_READ(misc_ctl_status));
-	printf("sfp_ctl_status	 = 0x%02x\n", CPLD_READ(sfp_ctl_status));
 	printf("flash_ctl_status = 0x%02x\n", CPLD_READ(flash_ctl_status));
 	printf("fan_ctl_status	 = 0x%02x\n", CPLD_READ(fan_ctl_status));
 	printf("led_ctl_status	 = 0x%02x\n", CPLD_READ(led_ctl_status));
+	printf("sfp_ctl_status	 = 0x%02x\n", CPLD_READ(sfp_ctl_status));
+	printf("misc_ctl_status	 = 0x%02x\n", CPLD_READ(misc_ctl_status));
 	printf("boot_override	 = 0x%02x\n", CPLD_READ(boot_override));
-	printf("boot_config[0]	 = 0x%02x\n", CPLD_READ(boot_config[0]));
-	printf("boot_config[1]	 = 0x%02x\n", CPLD_READ(boot_config[1]));
-	printf("boot_config[2]	 = 0x%02x\n", CPLD_READ(boot_config[2]));
+	printf("boot_config1	 = 0x%02x\n", CPLD_READ(boot_config1));
+	printf("boot_config2	 = 0x%02x\n", CPLD_READ(boot_config2));
 	putc('\n');
 }
 #endif
