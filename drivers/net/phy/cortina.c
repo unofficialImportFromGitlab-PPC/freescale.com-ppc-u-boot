@@ -9,11 +9,19 @@
 
 #include <config.h>
 #include <common.h>
+#include <malloc.h>
 #include <linux/ctype.h>
 #include <linux/string.h>
 #include <linux/err.h>
 #include <phy.h>
 #include <cortina.h>
+#ifdef CONFIG_SYS_CORTINA_FW_IN_NAND
+#include <nand.h>
+#elif defined(CONFIG_SYS_CORTINA_FW_IN_SPIFLASH)
+#include <spi_flash.h>
+#elif defined(CONFIG_SYS_CORTINA_FW_IN_MMC)
+#include <mmc.h>
+#endif
 
 #ifndef CONFIG_PHYLIB_10G
 #error The Cortina PHY needs 10G support
@@ -115,7 +123,6 @@ struct cortina_reg_config cortina_reg_cfg[] = {
 
 void cs4340_upload_firmware(struct phy_device *phydev)
 {
-	char *pby_temp = NULL;
 	char line_temp[0x50] = {0};
 	char reg_addr[0x50] = {0};
 	char reg_data[0x50] = {0};
@@ -123,26 +130,70 @@ void cs4340_upload_firmware(struct phy_device *phydev)
 	int line_cnt = 0;
 	int column_cnt = 0;
 	struct cortina_reg_config fw_temp;
+	char *addr = NULL;
 
-	pby_temp = (char *)CONFIG_CORTINA_FW_ADDR;
+#if defined(CONFIG_SYS_CORTINA_FW_IN_NOR) || \
+	defined(CONFIG_SYS_CORTINA_FW_IN_REMOTE)
 
-	if (*pby_temp == 0xff)
-		printf("No firmware at %x for Cortina CS4340/CS4315\n",
-		       CONFIG_CORTINA_FW_ADDR);
-	else
-		debug("Firmware exists at %x for Cortina CS4340/CS4315\n",
-		      CONFIG_CORTINA_FW_ADDR);
+	addr = (char *)CONFIG_CORTINA_FW_ADDR;
+#elif defined(CONFIG_SYS_CORTINA_FW_IN_NAND)
+	size_t fw_length = CONFIG_CORTINA_FW_LENGTH;
 
-	while (*pby_temp != 'Q') {
+	addr = malloc(CONFIG_CORTINA_FW_LENGTH);
+	rc = nand_read(&nand_info[0], (loff_t)CONFIG_CORTINA_FW_ADDR,
+		       &fw_length, (u_char *)addr);
+	if (rc == -EUCLEAN) {
+		printf("NAND read of Cortina firmware at 0x%x failed %d\n",
+		       CONFIG_CORTINA_FW_ADDR, rc);
+	}
+#elif defined(CONFIG_SYS_QE_FW_IN_SPIFLASH)
+	struct spi_flash *ucode_flash;
+	int ret = 0;
+
+	addr = malloc(CONFIG_CORTINA_FW_LENGTH);
+	ucode_flash = spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
+				CONFIG_ENV_SPI_MAX_HZ, CONFIG_ENV_SPI_MODE);
+	if (!ucode_flash) {
+		printf("SF: probe for Cortina ucode failed\n");
+	} else {
+		ret = spi_flash_read(ucode_flash, CONFIG_CORTINA_FW_ADDR,
+				     CONFIG_CORTINA_FW_LENGTH, addr);
+		if (ret)
+			printf("SF: read for Cortina ucode failed\n");
+		spi_flash_free(ucode_flash);
+	}
+#elif defined(CONFIG_SYS_CORTINA_FW_IN_MMC)
+	int dev = CONFIG_SYS_MMC_ENV_DEV;
+	u32 cnt = CONFIG_CORTINA_FW_LENGTH / 512;
+	u32 blk = CONFIG_CORTINA_FW_ADDR / 512;
+	struct mmc *mmc = find_mmc_device(CONFIG_SYS_MMC_ENV_DEV);
+
+	if (!mmc) {
+		printf("\nFailed to find MMC device for Cortina ucode\n");
+	} else {
+		addr = malloc(CONFIG_CORTINA_FW_LENGTH);
+		printf("\nMMC read: dev # %u, block # %u, count %u ...\n",
+		       dev, blk, cnt);
+		mmc_init(mmc);
+		(void)mmc->block_dev.block_read(dev, blk, cnt, addr);
+		/* flush cache after read */
+		flush_cache((ulong)addr, cnt * 512);
+	}
+#endif
+
+	while (*addr != 'Q') {
 		i = 0;
 
-		while (*pby_temp != 0x0a) {
-			line_temp[i++] = *pby_temp++;
-			if (0x50 < i)
+		while (*addr != 0x0a) {
+			line_temp[i++] = *addr++;
+			if (0x50 < i) {
+				printf("Not found Cortina PHY ucode at 0x%x\n",
+				       CONFIG_CORTINA_FW_ADDR);
 				return;
+			}
 		}
 
-		pby_temp++;  /* skip '\n' */
+		addr++;  /* skip '\n' */
 		line_cnt++;
 		column_cnt = i;
 		line_temp[column_cnt] = '\0';
