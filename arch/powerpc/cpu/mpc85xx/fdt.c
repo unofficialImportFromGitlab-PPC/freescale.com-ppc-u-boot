@@ -92,7 +92,8 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 	len = (len + (4096 - 1)) & ~(4096 - 1);
 
 	off = fdt_add_mem_rsv(blob, gd->relocaddr - len,
-			len + ((ulong)&__bss_end - gd->relocaddr));
+			len + ((ulong)&__bss_end - gd->relocaddr) +
+			TOTAL_MALLOC_LEN);
 	if (off < 0)
 		printf("Failed to reserve memory for deep sleep: %s\n",
 		       fdt_strerror(off));

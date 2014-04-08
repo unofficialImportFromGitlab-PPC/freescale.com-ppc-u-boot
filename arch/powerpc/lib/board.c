@@ -350,13 +350,6 @@ unsigned long logbuffer_base(void)
 }
 #endif
 
-#ifdef CONFIG_DEEP_SLEEP
-int check_warmboot(void)
-{
-	return !!(gd->flags & GD_FLG_DEEP_SLEEP);
-}
-#endif
-
 void board_init_f(ulong bootflag)
 {
 	bd_t *bd;
@@ -484,18 +477,10 @@ void board_init_f(ulong bootflag)
 
 	/*
 	 * reserve memory for malloc() arena
-	 * don't reserve it in deep sleep case
 	 */
-#ifdef CONFIG_DEEP_SLEEP
-	if (gd->flags & GD_FLG_DEEP_SLEEP)
-		addr_sp = addr;
-	else
-#endif
-	{
-		addr_sp = addr - TOTAL_MALLOC_LEN;
-		debug("Reserving %dk for malloc() at: %08lx\n",
-		      TOTAL_MALLOC_LEN >> 10, addr_sp);
-	}
+	addr_sp = addr - TOTAL_MALLOC_LEN;
+	debug("Reserving %dk for malloc() at: %08lx\n",
+	      TOTAL_MALLOC_LEN >> 10, addr_sp);
 
 	/*
 	 * (permanently) allocate a Board Info struct
@@ -728,10 +713,7 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	asm("sync ; isync");
 
-#ifdef CONFIG_DEEP_SLEEP
-	if ((gd->flags & GD_FLG_DEEP_SLEEP) == 0)
-#endif
-		mem_malloc_init(malloc_start, TOTAL_MALLOC_LEN);
+	mem_malloc_init(malloc_start, TOTAL_MALLOC_LEN);
 
 #if !defined(CONFIG_SYS_NO_FLASH)
 	puts("Flash: ");
@@ -787,15 +769,6 @@ void board_init_r(gd_t *id, ulong dest_addr)
 
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r();
-
-#ifdef CONFIG_DEEP_SLEEP
-	/* Jump to kernel in deep sleep case */
-	if (gd->flags & GD_FLG_DEEP_SLEEP) {
-		start = in_be32(&scfg->sparecr[1]);
-		kernel_resume = (func_t)start;
-		kernel_resume();
-	}
-#endif
 
 	WATCHDOG_RESET();
 
@@ -901,6 +874,15 @@ void board_init_r(gd_t *id, ulong dest_addr)
 	 * Do pci configuration
 	 */
 	pci_init();
+#endif
+
+#ifdef CONFIG_DEEP_SLEEP
+	/* Jump to kernel in deep sleep case */
+	if (gd->flags & GD_FLG_DEEP_SLEEP) {
+		start = in_be32(&scfg->sparecr[1]);
+		kernel_resume = (func_t)start;
+		kernel_resume();
+	}
 #endif
 
 /** leave this here (after malloc(), environment and PCI are working) **/
