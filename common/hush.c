@@ -3119,7 +3119,7 @@ static void mapset(const unsigned char *set, int code)
 	for (s=set; *s; s++) map[*s] = code;
 }
 
-static void update_ifs_map(void)
+void update_ifs_map(void)
 {
 	/* char *ifs and char map[256] are both globals. */
 	ifs = (uchar *)getenv("IFS");
