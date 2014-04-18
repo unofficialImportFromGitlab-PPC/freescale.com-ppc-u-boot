@@ -289,25 +289,41 @@ int phy_cortina_init(void)
 int get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id)
 {
 	int phy_reg;
+	bool cortina_phy = false;
 
-#if defined(CORTINA_PHY_ADDR1) || defined(CORTINA_PHY_ADDR2)
+	switch (addr) {
+#ifdef CORTINA_PHY_ADDR1
+	case CORTINA_PHY_ADDR1:
+#endif
+#ifdef CORTINA_PHY_ADDR2
+	case CORTINA_PHY_ADDR2:
+#endif
+#ifdef CORTINA_PHY_ADDR3
+	case CORTINA_PHY_ADDR3:
+#endif
+#ifdef CORTINA_PHY_ADDR4
+	case CORTINA_PHY_ADDR4:
+#endif
+		cortina_phy = true;
+		break;
+	default:
+		break;
+	}
+
 	/* Cortina PHY has non-standard offset of PHY ID registers */
-	if (addr == CORTINA_PHY_ADDR1 || addr == CORTINA_PHY_ADDR2)
+	if (cortina_phy)
 		phy_reg = bus->read(bus, addr, 0, VILLA_GLOBAL_CHIP_ID_LSB);
 	else
-#endif
 		phy_reg = bus->read(bus, addr, devad, MII_PHYSID1);
 
 	if (phy_reg < 0)
 		return -EIO;
 
 	*phy_id = (phy_reg & 0xffff) << 16;
-#if defined(CORTINA_PHY_ADDR1) || defined(CORTINA_PHY_ADDR2)
 	/* Cortina PHY has non-standard offset of PHY ID registers */
-	if (addr == CORTINA_PHY_ADDR1 || addr == CORTINA_PHY_ADDR2)
+	if (cortina_phy)
 		phy_reg = bus->read(bus, addr, 0, VILLA_GLOBAL_CHIP_ID_MSB);
 	else
-#endif
 		phy_reg = bus->read(bus, addr, devad, MII_PHYSID2);
 
 	if (phy_reg < 0)
