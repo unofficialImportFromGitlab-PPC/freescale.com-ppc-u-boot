@@ -791,12 +791,18 @@
 #define RAMDISKFILE	"t1040rdb_pi/ramdisk.uboot"
 #endif
 
+#ifdef CONFIG_FSL_DIU_FB
+#define DIU_ENVIRONMENT	"video-mode=fslfb:1024x768-32@60,monitor=dvi"
+#else
+#define DIU_ENVIRONMENT
+#endif
+
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"hwconfig=fsl_ddr:bank_intlv=cs0_cs1;"			\
 	"usb1:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) ";"\
 	"usb2:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
-	"video-mode=fslfb:1024x768-32@60,monitor=dvi\0"		\
+	"video-mode=" __stringify(DIU_ENVIRONMENT) "\0"		\
 	"uboot=" __stringify(CONFIG_UBOOTPATH) "\0"		\
 	"ubootaddr=" __stringify(CONFIG_SYS_TEXT_BASE) "\0"	\
 	"tftpflash=tftpboot $loadaddr $uboot && "		\
