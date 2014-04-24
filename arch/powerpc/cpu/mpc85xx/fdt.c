@@ -84,16 +84,20 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 	/*
 	 * reserve the memory space for deep sleep.
 	 * This space will be re-used next time when boot from deep sleep.
-	 * The space includes bd_t, gd_t, stack and uboot image.
+	 * The space includes bd_t, gd_t, malloc, stack and uboot image.
 	 * Reserve 1K for stack.
+	 * This is not needed by upstream since it has different
+	 * implementation.
 	 */
 	len = sizeof(bd_t) + sizeof(gd_t) + (1 << 10);
 	/* round up to 4K */
 	len = (len + (4096 - 1)) & ~(4096 - 1);
 
+	/* include the malloc space */
+	len += TOTAL_MALLOC_LEN;
+
 	off = fdt_add_mem_rsv(blob, gd->relocaddr - len,
-			len + ((ulong)&__bss_end - gd->relocaddr) +
-			TOTAL_MALLOC_LEN);
+			len + ((ulong)&__bss_end - gd->relocaddr));
 	if (off < 0)
 		printf("Failed to reserve memory for deep sleep: %s\n",
 		       fdt_strerror(off));
