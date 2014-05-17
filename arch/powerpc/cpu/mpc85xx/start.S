@@ -1637,6 +1637,15 @@ get_pir:
 
 	.globl get_pvr
 get_pvr:
+#ifdef CONFIG_SYS_FSL_ERRATUM_A008007
+/* On T1040 because of Erratum A008007, E5501 core has PVR register
+ * broken, hence the reads from PVR register are not reliable.
+ * Return the hardcoded correct PVR value if we are running on T1040.
+ */
+	lis	r3, 0x8024
+	addi	r3, r3, 0x1020
+	blr
+#endif
 	mfspr	r3,PVR
 	blr
 
