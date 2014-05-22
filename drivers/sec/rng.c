@@ -89,9 +89,14 @@ static int instantiate_rng(struct jobring *jr)
 {
 	struct result op;
 	u32 *desc;
+	u32 rdsta_val;
 	int ret = 0;
 	unsigned long long timeval;
 	unsigned long long timeout;
+	ccsr_sec_t __iomem *sec =
+			(ccsr_sec_t __iomem *)CONFIG_SYS_FSL_SEC_ADDR;
+	struct rng4tst __iomem *rng =
+			(struct rng4tst __iomem *)&sec->rng;
 
 	memset(&op, 0, sizeof(struct result));
 
@@ -123,41 +128,49 @@ static int instantiate_rng(struct jobring *jr)
 
 	if (op.status) {
 		printf("RNG: Instantiation failed with error %x\n", op.status);
-		return -1;
 	}
+
+	rdsta_val = in_be32(&rng->rdsta);
+	if (op.status || !(rdsta_val & RNG_STATE0_HANDLE_INSTANTIATED))
+		return -1;
 
 	return ret;
 }
 
 /*
  * By default, the TRNG runs for 200 clocks per sample;
- * 1600 clocks per sample generates better entropy.
+ * 1200 clocks per sample generates better entropy.
  */
-static void kick_trng(void)
+static void kick_trng(int ent_delay)
 {
-	ccsr_sec_t *sec = (void *)CONFIG_SYS_FSL_SEC_ADDR;
+	ccsr_sec_t __iomem *sec =
+			(ccsr_sec_t __iomem *)CONFIG_SYS_FSL_SEC_ADDR;
 	struct rng4tst __iomem *rng =
 			(struct rng4tst __iomem *)&sec->rng;
 	u32 val;
 
 	/* put RNG4 into program mode */
 	setbits_be32(&rng->rtmctl, RTMCTL_PRGM);
-	/* 1600 clocks per sample */
+	/* rtsdctl bits 0-15 contain "Entropy Delay, which defines the
+	 * length (in system clocks) of each Entropy sample taken
+	 * */
 	val = in_be32(&rng->rtsdctl);
-	val = (val & ~RTSDCTL_ENT_DLY_MASK) | (1600 << RTSDCTL_ENT_DLY_SHIFT);
+	val = (val & ~RTSDCTL_ENT_DLY_MASK) |
+	      (ent_delay << RTSDCTL_ENT_DLY_SHIFT);
 	out_be32(&rng->rtsdctl, val);
-	/* min. freq. count */
-	out_be32(&rng->rtfreqmin, 400);
-	/* max. freq. count */
-	out_be32(&rng->rtfreqmax, 6400);
+	/* min. freq. count, equal to 1/4 of the entropy sample length */
+	out_be32(&rng->rtfreqmin, ent_delay >> 2);
+	/* max. freq. count, equal to 8 times the entropy sample length */
+	out_be32(&rng->rtfreqmax, ent_delay << 3);
 	/* put RNG4 into run mode */
 	clrbits_be32(&rng->rtmctl, RTMCTL_PRGM);
 }
 
 int rng_init(struct jobring *jr)
 {
-	int ret;
-	ccsr_sec_t *sec = (void *)CONFIG_SYS_FSL_SEC_ADDR;
+	int ret, ent_delay = RTSDCTL_ENT_DLY_MIN;
+	ccsr_sec_t __iomem *sec =
+			(ccsr_sec_t __iomem *)CONFIG_SYS_FSL_SEC_ADDR;
 	struct rng4tst __iomem *rng =
 			(struct rng4tst __iomem *)&sec->rng;
 
@@ -165,15 +178,33 @@ int rng_init(struct jobring *jr)
 
 	/* Check if RNG state 0 handler is already instantiated */
 	if (rdsta & RNG_STATE0_HANDLE_INSTANTIATED) {
-		printf("RNG: Already instantiated\n");
 		return 0;
 	}
 
-	kick_trng();
-
-	ret = instantiate_rng(jr);
-	if (ret)
+	do {
+		/*
+		 * If either of the SH's were instantiated by somebody else
+		 * then it is assumed that the entropy
+		 * parameters are properly set and thus the function
+		 * setting these (kick_trng(...)) is skipped.
+		 * Also, if a handle was instantiated, do not change
+		 * the TRNG parameters.
+		 */
+		kick_trng(ent_delay);
+		ent_delay += 400;
+		/*
+		 * if instantiate_rng(...) fails, the loop will rerun
+		 * and the kick_trng(...) function will modfiy the
+		 * upper and lower limits of the entropy sampling
+		 * interval, leading to a sucessful initialization of
+		 * the RNG.
+		 */
+		ret = instantiate_rng(jr);
+	} while ((ret == -1) && (ent_delay < RTSDCTL_ENT_DLY_MAX));
+	if (ret) {
+		printf("RNG: Failed to instantiate RNG\n");
 		return ret;
+	}
 
 	 /* Enable RDB bit so that RNG works faster */
 	setbits_be32(&sec->scfgr, SEC_SCFGR_RDBENABLE);

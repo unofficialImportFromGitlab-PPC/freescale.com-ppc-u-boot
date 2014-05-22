@@ -2697,6 +2697,8 @@ struct rng4tst {
 		u32 rtpkrmax;	/* PRGM=1: poker max. limit register */
 		u32 rtpkrsq;	/* PRGM=0: poker square calc. result register */
 	};
+#define RTSDCTL_ENT_DLY_MIN	1200
+#define RTSDCTL_ENT_DLY_MAX	12800
 #define RTSDCTL_ENT_DLY_SHIFT 16
 #define RTSDCTL_ENT_DLY_MASK (0xffff << RTSDCTL_ENT_DLY_SHIFT)
 	u32 rtsdctl;		/* seed control register */
