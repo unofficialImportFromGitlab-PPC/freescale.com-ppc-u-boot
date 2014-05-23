@@ -2525,14 +2525,16 @@ typedef struct serdes_corenet {
 #define SRDS_PLLCR0_PLL_LCK		0x00800000
 #define SRDS_PLLCR0_FRATE_SEL_MASK	0x000f0000
 #define SRDS_PLLCR0_FRATE_SEL_5		0x00000000
+#define SRDS_PLLCR0_FRATE_SEL_4_9152	0x00030000
 #define SRDS_PLLCR0_FRATE_SEL_3_75	0x00050000
 #define SRDS_PLLCR0_FRATE_SEL_5_15	0x00060000
 #define SRDS_PLLCR0_FRATE_SEL_4		0x00070000
-#define SRDS_PLLCR0_FRATE_SEL_3_12	0x00090000
-#define SRDS_PLLCR0_FRATE_SEL_3		0x000a0000
+#define SRDS_PLLCR0_FRATE_SEL_3_125	0x00090000
+#define SRDS_PLLCR0_FRATE_SEL_3_0	0x000a0000
+#define SRDS_PLLCR0_FRATE_SEL_3_072	0x000c0000
 		u32	pllcr1; /* PLL Control Register 1 */
 #define SRDS_PLLCR1_PLL_BWSEL	0x08000000
-		u32	res_0c;	/* 0x00c */
+		u32	pllsr2;	/* 0x00c */
 		u32	pllcr3;
 		u32	pllcr4;
 		u8	res_18[0x20-0x18];
@@ -2979,6 +2981,9 @@ typedef struct ccsr_sfp_regs {
 	u32 ovpr;			/* 0xA4  Intent To Secure */
 	u8 reserved4[0x08];
 	u32 fsl_uid;		/* 0xB0  FSL Unique ID */
+	u8 reserved5[0x04];
+	u32 fsl_spfr0;		/* Scratch Pad Fuse Register 0 */
+	u32 fsl_spfr1;		/* Scratch Pad Fuse Register 1 */
 } ccsr_sfp_regs_t;
 #else
 typedef struct ccsr_sfp_regs {
