@@ -101,3 +101,17 @@ int cpu_eth_init(bd_t *bis)
 
 	return 0;
 }
+
+#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
+/* Setting the address at which secondary cores start from.*/
+void smp_set_core_boot_addr(unsigned long addr, int corenr)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+
+	/* After setting the secondary cores start address, just release
+	 * them to boot.
+	 */
+	out_be32(&gur->scratchrw[0], addr);
+	out_be32(&gur->brrl, 0x2);
+}
+#endif
