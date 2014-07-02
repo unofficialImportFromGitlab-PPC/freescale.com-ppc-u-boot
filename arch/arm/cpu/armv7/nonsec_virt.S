@@ -173,6 +173,9 @@ ENTRY(smp_waitloop)
 	wfi
 	ldr	r1, =CONFIG_SMP_PEN_ADDR	@ load start address
 	ldr	r1, [r1]
+#ifdef CONFIG_SOC_BIG_ENDIAN
+	rev	r1, r1
+#endif
 	cmp	r0, r1			@ make sure we dont execute this code
 	beq	smp_waitloop		@ again (due to a spurious wakeup)
 	mov	pc, r1
