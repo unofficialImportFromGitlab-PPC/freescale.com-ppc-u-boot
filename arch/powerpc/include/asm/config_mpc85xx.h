@@ -813,7 +813,6 @@ defined(CONFIG_PPC_T1020) || defined(CONFIG_PPC_T1022)
 #define MAX_QE_RISC            1
 #define QE_NUM_OF_SNUM         28
 #define CONFIG_SYS_FSL_ERRATUM_A006261
-#define CONFIG_SYS_FSL_ERRATUM_A008007
 
 #elif defined(CONFIG_PPC_T2080) || defined(CONFIG_PPC_T2081)
 #define CONFIG_E6500

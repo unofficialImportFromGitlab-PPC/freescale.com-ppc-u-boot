@@ -372,9 +372,6 @@ static int do_errata(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_SYS_FSL_ERRATUM_A005434
 	puts("Work-around for Erratum A-005434 enabled\n");
 #endif
-#ifdef CONFIG_SYS_FSL_ERRATUM_A008007
-	puts("Work-around for Erratum A-008007 enabled\n");
-#endif
 
 	return 0;
 }
