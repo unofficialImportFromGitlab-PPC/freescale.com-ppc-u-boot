@@ -23,6 +23,7 @@ ifdef CONFIG_MPC512X
 obj-$(CONFIG_USB_EHCI_FSL) += ehci-mpc512x.o
 else
 obj-$(CONFIG_USB_EHCI_FSL) += ehci-fsl.o
+obj-$(CONFIG_USB_XHCI_FSL) += xhci-fsl.o
 endif
 obj-$(CONFIG_USB_EHCI_FARADAY) += ehci-faraday.o
 obj-$(CONFIG_USB_EHCI_EXYNOS) += ehci-exynos.o
