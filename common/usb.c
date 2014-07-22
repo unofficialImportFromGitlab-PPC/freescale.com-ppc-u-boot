@@ -193,6 +193,9 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 	      request, requesttype, value, index, size);
 	dev->status = USB_ST_NOT_PROC; /*not yet processed */
 
+	if (dev->parent == NULL)
+		mdelay(195);
+
 	if (submit_control_msg(dev, pipe, data, size, setup_packet) < 0)
 		return -1;
 	if (timeout == 0)
