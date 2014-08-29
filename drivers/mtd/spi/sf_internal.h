@@ -36,6 +36,7 @@
 #define CMD_WRITE_ENABLE		0x06
 #define CMD_READ_CONFIG			0x35
 #define CMD_FLAG_STATUS			0x70
+#define CMD_CLEAR_FLAG_STATUS		0x50
 
 /* Read commands */
 #define CMD_READ_ARRAY_SLOW		0x03
@@ -74,6 +75,8 @@
 #define STATUS_QEB_WINSPAN		(1 << 1)
 #define STATUS_QEB_MXIC			(1 << 6)
 #define STATUS_PEC			(1 << 7)
+#define STATUS_PROT			(1 << 1)
+#define STATUS_ERASE			(1 << 5)
 
 /* Flash timeout values */
 #define SPI_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
@@ -133,6 +136,12 @@ static inline int spi_flash_cmd_write_enable(struct spi_flash *flash)
 static inline int spi_flash_cmd_write_disable(struct spi_flash *flash)
 {
 	return spi_flash_cmd(flash->spi, CMD_WRITE_DISABLE, NULL, 0);
+}
+
+/* Clear flag status register */
+static inline int spi_flash_cmd_clear_flag_status(struct spi_flash *flash)
+{
+	return spi_flash_cmd(flash->spi, CMD_CLEAR_FLAG_STATUS, NULL, 0);
 }
 
 /*
