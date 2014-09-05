@@ -20,6 +20,7 @@
 #include <net.h>
 #include <config.h>
 #include <phy.h>
+#include <fsl_mdio.h>
 
 #ifdef CONFIG_LS102XA
 #define TSEC_SIZE		0x40000
