@@ -92,6 +92,30 @@ int spi_flash_cmd_write_config(struct spi_flash *flash, u8 wc)
 }
 #endif
 
+#if defined(CONFIG_SPI_FLASH_STMICRO)
+int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash, int enable)
+{
+	int ret;
+	u8 cmd;
+
+	cmd = enable ? CMD_ENTER_4B_ADDR : CMD_EXIT_4B_ADDR;
+
+	ret = spi_claim_bus(flash->spi);
+	if (ret) {
+		debug("SF: unable to claim SPI bus\n");
+		return ret;
+	}
+
+	ret = spi_flash_cmd_write_enable(flash);
+	if (ret < 0) {
+		debug("SF: enabling write failed\n");
+		return ret;
+	}
+
+	return spi_flash_cmd(flash->spi, cmd, NULL, 0);
+}
+#endif
+
 #ifdef CONFIG_SPI_FLASH_BAR
 static int spi_flash_cmd_bankaddr_write(struct spi_flash *flash, u8 bank_sel)
 {
@@ -203,6 +227,10 @@ int spi_flash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	if (out_of_time) {
 		/* Timed out */
 		debug("SF: time out!\n");
+		if (cmd == CMD_FLAG_STATUS) {
+			if (spi_flash_cmd_clear_flag_status(flash) < 0)
+				debug("SF: clear flag status failed\n");
+		}
 		ret = -1;
 	}
 #ifdef CONFIG_SPI_FLASH_STMICRO
