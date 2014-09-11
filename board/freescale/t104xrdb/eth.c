@@ -47,7 +47,7 @@ int board_eth_init(bd_t *bis)
 		case PHY_INTERFACE_MODE_SGMII:
 			/* T1042RDB doesn't supports SGMII on DTSEC1 & DTSEC2 */
 			if ((FM1_DTSEC1 == i) || (FM1_DTSEC2 == i))
-				fm_info_set_phy_address(i, 0);
+				fm_disable_port(i);
 			/* T1042RDB only supports SGMII on DTSEC3 */
 			fm_info_set_phy_address(FM1_DTSEC3,
 						CONFIG_SYS_SGMII1_PHY_ADDR);

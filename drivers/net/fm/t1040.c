@@ -10,6 +10,21 @@
 #include <asm/immap_85xx.h>
 #include <asm/fsl_serdes.h>
 
+u32 port_to_devdisr[] = {
+	[FM1_DTSEC1] = FSL_CORENET_DEVDISR2_DTSEC1_1,
+	[FM1_DTSEC2] = FSL_CORENET_DEVDISR2_DTSEC1_2,
+	[FM1_DTSEC3] = FSL_CORENET_DEVDISR2_DTSEC1_3,
+	[FM1_DTSEC4] = FSL_CORENET_DEVDISR2_DTSEC1_4,
+	[FM1_DTSEC5] = FSL_CORENET_DEVDISR2_DTSEC1_5,
+};
+
+void fman_disable_port(enum fm_port port)
+{
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+
+	setbits_be32(&gur->devdisr2, port_to_devdisr[port]);
+}
+
 phy_interface_t fman_port_enet_if(enum fm_port port)
 {
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
