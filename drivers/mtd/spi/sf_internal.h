@@ -74,6 +74,11 @@ enum {
 #define CMD_WRITE_ENABLE		0x06
 #define CMD_READ_CONFIG		0x35
 #define CMD_FLAG_STATUS		0x70
+#define CMD_CLEAR_FLAG_STATUS		0x50
+
+/* Used for Macronix and Winbond flashes */
+#define	CMD_ENTER_4B_ADDR		0xB7
+#define	CMD_EXIT_4B_ADDR		0xE9
 
 /* Read commands */
 #define CMD_READ_ARRAY_SLOW		0x03
@@ -97,6 +102,8 @@ enum {
 #define STATUS_QEB_WINSPAN		(1 << 1)
 #define STATUS_QEB_MXIC		(1 << 6)
 #define STATUS_PEC			(1 << 7)
+#define STATUS_PROT			(1 << 1)
+#define STATUS_ERASE			(1 << 5)
 
 #ifdef CONFIG_SYS_SPI_ST_ENABLE_WP_PIN
 #define STATUS_SRWD			(1 << 7) /* SR write protect */
@@ -192,6 +199,12 @@ static inline int spi_flash_cmd_write_disable(struct spi_flash *flash)
 	return spi_flash_cmd(flash->spi, CMD_WRITE_DISABLE, NULL, 0);
 }
 
+/* Clear flag status register */
+static inline int spi_flash_cmd_clear_flag_status(struct spi_flash *flash)
+{
+	return spi_flash_cmd(flash->spi, CMD_CLEAR_FLAG_STATUS, NULL, 0);
+}
+
 /*
  * Send the read status command to the device and wait for the wip
  * (write-in-progress) bit to clear itself.
@@ -227,5 +240,9 @@ int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
 /* Flash read operation, support all possible read commands */
 int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 		size_t len, void *data);
+
+#if defined(CONFIG_SPI_FLASH_STMICRO)
+int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash, int enable);
+#endif
 
 #endif /* _SF_INTERNAL_H_ */

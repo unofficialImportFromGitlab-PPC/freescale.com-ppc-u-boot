@@ -224,6 +224,11 @@ static int spi_flash_validate_params(struct spi_slave *spi, u8 *idcode,
 #ifdef CONFIG_SPI_FLASH_STMICRO
 	if (params->flags & E_FSR)
 		flash->poll_cmd = CMD_FLAG_STATUS;
+
+	if (flash->size > SPI_FLASH_16MB_BOUN) {
+		if (spi_flash_cmd_4B_addr_switch(flash, 0) < 0)
+			debug("SF: enter 3B address mode failed\n");
+	}
 #endif
 
 #ifdef CONFIG_SPI_FLASH_ATMEL
