@@ -207,7 +207,7 @@ void board_init_f(ulong dummy)
 	 */
 	porsr1 = in_be32(&gur->porsr1);
 	pinctl = ((porsr1 & ~(DCFG_CCSR_PORSR1_RCW_MASK)) | 0x24800000);
-	out_be32((unsigned int *)(CONFIG_SYS_DCSRBAR + 0x20000), pinctl);
+	out_be32((unsigned int *)(CONFIG_SYS_DCSRBAR + 0x220000), pinctl);
 #endif
 
 	/* Set global data pointer */
