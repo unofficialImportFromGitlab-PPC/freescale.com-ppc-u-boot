@@ -14,4 +14,5 @@ obj-y += twserial/
 obj-y += video/
 obj-y += watchdog/
 obj-$(CONFIG_QE) += qe/
+obj-$(CONFIG_U_QE) += qe/
 obj-y += memory/
