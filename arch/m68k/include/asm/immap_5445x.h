@@ -55,7 +55,6 @@
 
 #include <asm/coldfire/ata.h>
 #include <asm/coldfire/crossbar.h>
-#include <asm/coldfire/dspi.h>
 #include <asm/coldfire/edma.h>
 #include <asm/coldfire/eport.h>
 #include <asm/coldfire/flexbus.h>

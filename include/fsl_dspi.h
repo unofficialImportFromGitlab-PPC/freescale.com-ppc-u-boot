@@ -1,8 +1,9 @@
 /*
- * MCF5227x Internal Memory Map
+ * Freescale DSPI Module Defines
  *
- * Copyright (C) 2004-2007 Freescale Semiconductor, Inc.
+ * Copyright (C) 2004-2007, 2013 Freescale Semiconductor, Inc.
  * TsiChung Liew (Tsi-Chung.Liew@freescale.com)
+ * Chao Fu (B44548@freesacle.com)
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -19,8 +20,7 @@ typedef struct dspi {
 	u32 sr;		/* 0x2C */
 	u32 irsr;	/* 0x30 */
 	u32 tfr;	/* 0x34 - PUSHR */
-	u16 resv1;	/* 0x38 */
-	u16 rfr;	/* 0x3A - POPR */
+	u32 rfr;	/* 0x38 - POPR */
 #ifdef CONFIG_MCF547x_8x
 	u32 tfdr[4];	/* 0x3C */
 	u8 resv2[0x30];	/* 0x40 */

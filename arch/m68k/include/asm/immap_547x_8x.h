@@ -41,7 +41,6 @@
 #define MMAP_SRAMCFG	(CONFIG_SYS_MBAR + 0x0001FF00)
 #define MMAP_SEC	(CONFIG_SYS_MBAR + 0x00020000)
 
-#include <asm/coldfire/dspi.h>
 #include <asm/coldfire/eport.h>
 #include <asm/coldfire/flexbus.h>
 #include <asm/coldfire/flexcan.h>

@@ -279,3 +279,10 @@ int get_clocks(void)
 
 	return (0);
 }
+
+#ifdef CONFIG_FSL_DSPI
+int get_dspi_clk(void)
+{
+	return gd->bus_clk;
+}
+#endif

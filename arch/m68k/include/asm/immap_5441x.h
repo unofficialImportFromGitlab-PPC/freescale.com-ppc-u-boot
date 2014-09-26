@@ -78,7 +78,6 @@
 #define MMAP_GPIO	0xEC094000
 
 #include <asm/coldfire/crossbar.h>
-#include <asm/coldfire/dspi.h>
 #include <asm/coldfire/edma.h>
 #include <asm/coldfire/eport.h>
 #include <asm/coldfire/flexbus.h>

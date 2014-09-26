@@ -148,8 +148,7 @@
 #define CONFIG_SYS_IMMR			CONFIG_SYS_MBAR
 
 /* DSPI and Serial Flash */
-#define CONFIG_CF_SPI
-#define CONFIG_CF_DSPI
+#define CONFIG_FSL_DSPI
 #define CONFIG_SERIAL_FLASH
 #define CONFIG_HARD_SPI
 #define CONFIG_SYS_SBFHDR_SIZE		0x7
