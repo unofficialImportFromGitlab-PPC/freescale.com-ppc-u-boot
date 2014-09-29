@@ -16,6 +16,7 @@
 #include <netdev.h>
 #include <fsl_mdio.h>
 #include <tsec.h>
+#include <spl.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -65,6 +66,7 @@ struct cpld_data {
 	u8 rev2;		/* Reserved */
 };
 
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 static void convert_serdes_mux(int type, int need_reset);
 
 void cpld_show(void)
@@ -100,11 +102,14 @@ void cpld_show(void)
 	       in_8(&cpld_data->serdes_mux));
 #endif
 }
+#endif
 
 int checkboard(void)
 {
 	puts("Board: LS1021ATWR\n");
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 	cpld_show();
+#endif
 
 	return 0;
 }
@@ -213,6 +218,7 @@ int board_eth_init(bd_t *bis)
 }
 #endif
 
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 int config_serdes_mux(void)
 {
 	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
@@ -244,6 +250,7 @@ int config_serdes_mux(void)
 
 	return 0;
 }
+#endif
 
 int board_early_init_f(void)
 {
@@ -265,6 +272,25 @@ int board_early_init_f(void)
 	return 0;
 }
 
+#ifdef CONFIG_SPL_BUILD
+void board_init_f(ulong dummy)
+{
+	/* Set global data pointer */
+	gd = &gdata;
+
+	/* Clear the BSS */
+	memset(__bss_start, 0, __bss_end - __bss_start);
+
+	get_clocks();
+
+	preloader_console_init();
+
+	dram_init();
+
+	board_init_r(NULL, 0);
+}
+#endif
+
 int board_init(void)
 {
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
@@ -279,9 +305,10 @@ int board_init(void)
 
 #ifndef CONFIG_SYS_FSL_NO_SERDES
 	fsl_serdes_init();
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 	config_serdes_mux();
 #endif
-
+#endif
 	return 0;
 }
 
@@ -309,6 +336,7 @@ u16 flash_read16(void *addr)
 	return (((val) >> 8) & 0x00ff) | (((val) << 8) & 0xff00);
 }
 
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 static void convert_flash_bank(char bank)
 {
 	struct cpld_data *cpld_data = (void *)(CONFIG_SYS_CPLD_BASE);
@@ -491,3 +519,4 @@ U_BOOT_CMD(
 	"	-change lane C & lane D to PCIeX2\n"
 	"\nWARNING: If you aren't familiar with the setting of serdes, don't try to change anything!\n"
 );
+#endif
