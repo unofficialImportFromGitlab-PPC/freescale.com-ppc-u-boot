@@ -188,6 +188,8 @@ static void board_mux_setup(void)
 
 int board_early_init_r(void)
 {
+	u32 reg;
+
 #ifdef CONFIG_SYS_FLASH_BASE
 	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
 	const u8 flash_esel = find_tlb_idx((void *)flashbase, 1);
@@ -214,6 +216,14 @@ int board_early_init_r(void)
 #endif
 	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
 	board_mux_lane_to_slot();
+
+	/* Increase IO drive strength to avoid FCS error on RGMII */
+#define IODSECR1_LVDD_VAL  (0x7 << 26)
+#define IODSECR1_L1VDD_VAL (0x7 << 23)
+	reg = in_be32((unsigned *)CONFIG_SYS_FSL_SCFG_IODSECR1_ADDR);
+	reg |= IODSECR1_LVDD_VAL | IODSECR1_L1VDD_VAL;
+	out_be32((unsigned *)CONFIG_SYS_FSL_SCFG_IODSECR1_ADDR, reg);
+
 	return 0;
 }
 

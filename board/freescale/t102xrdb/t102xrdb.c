@@ -57,6 +57,8 @@ int checkboard(void)
 
 int board_early_init_r(void)
 {
+	u32 reg;
+
 #ifdef CONFIG_SYS_FLASH_BASE
 	const unsigned int flashbase = CONFIG_SYS_FLASH_BASE;
 	int flash_esel = find_tlb_idx((void *)flashbase, 1);
@@ -86,6 +88,13 @@ int board_early_init_r(void)
 #ifdef CONFIG_SYS_DPAA_QBMAN
 	setup_portals();
 #endif
+
+	/* Increase IO drive strength to avoid FCS error on RGMII */
+#define IODSECR1_LVDD_VAL  (0x7 << 26)
+#define IODSECR1_L1VDD_VAL (0x7 << 23)
+	reg = in_be32((unsigned *)CONFIG_SYS_FSL_SCFG_IODSECR1_ADDR);
+	reg |= IODSECR1_LVDD_VAL | IODSECR1_L1VDD_VAL;
+	out_be32((unsigned *)CONFIG_SYS_FSL_SCFG_IODSECR1_ADDR, reg);
 
 	return 0;
 }
