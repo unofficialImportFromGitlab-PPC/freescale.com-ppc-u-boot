@@ -37,8 +37,49 @@ unsigned long get_board_sys_clk(void);
 unsigned long get_board_ddr_clk(void);
 #endif
 
+#if defined(CONFIG_SD_BOOT) || defined(CONFIG_QSPI_BOOT)
+#define CONFIG_SYS_CLK_FREQ            100000000
+#define CONFIG_DDR_CLK_FREQ            100000000
+#define CONFIG_QIXIS_I2C_ACCESS
+#else
 #define CONFIG_SYS_CLK_FREQ		get_board_sys_clk()
 #define CONFIG_DDR_CLK_FREQ		get_board_ddr_clk()
+#endif
+
+#ifdef CONFIG_RAMBOOT_PBL
+#define CONFIG_SYS_FSL_PBL_PBI	board/freescale/ls1021aqds/ls102xa_pbi.cfg
+#endif
+
+#ifdef CONFIG_SD_BOOT
+#define CONFIG_SYS_FSL_PBL_RCW	board/freescale/ls1021aqds/ls102xa_rcw_sd.cfg
+#define CONFIG_SPL
+#define CONFIG_SPL_PBL_PAD
+#define CONFIG_SPL_FRAMEWORK
+#define CONFIG_SPL_LDSCRIPT	"arch/$(ARCH)/cpu/u-boot-spl.lds"
+#define CONFIG_SPL_LIBCOMMON_SUPPORT
+#define CONFIG_SPL_LIBGENERIC_SUPPORT
+#define CONFIG_SPL_ENV_SUPPORT
+#define CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT
+#define CONFIG_SPL_I2C_SUPPORT
+#define CONFIG_SPL_WATCHDOG_SUPPORT
+#define CONFIG_SPL_SERIAL_SUPPORT
+#define CONFIG_SPL_MMC_SUPPORT
+#define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR		0xe8
+#define CONFIG_SYS_U_BOOT_MAX_SIZE_SECTORS		0x400
+
+#define CONFIG_SPL_TEXT_BASE		0x10000000
+#define CONFIG_SPL_MAX_SIZE		0x1a000
+#define CONFIG_SPL_STACK		0x1001d000
+#define CONFIG_SPL_PAD_TO		0x1c000
+#define CONFIG_SYS_TEXT_BASE		0x82000000
+
+#define CONFIG_SYS_SPL_MALLOC_START	0x80200000
+#define CONFIG_SYS_SPL_MALLOC_SIZE	0x100000
+#define CONFIG_SPL_BSS_START_ADDR	0x80100000
+#define CONFIG_SPL_BSS_MAX_SIZE		0x80000
+#define CONFIG_SYS_MONITOR_LEN		0x80000
+#define CONFIG_SYS_NO_FLASH
+#endif
 
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE		0x67f80000
@@ -70,6 +111,7 @@ unsigned long get_board_ddr_clk(void);
 /*
  * IFC Definitions
  */
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 #define CONFIG_FSL_IFC
 #define CONFIG_SYS_FLASH_BASE		0x60000000
 #define CONFIG_SYS_FLASH_BASE_PHYS	CONFIG_SYS_FLASH_BASE
@@ -162,6 +204,7 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CMD_NAND
 
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(128 * 1024)
+#endif
 
 /*
  * QIXIS Definitions
@@ -323,7 +366,12 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_CMDLINE_EDITING
+
+#if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
 #define CONFIG_CMD_IMLS
+#else
+#undef CONFIG_CMD_IMLS
+#endif
 
 #define CONFIG_HWCONFIG
 #define HWCONFIG_BUFFER_SIZE		128
@@ -371,17 +419,37 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
+#ifdef CONFIG_SPL_BUILD
+#define CONFIG_SYS_MONITOR_BASE CONFIG_SPL_TEXT_BASE
+#else
 #define CONFIG_SYS_MONITOR_BASE CONFIG_SYS_TEXT_BASE    /* start of monitor */
+#endif
 
 /*
  * Environment
  */
 #define CONFIG_ENV_OVERWRITE
 
+#if defined(CONFIG_SD_BOOT)
+#define CONFIG_ENV_OFFSET		(1024 * 1024)
+#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_SYS_MMC_ENV_DEV		0
+#define CONFIG_ENV_SIZE			0x2000
+#elif defined(CONFIG_NAND_BOOT)
+#define CONFIG_ENV_IS_IN_NAND
+#define CONFIG_ENV_SIZE			0x2000
+#define CONFIG_ENV_OFFSET		(10 * CONFIG_SYS_NAND_BLOCK_SIZE)
+#elif defined(CONFIG_QSPI_BOOT)
+#define CONFIG_ENV_IS_IN_SPI_FLASH
+#define CONFIG_ENV_SIZE			0x2000          /* 8KB */
+#define CONFIG_ENV_OFFSET		0x100000        /* 1MB */
+#define CONFIG_ENV_SECT_SIZE		0x10000
+#else
 #define CONFIG_ENV_IS_IN_FLASH
 #define CONFIG_ENV_ADDR		(CONFIG_SYS_MONITOR_BASE - CONFIG_ENV_SECT_SIZE)
 #define CONFIG_ENV_SIZE			0x2000
 #define CONFIG_ENV_SECT_SIZE		0x20000 /* 128K (one sector) */
+#endif
 
 #define CONFIG_OF_LIBFDT
 #define CONFIG_OF_BOARD_SETUP
