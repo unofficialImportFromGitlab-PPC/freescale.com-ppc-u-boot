@@ -32,12 +32,25 @@
 #include <errno.h>
 #endif
 
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+#include <asm/fsl_pamu.h>
+#endif
+#ifdef CONFIG_SECURE_BOOT
+#include <jr.h>
+#include <fsl_secboot_err.h>
+#endif
+
+
 #include "../../../../drivers/block/fsl_sata.h"
 #ifdef CONFIG_U_QE
 #include "../../../../drivers/qe/qe.h"
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_SECURE_BOOT
+struct jobring jr;
+#endif
 
 #ifdef CONFIG_SYS_FSL_SINGLE_SOURCE_CLK
 /*
@@ -924,6 +937,21 @@ skip_l2:
 		clrbits_le32(&reg->hcontrol, HCONTROL_ENTERPRISE_EN);
 	}
 #endif
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+	if (pamu_init() < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_PAMU_INIT);
+#endif
+
+#ifdef CONFIG_SECURE_BOOT
+	if (sec_init(&jr) < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
+	if (get_rng_vid() >= 4) {
+		if (rng_init(&jr) < 0)
+			printf("CAAM:RNG init failed\n");
+	}
+#endif
+
+	return 0;
 
 	init_used_tlb_cams();
 

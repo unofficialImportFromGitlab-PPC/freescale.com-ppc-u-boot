@@ -6,16 +6,29 @@
 
 #ifndef __FSL_SECURE_BOOT_H
 #define __FSL_SECURE_BOOT_H
+#include <asm/config_mpc85xx.h>
 
 #ifdef CONFIG_SECURE_BOOT
+
 #if defined(CONFIG_FSL_CORENET)
 #define CONFIG_SYS_PBI_FLASH_BASE		0xc0000000
 #elif defined(CONFIG_BSC9132QDS)
 #define CONFIG_SYS_PBI_FLASH_BASE		0xc8000000
+#elif defined(CONFIG_C29X)
+#define CONFIG_SYS_PBI_FLASH_BASE		0xcc000000
 #else
 #define CONFIG_SYS_PBI_FLASH_BASE		0xce000000
 #endif
+
 #define CONFIG_SYS_PBI_FLASH_WINDOW		0xcff80000
+
+/*
+ * Define the key hash for boot script here if public/private key pair used to
+ * sign bootscript are different from the SRK hash put in the fuse
+ * Example of defining KEY_HASH is
+ * #define CONFIG_BOOTSCRIPT_KEY_HASH \
+ *	 "41066b564c6ffcef40ccbc1e0a5d0d519604000c785d97bbefd25e4d288d1c8b"
+ */
 
 #if defined(CONFIG_B4860QDS) || \
 	defined(CONFIG_T4240QDS) || \
@@ -24,9 +37,32 @@
 	defined(CONFIG_T1040QDS) || \
 	defined(CONFIG_T104xRDB)
 #define CONFIG_SYS_CPC_REINIT_F
+#define CONFIG_KEY_REVOCATION
 #undef CONFIG_SYS_INIT_L3_ADDR
 #define CONFIG_SYS_INIT_L3_ADDR			0xbff00000
+#define CONFIG_SFP_v3_0
 #endif
+
+#if defined(CONFIG_C29X)
+#define CONFIG_KEY_REVOCATION
+#endif
+
+/* The bootscript header address is different for B4860 because the NOR
+ * mapping is different on B4 due to reduced NOR size.
+ */
+#if defined(CONFIG_B4860QDS)
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xecc00000
+#elif defined(CONFIG_FSL_CORENET)
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xe8e00000
+#elif defined(CONFIG_BSC9132QDS)
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0x88020000
+#elif defined(CONFIG_C29X)
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xec020000
+#else
+#define CONFIG_BOOTSCRIPT_HDR_ADDR	0xee020000
+#endif
+
+#include <config_fsl_secboot.h>
 
 #endif
 #endif
