@@ -496,14 +496,20 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 	return ESBC_VALID_HDR;
 }
 
-static inline int str2long(const char *p, ulong *num)
+static inline int str2longbe(const char *p, ulong *num)
 {
 	char *endptr;
+	ulong tmp;
 
-	if (!p)
+	if (!p) {
 		return 0;
-	else
-		*num = simple_strtoul(p, &endptr, 16);
+	} else {
+		tmp = simple_strtoul(p, &endptr, 16);
+		if (sizeof(ulong) == 4)
+			*num = cpu_to_be32(tmp);
+		else
+			*num = cpu_to_be64(tmp);
+	}
 
 	return *p != '\0' && *endptr == '\0';
 }
@@ -558,7 +564,7 @@ int fsl_secboot_blob_decap(cmd_tbl_t *cmdtp, int flag, int argc,
 			strncpy(key_str, cp + (i * NUM_HEX_CHARS),
 				NUM_HEX_CHARS);
 			key_str[NUM_HEX_CHARS] = '\0';
-			if (!str2long(key_str, &key_id[i])) {
+			if (!str2longbe(key_str, &key_id[i])) {
 				printf("%s is not a 128 bit hex string\n",
 				       argv[4]);
 				return -1;
@@ -667,7 +673,7 @@ int fsl_secboot_blob_encap(cmd_tbl_t *cmdtp, int flag, int argc,
 			strncpy(key_str, cp + (i * NUM_HEX_CHARS),
 				NUM_HEX_CHARS);
 			key_str[NUM_HEX_CHARS] = '\0';
-			if (!str2long(key_str, &key_id[i])) {
+			if (!str2longbe(key_str, &key_id[i])) {
 				printf("%s is not a 128 bit hex string\n"
 					, argv[4]);
 				return -1;
@@ -774,7 +780,7 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 			strncpy(hash_str, cp + (i * NUM_HEX_CHARS),
 				NUM_HEX_CHARS);
 			hash_str[NUM_HEX_CHARS] = '\0';
-			if (!str2long(hash_str, &hash[i])) {
+			if (!str2longbe(hash_str, &hash[i])) {
 				printf("%s is not a 256 bits hex string ",
 				       argv[2]);
 				return -1;
