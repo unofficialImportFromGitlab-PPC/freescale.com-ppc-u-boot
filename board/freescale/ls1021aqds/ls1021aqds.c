@@ -19,7 +19,17 @@
 #include "../common/qixis.h"
 #include "ls1021aqds_qixis.h"
 
+#ifdef CONFIG_SECURE_BOOT
+#include <fsl_sec.h>
+#include <jr.h>
+#include <fsl_secboot_err.h>
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_SECURE_BOOT
+struct jobring jr;
+#endif
 
 enum {
 	MUX_TYPE_SD_PCI4,
@@ -327,6 +337,21 @@ static struct csu_ns_dev ns_dev[] = {
 	{ CSU_CSLX_USB3_PHY, CSU_ALL_RW },
 	{ CSU_CSLX_RESERVED2, CSU_ALL_RW },
 };
+#endif
+
+#if defined(CONFIG_MISC_INIT_R)
+int misc_init_r(void)
+{
+#ifdef CONFIG_SECURE_BOOT
+	if (sec_init(&jr) < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
+
+	if (get_rng_vid() >= 4)
+		if (rng_init(&jr) < 0)
+			return -1;
+#endif
+	return 0;
+}
 #endif
 
 int board_init(void)

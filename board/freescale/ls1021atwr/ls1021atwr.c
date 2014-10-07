@@ -19,7 +19,17 @@
 #include <tsec.h>
 #include <spl.h>
 
+#ifdef CONFIG_SECURE_BOOT
+#include <fsl_sec.h>
+#include <jr.h>
+#include <fsl_secboot_err.h>
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_SECURE_BOOT
+struct jobring jr;
+#endif
 
 #define VERSION_MASK		0x00FF
 #define BANK_MASK		0x0001
@@ -397,12 +407,28 @@ int board_init(void)
 #endif
 #endif
 
+
 #ifdef CONFIG_LS102XA_NS_ACESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
 #endif
 
 	return 0;
 }
+
+#if defined(CONFIG_MISC_INIT_R)
+int misc_init_r(void)
+{
+#ifdef CONFIG_SECURE_BOOT
+	if (sec_init(&jr) < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
+
+	if (get_rng_vid() >= 4)
+		if (rng_init(&jr) < 0)
+			return -1;
+#endif
+	return 0;
+}
+#endif
 
 void ft_board_setup(void *blob, bd_t *bd)
 {

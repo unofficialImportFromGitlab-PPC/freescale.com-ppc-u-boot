@@ -376,4 +376,8 @@
 #define CONFIG_OF_BOARD_SETUP
 #define CONFIG_CMD_BOOTZ
 
+#define CONFIG_MISC_INIT_R
+
+#include <asm/fsl_secure_boot.h>
+
 #endif
