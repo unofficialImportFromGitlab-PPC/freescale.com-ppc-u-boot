@@ -40,11 +40,7 @@
 #define GENERIC_TIMER_CLK		12500000
 
 #define CONFIG_SYS_CLK_FREQ		100000000
-#ifdef CONFIG_SLS1020A
-#define CONFIG_DDR_CLK_FREQ		66000000
-#else
 #define CONFIG_DDR_CLK_FREQ		100000000
-#endif
 
 #ifdef CONFIG_RAMBOOT_PBL
 #define CONFIG_SYS_FSL_PBL_PBI	board/freescale/ls1021atwr/ls102xa_pbi.cfg
