@@ -40,7 +40,6 @@
 #define CONFIG_KEY_REVOCATION
 #undef CONFIG_SYS_INIT_L3_ADDR
 #define CONFIG_SYS_INIT_L3_ADDR			0xbff00000
-#define CONFIG_SFP_v3_0
 #endif
 
 #if defined(CONFIG_C29X)
