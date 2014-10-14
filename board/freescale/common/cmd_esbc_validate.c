@@ -43,7 +43,8 @@ static int do_esbc_halt(cmd_tbl_t *cmdtp, int flag, int argc,
 				char * const argv[])
 {
 	printf("Core is entering spin loop.\n");
-	unreachable();
+loop:
+	goto loop;
 
 	return 0;
 }
