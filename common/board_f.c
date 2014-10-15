@@ -54,6 +54,9 @@
 #endif
 #include <linux/compiler.h>
 
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#include <fsl_sleep.h>
+#endif
 /*
  * Pointer to initial global data area
  *
@@ -884,6 +887,9 @@ static init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_MIPS) || defined(CONFIG_PPC)
 	init_func_ram,
 #endif
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	fsl_dp_resume,
+#endif
 #ifdef CONFIG_POST
 	post_init_f,
 #endif
@@ -983,6 +989,10 @@ void board_init_f(ulong boot_flags)
 	gd->flags = boot_flags;
 	gd->have_console = 0;
 
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot())
+		gd->flags |= GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE;
+#endif
 	if (initcall_run_list(init_sequence_f))
 		hang();
 

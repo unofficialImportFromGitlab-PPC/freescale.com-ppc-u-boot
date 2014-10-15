@@ -114,6 +114,7 @@ typedef struct ddr4_spd_eeprom_s generic_spd_eeprom_t;
 #define SDRAM_CFG_2T_EN			0x00008000
 #define SDRAM_CFG_BI			0x00000001
 
+#define SDRAM_CFG2_FRC_SR		0x80000000
 #define SDRAM_CFG2_D_INIT		0x00000010
 #define SDRAM_CFG2_ODT_CFG_MASK		0x00600000
 #define SDRAM_CFG2_ODT_NEVER		0
@@ -163,6 +164,7 @@ typedef struct ddr4_spd_eeprom_s generic_spd_eeprom_t;
 #define DDR_CDR1_ODT(x) ((x & DDR_CDR1_ODT_MASK) << DDR_CDR1_ODT_SHIFT)
 #define DDR_CDR2_ODT(x) (x & DDR_CDR2_ODT_MASK)
 #define DDR_CDR2_VREF_OVRD(x)	(0x00008080 | ((((x) - 37) & 0x3F) << 8))
+#define DDR_CDR2_VREF_TRAIN_EN	0x00000080
 
 #if (defined(CONFIG_SYS_FSL_DDR_VER) && \
 	(CONFIG_SYS_FSL_DDR_VER >= FSL_DDR_VER_4_7))
