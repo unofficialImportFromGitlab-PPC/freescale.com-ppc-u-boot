@@ -8,6 +8,9 @@
 #include <fsl_ddr_sdram.h>
 #include <fsl_ddr_dimm_params.h>
 #include "ddr.h"
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#include <fsl_sleep.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -152,6 +155,10 @@ phys_size_t initdram(int board_type)
 #else
 	dram_size =  fsl_ddr_sdram_size();
 #endif
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	fsl_dp_ddr_restore();
+#endif
+
 	return dram_size;
 }
 

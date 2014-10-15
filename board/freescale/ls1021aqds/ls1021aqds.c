@@ -17,6 +17,9 @@
 #include <fsl_esdhc.h>
 #include <fsl_ifc.h>
 #include <spl.h>
+#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
+#include <asm/armv7.h>
+#endif
 
 #include "../common/qixis.h"
 #include "ls1021aqds_qixis.h"
@@ -594,3 +597,66 @@ u16 flash_read16(void *addr)
 
 	return (((val) >> 8) & 0x00ff) | (((val) << 8) & 0xff00);
 }
+
+#ifdef CONFIG_FSL_DEEP_SLEEP
+/* determine if it is a warm boot */
+bool is_warm_boot(void)
+{
+#define DCFG_CCSR_CRSTSR_WDRFR	(1 << 3)
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
+
+	if (in_be32(&gur->crstsr) & DCFG_CCSR_CRSTSR_WDRFR)
+		return 1;
+
+	return 0;
+}
+
+void fsl_dp_mem_setup(void)
+{
+	/* does not provide HW signals for power management */
+	QIXIS_WRITE(pwr_ctl[1], (QIXIS_READ(pwr_ctl[1]) & ~0x2));
+	udelay(1);
+}
+
+void fsl_dp_ddr_restore(void)
+{
+#define DDR_BUFF_LEN	128
+	u64 *src, *dst;
+	int i;
+	struct ccsr_scfg *scfg = (void *)CONFIG_SYS_FSL_SCFG_ADDR;
+
+	if (!is_warm_boot())
+		return;
+
+	/* get the address of ddr date from SPARECR3, little endian */
+	src = (u64 *)in_le32(&scfg->sparecr[2]);
+	dst = (u64 *)CONFIG_SYS_SDRAM_BASE;
+	for (i = 0; i < DDR_BUFF_LEN / 8; i++)
+		*dst++ = *src++;
+}
+
+int fsl_dp_resume(void)
+{
+	u32 start_addr;
+	void (*kernel_resume)(void);
+	struct ccsr_scfg *scfg = (void *)CONFIG_SYS_FSL_SCFG_ADDR;
+
+	if (!is_warm_boot())
+		return 0;
+
+#ifdef CONFIG_LS102XA_NS_ACESS
+	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
+#endif
+	armv7_switch_nonsec();
+	armv7_switch_hyp();
+	cleanup_before_linux();
+
+	/* Get the entry address and jump to kernel */
+	start_addr = in_le32(&scfg->sparecr[1]);
+	debug("Entry address is 0x%08x\n", start_addr);
+	kernel_resume = (void (*)(void))start_addr;
+	kernel_resume();
+
+	return 0;
+}
+#endif
