@@ -115,6 +115,9 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_SYS_HAS_SERDES
 
+#if !defined(CONFIG_SDCARD) && !defined(CONFIG_NAND) && !defined(CONFIG_SPI)
+#define CONFIG_U_QE
+#endif
 /*
  * IFC Definitions
  */
@@ -389,6 +392,8 @@ unsigned long get_board_ddr_clk(void);
 #define HWCONFIG_BUFFER_SIZE		128
 
 #define CONFIG_BOOTDELAY		3
+
+#define CONFIG_SYS_QE_FW_ADDR     0x67f40000
 
 #ifdef CONFIG_LPUART
 #define CONFIG_EXTRA_ENV_SETTINGS	\
