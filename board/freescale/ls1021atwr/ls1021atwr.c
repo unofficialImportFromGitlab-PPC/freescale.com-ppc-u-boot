@@ -19,6 +19,9 @@
 #include <fsl_mdio.h>
 #include <tsec.h>
 #include <spl.h>
+#ifdef CONFIG_U_QE
+#include "../../../drivers/qe/qe.h"
+#endif
 
 #ifdef CONFIG_SECURE_BOOT
 #include <fsl_sec.h>
@@ -430,6 +433,10 @@ int board_init(void)
 
 #ifdef CONFIG_LS102XA_NS_ACESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
+#endif
+
+#ifdef CONFIG_U_QE
+	u_qe_init();
 #endif
 
 	return 0;

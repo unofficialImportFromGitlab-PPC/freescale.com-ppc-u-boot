@@ -90,6 +90,10 @@
 
 #define CONFIG_SYS_HAS_SERDES
 
+#if !defined(CONFIG_SDCARD) && !defined(CONFIG_NAND) && !defined(CONFIG_SPI)
+#define CONFIG_U_QE
+#endif
+
 /*
  * IFC Definitions
  */
@@ -352,6 +356,8 @@
 #else
 #define CONFIG_SYS_MONITOR_BASE CONFIG_SYS_TEXT_BASE    /* start of monitor */
 #endif
+
+#define CONFIG_SYS_QE_FW_ADDR     0x67f40000
 
 /*
  * Environment
