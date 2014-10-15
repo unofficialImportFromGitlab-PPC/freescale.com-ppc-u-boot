@@ -115,6 +115,7 @@ int armv7_switch_nonsec(void)
 {
 	unsigned int reg;
 	unsigned itlinesnr, i;
+	unsigned long gic_base_addr;
 
 	/* check whether the CPU supports the security extensions */
 	reg = read_id_pfr1();
@@ -129,23 +130,24 @@ int armv7_switch_nonsec(void)
 	 * any access to it will trap.
 	 */
 
-	gic_dist_addr = get_gicd_base_address();
-	if (gic_dist_addr == -1)
+	gic_base_addr = get_gicd_base_address();
+	gic_dist_addr = gic_base_addr;
+	if (gic_base_addr == -1)
 		return -1;
 
 	/* enable the GIC distributor */
-	writel(readl(gic_dist_addr + GICD_CTLR) | 0x03,
-	       gic_dist_addr + GICD_CTLR);
+	writel(readl(gic_base_addr + GICD_CTLR) | 0x03,
+	       gic_base_addr + GICD_CTLR);
 
 	/* TYPER[4:0] contains an encoded number of available interrupts */
-	itlinesnr = readl(gic_dist_addr + GICD_TYPER) & 0x1f;
+	itlinesnr = readl(gic_base_addr + GICD_TYPER) & 0x1f;
 
 	/* set all bits in the GIC group registers to one to allow access
 	 * from non-secure state. The first 32 interrupts are private per
 	 * CPU and will be set later when enabling the GIC for each core
 	 */
 	for (i = 1; i <= itlinesnr; i++)
-		writel((unsigned)-1, gic_dist_addr + GICD_IGROUPRn + 4 * i);
+		writel((unsigned)-1, gic_base_addr + GICD_IGROUPRn + 4 * i);
 
 	smp_set_core_boot_addr((unsigned long)_smp_pen, -1);
 	smp_kick_all_cpus();
