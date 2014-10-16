@@ -14,6 +14,7 @@
 #include <malloc.h>
 #include <asm/io.h>
 #include <fsl_dspi.h>
+#include "fsl_spi_interface.h"
 
 #if defined(CONFIG_VF610) || defined(CONFIG_LS102XA)
 #include <asm/arch/clock.h>
@@ -125,22 +126,11 @@ int dspi_xfer(struct spi_slave *slave, uint bitlen, const void *dout,
 
 	if (len) {
 		if (dout != NULL) {
-#ifdef CONFIG_LS102XA
-			if (flags == SPI_XFER_END)
-				ctrl |= DSPI_TFR_CONT;
-#endif
 			if (dspislave->charbit == 16)
 				dspi_tx(dspislave, ctrl, *spi_wr16);
 			else
 				dspi_tx(dspislave, ctrl, *spi_wr);
 			dspi_rx(dspislave);
-#ifdef CONFIG_LS102XA
-			if (flags == SPI_XFER_END) {
-				ctrl &= ~DSPI_TFR_CONT;
-				dspi_tx(dspislave, ctrl, CONFIG_SPI_IDLE_VAL);
-				dspi_rx(dspislave);
-			}
-#endif
 		}
 
 		if (din != NULL) {
@@ -159,7 +149,8 @@ int dspi_xfer(struct spi_slave *slave, uint bitlen, const void *dout,
 	return 0;
 }
 
-struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
+struct spi_slave *dspi_setup_slave(unsigned int bus, unsigned int cs,
+				unsigned int max_hz, unsigned int mode)
 {
 	/*
 	 * bit definition for mode:
@@ -174,6 +165,7 @@ struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
 	 *     11 -  8: Delay after transfer scaler
 	 *      7 -  0: SPI_CPHA, SPI_CPOL, SPI_LSB_FIRST
 	 */
+	struct dspi_slave *dspislave;
 	int prescaler[] = { 2, 3, 5, 7 };
 	int scaler[] = {
 		2, 4, 6, 8,
@@ -185,7 +177,12 @@ struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
 	int best_i, best_j, bestmatch = 0x7FFFFFFF, baud_speed, bus_clk;
 	u32 bus_setup = 0;
 
-	dspislave->regs = (dspi_t *)MMAP_DSPI;
+	dspislave = spi_alloc_slave(struct dspi_slave, bus, cs);
+	if (!dspislave)
+		return NULL;
+
+	dspislave->baudrate = max_hz;
+	dspislave->regs = (struct dspi *)get_spi_bus_base(bus);
 
 #if !defined(CONFIG_VF610) && !defined(CONFIG_LS102XA)
 	cfspi_port_conf();	/* port configuration */
@@ -255,9 +252,9 @@ struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
 
 		if ((mode & 0xF0000000) == 0)
 			bus_setup |=
-			dspi_read32(&dspislave->regs->
-					ctar[dspislave->slave.bus])
-			& 0x78000000;
+			    dspi_read32(&dspislave->regs->
+				ctar[dspislave->slave.cs])
+			    & 0x78000000;
 		else
 			bus_setup |= ((mode & 0xF0000000) >> 1);
 
@@ -273,13 +270,13 @@ struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
 		bus_setup |= (mode & 0x000FFF00) >> 4;	/* CSSCK, ASC, DT */
 	} else
 		bus_setup |=
-		dspi_read32(&dspislave->regs->ctar[dspislave->slave.bus])
+			dspi_read32(&dspislave->regs->ctar[dspislave->slave.cs])
 			& 0x78FCFFF0;
 
 	dspislave->charbit =
-	    ((dspi_read32(&dspislave->regs->ctar[dspislave->slave.bus])
-	      & 0x78000000)
-	     == 0x78000000) ? 16 : 8;
+	    ((dspi_read32(&dspislave->regs->ctar[dspislave->slave.cs])
+	    & 0x78000000)
+	    == 0x78000000) ? 16 : 8;
 
 	pbrcnt = sizeof(prescaler) / sizeof(int);
 	brcnt = sizeof(scaler) / sizeof(int);
@@ -304,20 +301,11 @@ struct spi_slave *dspi_setup_slave(struct dspi_slave *dspislave, uint mode)
 	}
 
 	bus_setup |= (DSPI_CTAR_PBR(best_i) | DSPI_CTAR_BR(best_j));
-	dspi_write32(&dspislave->regs->ctar[dspislave->slave.bus], bus_setup);
+	dspi_write32(&dspislave->regs->ctar[dspislave->slave.cs], bus_setup);
 
 	return &dspislave->slave;
 }
 #endif				/* CONFIG_FSL_DSPI */
-
-#ifdef CONFIG_CMD_SPI
-int spi_cs_is_valid(unsigned int bus, unsigned int cs)
-{
-	if (((cs >= 0) && (cs < 8)) && ((bus >= 0) && (bus < 8)))
-		return 1;
-	else
-		return 0;
-}
 
 void spi_init_f(void)
 {
@@ -327,32 +315,17 @@ void spi_init_r(void)
 {
 }
 
-void spi_init(void)
+void dspi_init(void)
 {
 }
 
-struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
-				  unsigned int max_hz, unsigned int mode)
-{
-	struct dspi_slave *dspislave;
 
-	if (!spi_cs_is_valid(bus, cs))
-		return NULL;
-	dspislave = spi_alloc_slave(struct dspi_slave, bus, cs);
-	if (!dspislave)
-		return NULL;
-
-	dspislave->baudrate = max_hz;
-	/* specific setup */
-	return dspi_setup_slave(dspislave, mode);
-}
-
-void spi_free_slave(struct spi_slave *slave)
+void dspi_free_slave(struct spi_slave *slave)
 {
 	free(slave);
 }
 
-int spi_claim_bus(struct spi_slave *slave)
+int dspi_claim_bus(struct spi_slave *slave)
 {
 #if defined(CONFIG_VF610) || defined(CONFIG_LS102XA)
 	return 0;
@@ -361,16 +334,10 @@ int spi_claim_bus(struct spi_slave *slave)
 #endif
 }
 
-void spi_release_bus(struct spi_slave *slave)
+void dspi_release_bus(struct spi_slave *slave)
 {
 #if !defined(CONFIG_VF610) && !defined(CONFIG_LS102XA)
 	cfspi_release_bus(slave->bus, slave->cs);
 #endif
 }
 
-int spi_xfer(struct spi_slave *slave, unsigned int bitlen, const void *dout,
-	     void *din, unsigned long flags)
-{
-	return dspi_xfer(slave, bitlen, dout, din, flags);
-}
-#endif				/* CONFIG_CMD_SPI */

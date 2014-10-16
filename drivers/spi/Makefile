@@ -42,3 +42,4 @@ obj-$(CONFIG_TI_QSPI) += ti_qspi.o
 obj-$(CONFIG_XILINX_SPI) += xilinx_spi.o
 obj-$(CONFIG_ZYNQ_SPI) += zynq_spi.o
 obj-$(CONFIG_FSL_QSPI) += fsl_qspi.o
+obj-$(CONFIG_FSL_SPI_INTERFACE) += fsl_spi_interface.o

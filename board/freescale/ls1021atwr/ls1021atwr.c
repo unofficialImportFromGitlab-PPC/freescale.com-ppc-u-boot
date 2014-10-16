@@ -457,6 +457,30 @@ int misc_init_r(void)
 }
 #endif
 
+int board_spi_find_bus(unsigned int bus, unsigned int cs)
+{
+	switch (bus) {
+	case SPI_BUS_FSL_QSPI:
+		break;
+	default:
+		return -1;
+	}
+
+	switch (bus) {
+	case SPI_BUS_FSL_QSPI:
+		if (cs == 0)
+			return 0;
+	default:
+		return -1;
+	}
+}
+
+void board_print_spi_device(void)
+{
+	printf("LS1021atwr spi flash info:\n");
+	printf("N25Q128A13 is on spi bus 0 cs 0\n");
+}
+
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	ft_cpu_setup(blob, bd);

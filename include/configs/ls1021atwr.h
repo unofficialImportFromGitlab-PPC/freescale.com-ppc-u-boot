@@ -227,6 +227,20 @@
 #define CONFIG_FSL_ESDHC
 #define CONFIG_GENERIC_MMC
 
+/*SPI device */
+#define CONFIG_CMD_SF
+#define CONFIG_SPI_FLASH
+#define CONFIG_FSL_SPI_INTERFACE
+#define CONFIG_SPI_FLASH_STMICRO
+
+/* QSPI */
+#define CONFIG_FSL_QSPI
+#ifdef CONFIG_FSL_QSPI
+#define QSPI_AMBA_BASE			0x40000000
+#define FSL_QSPI_FLASH_SIZE            (1 << 24)
+#define FSL_QSPI_FLASH_NUM             2
+#endif
+
 /*
  * Video
  */

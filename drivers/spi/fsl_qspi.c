@@ -12,6 +12,7 @@
 #include <asm/io.h>
 #include <linux/sizes.h>
 #include "fsl_qspi.h"
+#include "fsl_spi_interface.h"
 
 #define RX_BUFFER_SIZE		0x80
 #define TX_BUFFER_SIZE		0x40
@@ -50,14 +51,6 @@
 #define qspi_read32		in_be32
 #define qspi_write32		out_be32
 #endif
-
-static unsigned long spi_bases[] = {
-	QSPI0_BASE_ADDR,
-};
-
-static unsigned long amba_bases[] = {
-	QSPI0_AMBA_BASE,
-};
 
 struct fsl_qspi {
 	struct spi_slave slave;
@@ -176,12 +169,7 @@ static void qspi_set_lut(struct fsl_qspi *qspi)
 	qspi_write32(&regs->lckcr, QSPI_LCKCR_LOCK);
 }
 
-void spi_init()
-{
-	/* do nothing */
-}
-
-struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
+struct spi_slave *qspi_setup_slave(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int mode)
 {
 	struct fsl_qspi *qspi;
@@ -189,15 +177,12 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	u32 reg_val, smpr_val;
 	u32 total_size, seq_id;
 
-	if (bus >= ARRAY_SIZE(spi_bases))
-		return NULL;
-
 	qspi = spi_alloc_slave(struct fsl_qspi, bus, cs);
 	if (!qspi)
 		return NULL;
 
-	qspi->reg_base = spi_bases[bus];
-	qspi->amba_base = amba_bases[bus];
+	qspi->reg_base = get_spi_bus_base(bus);
+	qspi->amba_base = get_qspi_amba_base(bus);
 
 	qspi->slave.max_write_size = TX_BUFFER_SIZE;
 
@@ -232,14 +217,14 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 	return &qspi->slave;
 }
 
-void spi_free_slave(struct spi_slave *slave)
+void qspi_free_slave(struct spi_slave *slave)
 {
 	struct fsl_qspi *qspi = to_qspi_spi(slave);
 
 	free(qspi);
 }
 
-int spi_claim_bus(struct spi_slave *slave)
+int qspi_claim_bus(struct spi_slave *slave)
 {
 	return 0;
 }
@@ -436,7 +421,7 @@ static void qspi_op_se(struct fsl_qspi *qspi)
 	qspi_write32(&regs->mcr, mcr_reg);
 }
 
-int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
+int qspi_xfer(struct spi_slave *slave, unsigned int bitlen,
 		const void *dout, void *din, unsigned long flags)
 {
 	struct fsl_qspi *qspi = to_qspi_spi(slave);
@@ -476,7 +461,7 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 	return 0;
 }
 
-void spi_release_bus(struct spi_slave *slave)
+void qspi_release_bus(struct spi_slave *slave)
 {
 	/* Nothing to do */
 }

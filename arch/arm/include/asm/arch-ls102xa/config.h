@@ -48,8 +48,9 @@
 
 #define WDOG1_BASE_ADDR				(CONFIG_SYS_IMMR + 0x01ad0000)
 
-#define QSPI0_BASE_ADDR				(CONFIG_SYS_IMMR + 0x00550000)
+#define QSPI_BASE_ADDR				(CONFIG_SYS_IMMR + 0x00550000)
 #define DSPI1_BASE_ADDR				(CONFIG_SYS_IMMR + 0x01100000)
+#define DSPI2_BASE_ADDR				(CONFIG_SYS_IMMR + 0x01110000)
 
 #define LPUART_BASE				(CONFIG_SYS_IMMR + 0x01950000)
 
@@ -68,6 +69,10 @@
 #define CONFIG_SYS_FSL_DSPI_BE
 #define CONFIG_SYS_FSL_QSPI_BE
 #define CONFIG_SYS_FSL_DCU_BE
+
+#define SPI_BUS_FSL_QSPI                               0
+#define SPI_BUS_FSL_DSPI1                              1
+#define SPI_BUS_FSL_DSPI2                              2
 
 #define DCU_LAYER_MAX_NUM			16
 

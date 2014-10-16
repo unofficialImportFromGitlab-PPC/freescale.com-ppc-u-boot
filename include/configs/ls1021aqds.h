@@ -398,6 +398,31 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_FSL_ESDHC
 #define CONFIG_GENERIC_MMC
 
+/*SPI device */
+#define CONFIG_CMD_SF
+#define CONFIG_SPI_FLASH_SPANSION
+#define CONFIG_SPI_FLASH_ATMEL
+#define CONFIG_SPI_FLASH
+#define CONFIG_FSL_SPI_INTERFACE
+#define CONFIG_SF_DATAFLASH
+
+/* QSPI */
+#define CONFIG_FSL_QSPI
+#ifdef CONFIG_FSL_QSPI
+#define QSPI_AMBA_BASE			0x40000000
+#define FSL_QSPI_FLASH_SIZE            (1 << 24)
+#define FSL_QSPI_FLASH_NUM             2
+#endif
+/* DSPI */
+#define CONFIG_FSL_DSPI
+#ifdef CONFIG_FSL_DSPI
+#define MMAP_DSPI		DSPI1_BASE_ADDR
+#define CONFIG_SYS_DSPI_CTAR0   (DSPI_CTAR_TRSZ(7) | DSPI_CTAR_PCSSCK_1CLK |\
+				DSPI_CTAR_PASC(0) | DSPI_CTAR_PDT(0) | \
+				DSPI_CTAR_CSSCK(0) | DSPI_CTAR_ASC(0) | \
+				DSPI_CTAR_DT(0))
+#endif
+
 /*
  * eTSEC
  */
