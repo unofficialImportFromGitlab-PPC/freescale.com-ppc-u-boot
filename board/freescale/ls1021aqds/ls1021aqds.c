@@ -179,6 +179,22 @@ void board_init_f(ulong dummy)
 {
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
 
+#ifdef CONFIG_NAND_BOOT
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
+	u32 porsr1, pinctl;
+
+	init_early_memctl_regs();
+
+	/*
+	 * There is LS1 SoC issue where NOR, FPGA are inaccessible during
+	 * NAND boot because IFC signals > IFC_AD7 are not enabled.
+	 * This workaround changes RCW source to make all signals enabled.
+	 */
+	porsr1 = in_be32(&gur->porsr1);
+	pinctl = ((porsr1 & ~(DCFG_CCSR_PORSR1_RCW_MASK)) | 0x24800000);
+	out_be32((unsigned int *)(CONFIG_SYS_DCSRBAR + 0x20000), pinctl);
+#endif
+
 	/* Set global data pointer */
 	gd = &gdata;
 
