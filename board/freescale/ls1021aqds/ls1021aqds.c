@@ -11,6 +11,7 @@
 #include <asm/arch/ns_access.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/fsl_serdes.h>
+#include <hwconfig.h>
 #include <asm/arch/ls102xa_stream_id.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -36,6 +37,11 @@ struct jobring jr;
 #endif
 
 enum {
+	MUX_TYPE_CAN,
+	MUX_TYPE_IIC2,
+	MUX_TYPE_RGMII,
+	MUX_TYPE_SAI,
+	MUX_TYPE_SDHC,
 	MUX_TYPE_SD_PCI4,
 	MUX_TYPE_SD_PC_SA_SG_SG,
 	MUX_TYPE_SD_PC_SA_PC_SG,
@@ -218,11 +224,27 @@ void board_init_f(ulong dummy)
 
 int config_board_mux(int ctrl_type)
 {
-	u8 reg12;
+	u8 reg12, reg14;
 
 	reg12 = QIXIS_READ(brdcfg[12]);
+	reg14 = QIXIS_READ(brdcfg[14]);
 
 	switch (ctrl_type) {
+	case MUX_TYPE_CAN:
+		reg14 = (reg14 & 0xf0) | 0x03;
+		break;
+	case MUX_TYPE_IIC2:
+		reg14 = (reg14 & 0x0f) | 0xa0;
+		break;
+	case MUX_TYPE_RGMII:
+		reg14 = (reg14 & 0xf0) | 0x0;
+		break;
+	case MUX_TYPE_SAI:
+		reg14 = (reg14 & 0xf0) | 0x0c;
+		break;
+	case MUX_TYPE_SDHC:
+		reg14 = (reg14 & 0x0f) | 0x0;
+		break;
 	case MUX_TYPE_SD_PCI4:
 		reg12 = 0x38;
 		break;
@@ -241,6 +263,7 @@ int config_board_mux(int ctrl_type)
 	}
 
 	QIXIS_WRITE(brdcfg[12], reg12);
+	QIXIS_WRITE(brdcfg[14], reg14);
 
 	return 0;
 }
@@ -270,6 +293,48 @@ int config_serdes_mux(void)
 		printf("SRDS1 prtcl:0x%x\n", cfg);
 		break;
 	}
+
+	return 0;
+}
+
+int misc_init_r(void)
+{
+	int conflict_flag;
+
+	/* some signals can not enable simultaneous*/
+	conflict_flag = 0;
+	if (hwconfig("sdhc"))
+		conflict_flag++;
+	if (hwconfig("iic2"))
+		conflict_flag++;
+	if (conflict_flag > 1) {
+		printf("WARNING: pin conflict !\n");
+		return 0;
+	}
+
+	conflict_flag = 0;
+	if (hwconfig("rgmii"))
+		conflict_flag++;
+	if (hwconfig("can"))
+		conflict_flag++;
+	if (hwconfig("sai"))
+		conflict_flag++;
+	if (conflict_flag > 1) {
+		printf("WARNING: pin conflict !\n");
+		return 0;
+	}
+
+	if (hwconfig("can"))
+		config_board_mux(MUX_TYPE_CAN);
+	else if (hwconfig("rgmii"))
+		config_board_mux(MUX_TYPE_RGMII);
+	else if (hwconfig("sai"))
+		config_board_mux(MUX_TYPE_SAI);
+
+	if (hwconfig("iic2"))
+		config_board_mux(MUX_TYPE_IIC2);
+	else if (hwconfig("sdhc"))
+		config_board_mux(MUX_TYPE_SDHC);
 
 	return 0;
 }

@@ -483,6 +483,7 @@ unsigned long get_board_ddr_clk(void);
 #undef CONFIG_CMD_IMLS
 #endif
 
+#define CONFIG_MISC_INIT_R
 #define CONFIG_HWCONFIG
 #define HWCONFIG_BUFFER_SIZE		128
 
