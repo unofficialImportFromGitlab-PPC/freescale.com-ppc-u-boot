@@ -420,7 +420,7 @@ int board_init(void)
 	out_le32(&cci->slave[0].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
-
+	out_le32(0x1185000, 0x3);
 #ifndef CONFIG_SYS_FSL_NO_SERDES
 	fsl_serdes_init();
 #if !defined(CONFIG_SD_BOOT) && !defined(CONFIG_QSPI_BOOT)
@@ -430,7 +430,10 @@ int board_init(void)
 
 	ls102xa_config_smmu_stream_id(dev_stream_id,
 				      ARRAY_SIZE(dev_stream_id));
-
+	/* Configure SMMU3 to make transactions with CAAM stream ID
+	 * as cacheable
+	 */
+	ls1021x_config_smmu3(0x10);
 #ifdef CONFIG_LS102XA_NS_ACESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
 #endif

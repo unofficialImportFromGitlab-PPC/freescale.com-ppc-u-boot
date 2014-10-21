@@ -399,6 +399,7 @@ int board_init(void)
 	/* Set CCI-400 control override register to
 	 * enable barrier transaction */
 	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+	out_le32(0x1185000, 0x3);
 	/*
 	 * Set CCI-400 Slave interface S0, S1, S2 Shareable Override Register
 	 * All transactions are treated as non-shareable
@@ -416,6 +417,10 @@ int board_init(void)
 
 	ls102xa_config_smmu_stream_id(dev_stream_id,
 				      ARRAY_SIZE(dev_stream_id));
+	/* Configure SMMU3 to make transactions with CAAM stream ID
+	 * as cacheable
+	 */
+	ls1021x_config_smmu3(0x10);
 
 #ifdef CONFIG_LS102XA_NS_ACESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
