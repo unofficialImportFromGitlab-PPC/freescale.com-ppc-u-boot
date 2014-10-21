@@ -48,6 +48,12 @@ enum {
 	MUX_TYPE_SD_PC_SG_SG,
 };
 
+enum {
+	GE0_CLK125,
+	GE2_CLK125,
+	GE1_CLK125,
+};
+
 int checkboard(void)
 {
 	char buf[64];
@@ -222,6 +228,38 @@ void board_init_f(ulong dummy)
 }
 #endif
 
+void config_etseccm_source(int etsec_gtx_125_mux)
+{
+	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
+
+	/* Apply LS1021A specific quirk, to write to the BE SCFG space */
+	out_be32(&scfg->scfgrevcr, 0xFFFFFFFF);
+
+	switch (etsec_gtx_125_mux) {
+	case GE0_CLK125:
+		out_be32(&scfg->etsecmcr, 0x00000000);
+		debug("etseccm set to GE0_CLK125\n");
+		break;
+
+	case GE2_CLK125:
+		out_be32(&scfg->etsecmcr, 0x04000000);
+		debug("etseccm set to GE2_CLK125\n");
+		break;
+
+	case GE1_CLK125:
+		out_be32(&scfg->etsecmcr, 0x08000000);
+		debug("etseccm set to GE1_CLK125\n");
+		break;
+
+	default:
+		printf("Error! trying to set etseccm to invalid value\n");
+		break;
+	}
+
+	/* Revert back the quirk */
+	out_be32(&scfg->scfgrevcr, 0x00000000);
+}
+
 int config_board_mux(int ctrl_type)
 {
 	u8 reg12, reg14;
@@ -231,6 +269,8 @@ int config_board_mux(int ctrl_type)
 
 	switch (ctrl_type) {
 	case MUX_TYPE_CAN:
+		config_etseccm_source(GE2_CLK125);
+
 		reg14 = (reg14 & 0xf0) | 0x03;
 		break;
 	case MUX_TYPE_IIC2:
