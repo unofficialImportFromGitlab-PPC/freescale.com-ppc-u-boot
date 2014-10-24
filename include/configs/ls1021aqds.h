@@ -127,6 +127,11 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_MONITOR_LEN		0x80000
 #endif
 
+#ifdef CONFIG_QSPI_BOOT
+#define CONFIG_SYS_TEXT_BASE		0x40010000
+#define CONFIG_SYS_NO_FLASH
+#endif
+
 #ifndef CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_TEXT_BASE		0x67f80000
 #endif
