@@ -344,48 +344,6 @@ int config_serdes_mux(void)
 	return 0;
 }
 
-int misc_init_r(void)
-{
-	int conflict_flag;
-
-	/* some signals can not enable simultaneous*/
-	conflict_flag = 0;
-	if (hwconfig("sdhc"))
-		conflict_flag++;
-	if (hwconfig("iic2"))
-		conflict_flag++;
-	if (conflict_flag > 1) {
-		printf("WARNING: pin conflict !\n");
-		return 0;
-	}
-
-	conflict_flag = 0;
-	if (hwconfig("rgmii"))
-		conflict_flag++;
-	if (hwconfig("can"))
-		conflict_flag++;
-	if (hwconfig("sai"))
-		conflict_flag++;
-	if (conflict_flag > 1) {
-		printf("WARNING: pin conflict !\n");
-		return 0;
-	}
-
-	if (hwconfig("can"))
-		config_board_mux(MUX_TYPE_CAN);
-	else if (hwconfig("rgmii"))
-		config_board_mux(MUX_TYPE_RGMII);
-	else if (hwconfig("sai"))
-		config_board_mux(MUX_TYPE_SAI);
-
-	if (hwconfig("iic2"))
-		config_board_mux(MUX_TYPE_IIC2);
-	else if (hwconfig("sdhc"))
-		config_board_mux(MUX_TYPE_SDHC);
-
-	return 0;
-}
-
 #ifdef CONFIG_LS102XA_NS_ACESS
 static struct csu_ns_dev ns_dev[] = {
 	{ CSU_CSLX_PCIE2_IO, CSU_ALL_RW },
@@ -475,6 +433,43 @@ static struct csu_ns_dev ns_dev[] = {
 #if defined(CONFIG_MISC_INIT_R)
 int misc_init_r(void)
 {
+	int conflict_flag;
+
+	/* some signals can not enable simultaneous*/
+	conflict_flag = 0;
+	if (hwconfig("sdhc"))
+		conflict_flag++;
+	if (hwconfig("iic2"))
+		conflict_flag++;
+	if (conflict_flag > 1) {
+		printf("WARNING: pin conflict !\n");
+		return 0;
+	}
+
+	conflict_flag = 0;
+	if (hwconfig("rgmii"))
+		conflict_flag++;
+	if (hwconfig("can"))
+		conflict_flag++;
+	if (hwconfig("sai"))
+		conflict_flag++;
+	if (conflict_flag > 1) {
+		printf("WARNING: pin conflict !\n");
+		return 0;
+	}
+
+	if (hwconfig("can"))
+		config_board_mux(MUX_TYPE_CAN);
+	else if (hwconfig("rgmii"))
+		config_board_mux(MUX_TYPE_RGMII);
+	else if (hwconfig("sai"))
+		config_board_mux(MUX_TYPE_SAI);
+
+	if (hwconfig("iic2"))
+		config_board_mux(MUX_TYPE_IIC2);
+	else if (hwconfig("sdhc"))
+		config_board_mux(MUX_TYPE_SDHC);
+
 #ifdef CONFIG_SECURE_BOOT
 	if (sec_init(&jr) < 0)
 		fsl_secboot_handle_error(ERROR_ESBC_SEC_INIT);
