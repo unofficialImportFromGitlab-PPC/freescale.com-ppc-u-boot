@@ -13,6 +13,7 @@
 #include <asm/arch/fsl_serdes.h>
 #include <hwconfig.h>
 #include <asm/arch/ls102xa_stream_id.h>
+#include <asm/pcie_layerscape.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <fsl_ifc.h>
@@ -590,6 +591,10 @@ int board_spi_is_dataflash(unsigned int bus, unsigned int cs)
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	ft_cpu_setup(blob, bd);
+
+#ifdef CONFIG_PCIE_LAYERSCAPE
+	ft_pcie_setup(blob, bd);
+#endif
 }
 
 u8 flash_read8(void *addr)
