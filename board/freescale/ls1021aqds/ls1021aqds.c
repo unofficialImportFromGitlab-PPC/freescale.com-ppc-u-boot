@@ -577,6 +577,16 @@ void board_print_spi_device(void)
 	printf("AT45DB021 is on spi bus 1 cs 0\n");
 }
 
+#ifdef CONFIG_SF_DATAFLASH
+int board_spi_is_dataflash(unsigned int bus, unsigned int cs)
+{
+	if (bus == SPI_BUS_FSL_DSPI1 && cs == 0)
+		return 1;
+	else
+		return 0;
+}
+#endif
+
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	ft_cpu_setup(blob, bd);

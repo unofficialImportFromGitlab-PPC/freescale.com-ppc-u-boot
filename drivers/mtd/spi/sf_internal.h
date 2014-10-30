@@ -21,6 +21,7 @@
 #define SPI_FLASH_CFI_MFR_WINBOND	0xef
 
 /* Erase commands */
+#define CMD_ERASE_2K			0x50
 #define CMD_ERASE_4K			0x20
 #define CMD_ERASE_32K			0x52
 #define CMD_ERASE_CHIP			0xc7
@@ -51,6 +52,12 @@
 #define CMD_READ_QUAD_IO_FAST		0xeb
 #define CMD_READ_ID			0x9f
 
+/* ATMEL dataflash commands*/
+#define CMD_ATMEL_PAGE_PROGRAM		0x82
+#define CMD_ATMEL_READ_STATUS		0xd7
+#define CMD_ATMEL_FLAG_STATUS		0xd7
+#define CMD_ATMEL_ERASE_32K		0x7c
+
 /* Bank addr access commands */
 #ifdef CONFIG_SPI_FLASH_BAR
 # define CMD_BANKADDR_BRWR		0x17
@@ -80,6 +87,10 @@
 
 int sst_write_wp(struct spi_flash *flash, u32 offset, size_t len,
 		const void *buf);
+#endif
+
+#ifdef CONFIG_SF_DATAFLASH
+int board_spi_is_dataflash(unsigned int bus, unsigned int cs);
 #endif
 
 /* Send a single-byte command to the device and read the response */
