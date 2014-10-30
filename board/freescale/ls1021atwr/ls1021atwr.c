@@ -284,6 +284,10 @@ int board_early_init_f(void)
 	out_be32(&scfg->pixclkcr, SCFG_PIXCLKCR_PXCKEN);
 #endif
 
+#ifdef CONFIG_FSL_QSPI
+	out_be32(&scfg->qspi_cfg, SCFG_QSPI_CLKSEL);
+#endif
+
 	return 0;
 }
 
