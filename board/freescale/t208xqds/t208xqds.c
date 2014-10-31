@@ -86,6 +86,11 @@ int select_i2c_ch_pca9547(u8 ch)
 	return 0;
 }
 
+int i2c_multiplexer_select_vid_channel(u8 channel)
+{
+	return select_i2c_ch_pca9547(channel);
+}
+
 int brd_mux_lane_to_slot(void)
 {
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
