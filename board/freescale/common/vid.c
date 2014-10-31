@@ -273,7 +273,7 @@ static int set_voltage(int i2caddress, int vdd)
 	return vdd_last;
 }
 
-static int adjust_vdd(ulong vdd_override)
+int adjust_vdd(ulong vdd_override)
 {
 	int re_enable = disable_interrupts();
 	ccsr_gur_t __iomem *gur =

@@ -15,5 +15,6 @@
 /* step the IR regulator in 5mV increments */
 #define IR_VDD_STEP_DOWN		5
 #define IR_VDD_STEP_UP			5
+int adjust_vdd(ulong vdd_override);
 
 #endif  /* __VID_H_ */

@@ -20,6 +20,7 @@
 
 #include "../common/qixis.h"
 #include "../common/vsc3316_3308.h"
+#include "../common/vid.h"
 #include "t208xqds.h"
 #include "t208xqds_qixis.h"
 
@@ -356,6 +357,13 @@ int board_early_init_r(void)
 
 	/* Disable remote I2C connection to qixis fpga */
 	QIXIS_WRITE(brdcfg[5], QIXIS_READ(brdcfg[5]) & ~BRDCFG5_IRE);
+
+	/*
+	 * Adjust core voltage according to voltage ID
+	 * This function changes I2C mux to channel 2.
+	 */
+	if (adjust_vdd(0))
+		printf("Warning: Adjusting core voltage failed.\n");
 
 	brd_mux_lane_to_slot();
 	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
