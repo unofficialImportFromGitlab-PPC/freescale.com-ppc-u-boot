@@ -83,8 +83,29 @@ struct fsl_secboot_img_hdr {
 	};
 	ulong img_start;		/* ESBC client entry point */
 	u32 sg_flag;		/* Scatter gather flag */
-	u32 reserved[3];
+	u32 uid_flag;
+	u32 fsl_uid_0;
+	u32 oem_uid_0;
+	u32 reserved1[2];
+	u32 fsl_uid_1;
+	u32 oem_uid_1;
+	u32 reserved2[2];
+	u32 ie_flag;
+	u32 ie_key_sel;
 };
+
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+struct ie_key_table {
+	u32 key_len;
+	u8 pkey[2 * KEY_SIZE_BYTES];
+};
+
+struct ie_key_info {
+	uint32_t key_revok;
+	uint32_t num_keys;
+	struct ie_key_table ie_key_tbl[32];
+};
+#endif
 
 #ifdef CONFIG_KEY_REVOCATION
 struct srk_table {
@@ -92,16 +113,35 @@ struct srk_table {
 	u8 pkey[2 * KEY_SIZE_BYTES];
 };
 #endif
+
 /*
  * SG table.
+ */
+#if defined(CONFIG_FSL_TRUST_ARCH_v1) && defined(CONFIG_FSL_CORENET)
+/*
  * This struct contains the following fields
  * length of the segment
- * pointer to data segment
+ * source address
  */
 struct fsl_secboot_sg_table {
 	u32 len;		/* length of the segment in bytes */
-	u8 *pdata;		/* ptr to the data segment */
+	ulong src_addr;		/* ptr to the data segment */
 };
+#else
+/*
+ * This struct contains the following fields
+ * length of the segment
+ * Destination Target ID
+ * source address
+ * destination address
+ */
+struct fsl_secboot_sg_table {
+	u32 len;
+	u32 trgt_id;
+	ulong src_addr;
+	ulong dst_addr;
+};
+#endif
 
 /*
  * ESBC private structure.
@@ -114,6 +154,8 @@ struct fsl_secboot_sg_table {
  */
 struct fsl_secboot_img_priv {
 	uint32_t hdr_location;
+	ulong ie_addr;
+	u32 key_len;
 	struct fsl_secboot_img_hdr hdr;
 
 	u8 img_key[2 * KEY_SIZE_BYTES];	/* ESBC client key */

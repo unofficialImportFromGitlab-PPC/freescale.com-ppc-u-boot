@@ -18,6 +18,9 @@
 #ifdef CONFIG_FSL_CORENET
 #include <asm/fsl_pamu.h>
 #endif
+#ifndef CONFIG_MPC85xx
+#include <asm/arch/immap_ls102xa.h>
+#endif
 
 #define SHA256_BITS	256
 #define SHA256_BYTES	(256/8)
@@ -46,6 +49,107 @@ void branch_to_self(void)
 self:
 	goto self;
 }
+
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+static u32 check_ie(struct fsl_secboot_img_priv *img)
+{
+	if (img->hdr.ie_flag)
+		return 1;
+
+	return 0;
+}
+
+/* This function returns the CSF Header Address of uboot
+ * For MPC85xx based platforms, the LAW mapping for NOR
+ * flash changes in uboot code. Hence the offset needs
+ * to be calculated and added to the new NOR flash base
+ * address
+ */
+#if defined(CONFIG_MPC85xx)
+int get_csf_base_addr(ulong *csf_addr, ulong *flash_base_addr)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u32 csf_hdr_addr = in_be32(&gur->scratchrw[0]);
+	u32 csf_flash_offset = csf_hdr_addr & ~(CONFIG_SYS_PBI_FLASH_BASE);
+	ulong flash_addr, addr;
+	int found = 0;
+	int i = 0;
+
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; i++) {
+		flash_addr = flash_info[i].start[0];
+		addr = flash_info[i].start[0] + csf_flash_offset;
+		if (memcmp((u8 *)addr, barker_code, ESBC_BARKER_LEN) == 0) {
+			debug("Barker found on addr %lx\n", addr);
+			found = 1;
+			break;
+		}
+	}
+
+	if (!found)
+		return -1;
+
+	*csf_addr = addr;
+	*flash_base_addr = flash_addr;
+
+	return 0;
+}
+#else
+/* For platforms like LS1020, correct flash address is present in
+ * the header. So the function reqturns flash base address as 0
+ */
+int get_csf_base_addr(ulong *csf_addr, ulong *flash_base_addr)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	u32 csf_hdr_addr = in_be32(&gur->scratchrw[0]);
+
+	if (memcmp((u8 *)csf_hdr_addr, barker_code, ESBC_BARKER_LEN))
+		return -1;
+
+	*csf_addr = csf_hdr_addr;
+	*flash_base_addr = 0;
+	return 0;
+}
+#endif
+
+static int get_ie_info_addr(ulong *ie_addr)
+{
+	struct fsl_secboot_img_hdr *hdr;
+	struct fsl_secboot_sg_table *sg_tbl;
+	ulong flash_base_addr, csf_addr;
+
+	if (get_csf_base_addr(&csf_addr, &flash_base_addr))
+		return -1;
+
+	hdr = (struct fsl_secboot_img_hdr *)csf_addr;
+
+	/* For SoC's with Trust Architecture v1 with corenet bus
+	 * the sg table field in CSF header has absolute address
+	 * for sg table in memory. In other Trust Architecture,
+	 * this field specifies the offset of sg table from the
+	 * base address of CSF Header
+	 */
+#if defined(CONFIG_FSL_TRUST_ARCH_v1) && defined(CONFIG_FSL_CORENET)
+	sg_tbl = (struct fsl_secboot_sg_table *)
+		 (((ulong)hdr->psgtable & ~(CONFIG_SYS_PBI_FLASH_BASE)) +
+		  flash_base_addr);
+#else
+	sg_tbl = (struct fsl_secboot_sg_table *)(csf_addr +
+						 (ulong)hdr->psgtable);
+#endif
+
+	/* IE Key Table is the first entry in the SG Table */
+#if defined(CONFIG_MPC85xx)
+	*ie_addr = (sg_tbl->src_addr & ~(CONFIG_SYS_PBI_FLASH_BASE)) +
+		   flash_base_addr;
+#else
+	*ie_addr = sg_tbl->src_addr;
+#endif
+
+	debug("IE Table address is %lx\n", *ie_addr);
+	return 0;
+}
+
+#endif
 
 #ifdef CONFIG_KEY_REVOCATION
 /* This function checks srk_table_flag in header and set/reset srk_flag.*/
@@ -92,18 +196,9 @@ static u32 validate_srk_tbl(struct srk_table *tbl, u32 num_entries)
 #endif
 
 /* This function return length of public key.*/
-static u32 get_key_len(struct fsl_secboot_img_priv *img)
+static inline u32 get_key_len(struct fsl_secboot_img_priv *img)
 {
-	u32 key_len;
-#ifdef CONFIG_KEY_REVOCATION
-	if (check_srk(img))
-		key_len = img->srk_tbl[img->hdr.len_kr.srk_sel - 1].key_len;
-	else
-		key_len = img->hdr.key_len;
-#else
-	key_len = img->hdr.key_len;
-#endif
-	return key_len;
+	return img->key_len;
 }
 
 /*
@@ -211,6 +306,14 @@ void fsl_secboot_handle_error(int error)
 	case ERROR_ESBC_CLIENT_HEADER_INVALID_KEY_NUM:
 	case ERROR_ESBC_CLIENT_HEADER_INV_SRK_ENTRY_KEYLEN:
 #endif
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+	/*@fallthrough@*/
+	case ERROR_ESBC_CLIENT_HEADER_IE_KEY_REVOKED:
+	case ERROR_ESBC_CLIENT_HEADER_INVALID_IE_NUM_ENTRY:
+	case ERROR_ESBC_CLIENT_HEADER_INVALID_IE_KEY_NUM:
+	case ERROR_ESBC_CLIENT_HEADER_INV_IE_ENTRY_KEYLEN:
+	case ERROR_IE_TABLE_NOT_FOUND:
+#endif
 		fsl_secboot_header_verification_failure();
 		break;
 	case ERROR_ESBC_SEC_RESET:
@@ -269,10 +372,12 @@ static int calc_img_key_hash(struct sha_ctx *ctx,
 		sha_update(ctx, (u8 *)(img->ehdrloc + img->hdr.srk_tbl_off),
 			   img->hdr.len_kr.num_srk * sizeof(struct srk_table));
 	else
-		sha_update(ctx, img->img_key, img->hdr.key_len);
+		sha_update(ctx, img->img_key, img->key_len);
+
 #else
-	sha_update(ctx, img->img_key, img->hdr.key_len);
+	sha_update(ctx, img->img_key, img->key_len);
 #endif
+
 	ret = sha_final(ctx);
 	if (ret)
 		return ret;
@@ -295,36 +400,34 @@ static int calc_img_key_hash(struct sha_ctx *ctx,
 static int calc_esbchdr_esbc_hash(struct sha_ctx *ctx,
 	struct fsl_secboot_img_priv *img)
 {
-	int i = 0;
 	int ret = 0;
+	int key_hash = 0;
 
 	/* calculate the hash of the CSF header */
 	sha_init(ctx, &jr);
 	sha_update(ctx, (u8 *)&img->hdr, sizeof(struct fsl_secboot_img_hdr));
+
+	/* Update the hash with that of srk table if srk flag is 1
+	 * If IE Table is selected, key is not added in the hash
+	 * If neither rk table nor IE key tabel available, add key
+	 * from header in the hash calculation
+	 */
 #ifdef CONFIG_KEY_REVOCATION
-	if (check_srk(img))
+	if (check_srk(img)) {
 		sha_update(ctx, (u8 *)(img->ehdrloc + img->hdr.srk_tbl_off),
 			   img->hdr.len_kr.num_srk * sizeof(struct srk_table));
-	else
-		sha_update(ctx, img->img_key, img->hdr.key_len);
-#else
-	sha_update(ctx, img->img_key, img->hdr.key_len);
-#endif
-
-	if (img->hdr.sg_flag) {
-		/* calculate hash of the SG table */
-		sha_update(ctx, (u8 *)&img->sgtbl, img->hdr.sg_entries *
-			   sizeof(struct fsl_secboot_sg_table));
-
-		/* calculate the hash of each entry in the table */
-		for (i = 0; i < img->hdr.sg_entries; i++)
-			sha_update(ctx, img->sgtbl[i].pdata,
-				   img->sgtbl[i].len);
-	} else {
-		/* contiguous ESBC */
-		sha_update(ctx, (u8 *)img->hdr.pimg,
-			   img->hdr.img_size);
+		key_hash = 1;
 	}
+#endif
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+	if (!key_hash && check_ie(img))
+		key_hash = 1;
+#endif
+	if (!key_hash)
+		sha_update(ctx, img->img_key, img->hdr.key_len);
+
+	/* contiguous ESBC */
+	sha_update(ctx, (u8 *)img->hdr.pimg, img->hdr.img_size);
 
 	ret = sha_final(ctx);
 	if (ret)
@@ -409,6 +512,11 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 	u32 ret;
 	u32 key_num, key_revoc_flag, size;
 #endif
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+	struct ie_key_info *ie_info;
+	u32 ie_num, ie_revoc_flag, ie_key_len;
+#endif
+	int  key_found = 0;
 
 	/* check barker code */
 	if (memcmp(hdr->barker, barker_code, ESBC_BARKER_LEN))
@@ -440,17 +548,53 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 		size = hdr->len_kr.num_srk * sizeof(struct srk_table);
 
 		memcpy(&img->srk_tbl, esbc + hdr->srk_tbl_off, size);
-		memcpy(&img->img_key, &(img->srk_tbl[key_num - 1].pkey),
-		       img->srk_tbl[key_num - 1].key_len);
 
 		ret = validate_srk_tbl(img->srk_tbl, hdr->len_kr.num_srk);
 
 		if (ret != 0)
 			return ret;
 
-	} else
+		img->key_len = img->srk_tbl[key_num - 1].key_len;
+
+		memcpy(&img->img_key, &(img->srk_tbl[key_num - 1].pkey),
+		       img->key_len);
+
+		key_found = 1;
+	}
 #endif
-	{
+
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+	if (!key_found && check_ie(img)) {
+		if (get_ie_info_addr(&img->ie_addr))
+			return ERROR_IE_TABLE_NOT_FOUND;
+		ie_info = (struct ie_key_info *)img->ie_addr;
+		if (ie_info->num_keys == 0 || ie_info->num_keys > 32)
+			return ERROR_ESBC_CLIENT_HEADER_INVALID_IE_NUM_ENTRY;
+
+		ie_num = hdr->ie_key_sel;
+		if (ie_num == 0 || ie_num > ie_info->num_keys)
+			return ERROR_ESBC_CLIENT_HEADER_INVALID_IE_KEY_NUM;
+
+		ie_revoc_flag = ie_info->key_revok;
+		if ((u32)(1 << (ie_num - 1)) & ie_revoc_flag)
+			return ERROR_ESBC_CLIENT_HEADER_IE_KEY_REVOKED;
+
+		ie_key_len = ie_info->ie_key_tbl[ie_num - 1].key_len;
+
+		if (!((ie_key_len == 2 * KEY_SIZE_BYTES / 4) ||
+		      (ie_key_len == 2 * KEY_SIZE_BYTES / 2) ||
+		      (ie_key_len == 2 * KEY_SIZE_BYTES)))
+			return ERROR_ESBC_CLIENT_HEADER_INV_IE_ENTRY_KEYLEN;
+
+		memcpy(&img->img_key, &(ie_info->ie_key_tbl[ie_num - 1].pkey),
+		       ie_key_len);
+
+		img->key_len = ie_key_len;
+		key_found = 1;
+	}
+#endif
+
+	if (key_found == 0) {
 		/* check key length */
 		if (!((hdr->key_len == 2 * KEY_SIZE_BYTES / 4) ||
 		      (hdr->key_len == 2 * KEY_SIZE_BYTES / 2) ||
@@ -458,6 +602,10 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 			return ERROR_ESBC_CLIENT_HEADER_KEY_LEN;
 
 		memcpy(&img->img_key, esbc + hdr->pkey, hdr->key_len);
+
+		img->key_len = hdr->key_len;
+
+		key_found = 1;
 	}
 
 	/* check signaure */
@@ -745,7 +893,7 @@ out:
 int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 		char * const argv[])
 {
-	int hash_srk = 1;
+	int hash_cmd = 0;
 	struct ccsr_sfp_regs *sfp_regs = (void *)(CONFIG_SYS_SFP_ADDR);
 	ulong hash[SHA256_BYTES/sizeof(ulong)];
 	char hash_str[NUM_HEX_CHARS + 1];
@@ -787,7 +935,7 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 			}
 		}
 
-		hash_srk = 0;
+		hash_cmd = 1;
 	}
 
 #ifdef CONFIG_FSL_CORENET
@@ -829,10 +977,15 @@ int fsl_secboot_validate(cmd_tbl_t *cmdtp, int flag, int argc,
 	}
 
 	/* Compare hash obtained above with SRK hash present in SFP */
-	if (hash_srk)
-		ret = memcmp(srk_hash, img->img_key_hash, SHA256_BYTES);
-	else
+	if (hash_cmd)
 		ret = memcmp(&hash, &img->img_key_hash, SHA256_BYTES);
+	else
+		ret = memcmp(srk_hash, img->img_key_hash, SHA256_BYTES);
+
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
+	if (!hash_cmd && check_ie(img))
+		ret = 0;
+#endif
 
 	if (ret != 0) {
 		fsl_secboot_handle_error(ERROR_ESBC_CLIENT_HASH_COMPARE_KEY);

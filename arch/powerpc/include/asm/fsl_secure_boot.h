@@ -48,6 +48,23 @@
 #define CONFIG_KEY_REVOCATION
 #endif
 
+#if defined(CONFIG_PPC_P3041)	||	\
+	defined(CONFIG_PPC_P4080) ||	\
+	defined(CONFIG_PPC_P5020) ||	\
+	defined(CONFIG_PPC_P5040) ||	\
+	defined(CONFIG_PPC_P2041)
+	#define	CONFIG_FSL_TRUST_ARCH_v1
+#endif
+
+#if defined(CONFIG_FSL_CORENET)
+/* The key used for verification of next level images
+ * is picked up from an Extension Table which has
+ * been verified by the ISBC (Internal Secure boot Code)
+ * in boot ROM of the SoC
+ */
+#define CONFIG_FSL_ISBC_KEY_EXT
+#endif
+
 /* The bootscript header address is different for B4860 because the NOR
  * mapping is different on B4 due to reduced NOR size.
  */
