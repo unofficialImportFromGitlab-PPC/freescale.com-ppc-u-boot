@@ -13,6 +13,7 @@
 #include <asm/arch/fsl_serdes.h>
 #include <hwconfig.h>
 #include <asm/arch/ls102xa_stream_id.h>
+#include <asm/pcie_layerscape.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <fsl_ifc.h>
@@ -181,6 +182,10 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_FSL_IFC
 	init_early_memctl_regs();
+#endif
+
+#ifdef CONFIG_FSL_QSPI
+	out_be32(&scfg->qspi_cfg, SCFG_QSPI_CLKSEL);
 #endif
 
 	/* Workaround for the issue that DDR could not respond to
@@ -573,9 +578,23 @@ void board_print_spi_device(void)
 	printf("AT45DB021 is on spi bus 1 cs 0\n");
 }
 
+#ifdef CONFIG_SF_DATAFLASH
+int board_spi_is_dataflash(unsigned int bus, unsigned int cs)
+{
+	if (bus == SPI_BUS_FSL_DSPI1 && cs == 0)
+		return 1;
+	else
+		return 0;
+}
+#endif
+
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	ft_cpu_setup(blob, bd);
+
+#ifdef CONFIG_PCIE_LAYERSCAPE
+	ft_pcie_setup(blob, bd);
+#endif
 }
 
 u8 flash_read8(void *addr)

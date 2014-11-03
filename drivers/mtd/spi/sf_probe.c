@@ -169,7 +169,10 @@ static struct spi_flash *spi_flash_validate_params(struct spi_slave *spi,
 #endif
 
 	/* Compute erase sector and command */
-	if (params->flags & SECT_4K) {
+	if (params->flags & SECT_2K) {
+		flash->erase_cmd = CMD_ERASE_2K;
+		flash->erase_size = 2048 << flash->shift;
+	} else if (params->flags & SECT_4K) {
 		flash->erase_cmd = CMD_ERASE_4K;
 		flash->erase_size = 4096 << flash->shift;
 	} else if (params->flags & SECT_32K) {
@@ -228,6 +231,14 @@ static struct spi_flash *spi_flash_validate_params(struct spi_slave *spi,
 	}
 #endif
 
+#ifdef CONFIG_SF_DATAFLASH
+	if (board_spi_is_dataflash(spi->bus, spi->cs)) {
+		flash->poll_cmd = CMD_ATMEL_READ_STATUS;
+		flash->write_cmd = CMD_ATMEL_PAGE_PROGRAM;
+		if (params->flags & SECT_32K)
+			flash->erase_cmd = CMD_ATMEL_ERASE_32K;
+	}
+#endif
 	/* Configure the BAR - discover bank cmds and read current bank */
 #ifdef CONFIG_SPI_FLASH_BAR
 	u8 curr_bank = 0;
@@ -252,6 +263,10 @@ static struct spi_flash *spi_flash_validate_params(struct spi_slave *spi,
 #if defined(CONFIG_SPI_FLASH_ATMEL) || \
 	defined(CONFIG_SPI_FLASH_MACRONIX) || \
 	defined(CONFIG_SPI_FLASH_SST)
+#ifdef CONFIG_SF_DATAFLASH
+		if (!board_spi_is_dataflash(spi->bus, spi->cs))
+			return flash;
+#endif
 		spi_flash_cmd_write_status(flash, 0);
 #endif
 

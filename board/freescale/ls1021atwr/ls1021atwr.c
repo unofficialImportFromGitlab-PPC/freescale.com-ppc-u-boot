@@ -12,6 +12,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/fsl_serdes.h>
 #include <asm/arch/ls102xa_stream_id.h>
+#include <asm/pcie_layerscape.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <fsl_ifc.h>
@@ -284,6 +285,10 @@ int board_early_init_f(void)
 	out_be32(&scfg->pixclkcr, SCFG_PIXCLKCR_PXCKEN);
 #endif
 
+#ifdef CONFIG_FSL_QSPI
+	out_be32(&scfg->qspi_cfg, SCFG_QSPI_CLKSEL);
+#endif
+
 	return 0;
 }
 
@@ -487,6 +492,10 @@ void board_print_spi_device(void)
 void ft_board_setup(void *blob, bd_t *bd)
 {
 	ft_cpu_setup(blob, bd);
+
+#ifdef CONFIG_PCIE_LAYERSCAPE
+	ft_pcie_setup(blob, bd);
+#endif
 }
 
 u8 flash_read8(void *addr)
