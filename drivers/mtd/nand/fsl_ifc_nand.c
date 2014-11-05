@@ -290,7 +290,7 @@ static int fsl_ifc_run_command(struct mtd_info *mtd)
 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
 	struct fsl_ifc *ifc = ctrl->regs;
 	long long end_tick;
-	u32 eccstat[4];
+	u32 eccstat[4] = {0};
 	int i;
 
 	/* set the chip select for NAND Transaction */
