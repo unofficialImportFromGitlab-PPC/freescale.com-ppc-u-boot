@@ -683,6 +683,11 @@ int fsl_dp_resume(void)
 #ifdef CONFIG_LS102XA_NS_ACESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
 #endif
+
+#ifdef CONFIG_U_QE
+	u_qe_resume();
+#endif
+
 	armv7_switch_nonsec();
 	armv7_switch_hyp();
 	cleanup_before_linux();
