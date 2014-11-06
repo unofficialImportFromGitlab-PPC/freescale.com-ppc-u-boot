@@ -14,6 +14,44 @@
 #include <asm/fsl_portals.h>
 #include <asm/fsl_liodn.h>
 
+#define MAX_PORTALS (CONFIG_SYS_BMAN_CINH_SIZE / CONFIG_SYS_BMAN_SP_CINH_SIZE)
+void inhibit_bman_portals(void)
+{
+	void __iomem *addr = (void *)CONFIG_SYS_BMAN_CINH_BASE +
+		CONFIG_SYS_BMAN_SWP_ISDR_REG;
+	uint32_t val;
+	int portal_count = 0;
+
+	/* Dynamically determine number of portals */
+	do {
+		val = in_be32(addr);
+		if (val) {
+			printf("ERROR: should be zero at 0x%p\n", addr);
+			goto done;
+		}
+		out_be32(addr, -1);
+		val = in_be32(addr);
+		if (!val) {
+			/* end of portals */
+			if (!portal_count)
+				printf("ERROR: No portals\n");
+			goto done;
+		}
+		portal_count++;
+		addr += CONFIG_SYS_BMAN_SP_CINH_SIZE;
+		if (portal_count >= MAX_PORTALS)
+			goto done;
+	} while (1);
+
+done:
+
+#ifdef DEBUG
+	printf("BMan portal counted %u, defined is %u\n",
+	       portal_count, CONFIG_SYS_BMAN_NUM_PORTALS);
+#endif
+	return;
+}
+
 void setup_portals(void)
 {
 	ccsr_qman_t *qman = (void *)CONFIG_SYS_FSL_QMAN_ADDR;
@@ -38,6 +76,9 @@ void setup_portals(void)
 	out_be32(&qman->qcsp_bare, (u32)(CONFIG_SYS_QMAN_MEM_PHYS >> 32));
 #endif
 	out_be32(&qman->qcsp_bar, (u32)CONFIG_SYS_QMAN_MEM_PHYS);
+
+	/* Change default state of BMan ISDR portals to all 1s */
+	inhibit_bman_portals();
 }
 
 /* Update portal containter to match LAW setup of portal in phy map */
