@@ -113,6 +113,9 @@ ulong monitor_flash_len;
 #include <bedbug/type.h>
 #endif
 
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#include <fsl_sleep.h>
+#endif
 /*
  * Utilities
  */
@@ -343,13 +346,6 @@ void board_init_f(ulong bootflag)
 #ifdef CONFIG_PRAM
 	ulong reg;
 #endif
-#ifdef CONFIG_DEEP_SLEEP
-	const ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	struct ccsr_scfg *scfg = (void *)CONFIG_SYS_MPC85xx_SCFG;
-	u32 start_addr;
-	typedef void (*func_t)(void);
-	func_t kernel_resume;
-#endif
 
 	/* Pointer is writable since we allocated a register for it */
 	gd = (gd_t *) (CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_GBL_DATA_OFFSET);
@@ -367,18 +363,10 @@ void board_init_f(ulong bootflag)
 		if ((*init_fnc_ptr) () != 0)
 			hang();
 
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
 	/* Jump to kernel in deep sleep case */
-	if (in_be32(&gur->scrtsr[0]) & (1 << 3)) {
-		l2cache_init();
-#if defined(CONFIG_RAMBOOT_PBL)
-		disable_cpc_sram();
-#endif
-		enable_cpc();
-		start_addr = in_be32(&scfg->sparecr[1]);
-		kernel_resume = (func_t)start_addr;
-		kernel_resume();
-	}
+	if (is_warm_boot())
+		fsl_dp_resume();
 #endif
 
 #ifdef CONFIG_POST

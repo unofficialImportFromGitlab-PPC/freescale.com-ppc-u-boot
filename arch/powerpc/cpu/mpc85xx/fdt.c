@@ -134,7 +134,7 @@ void ft_fixup_cpu(void *blob, u64 memory_limit)
 			printf("Failed to reserve memory for spin table: %s\n",
 				fdt_strerror(off));
 	}
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
 #ifdef CONFIG_SPL_MMC_BOOT
 	off = fdt_add_mem_rsv(blob, CONFIG_SYS_MMC_U_BOOT_START,
 		CONFIG_SYS_MMC_U_BOOT_SIZE);

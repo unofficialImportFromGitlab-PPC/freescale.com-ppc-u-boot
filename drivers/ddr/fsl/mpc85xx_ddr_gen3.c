@@ -10,12 +10,13 @@
 #include <asm/io.h>
 #include <fsl_ddr_sdram.h>
 #include <asm/processor.h>
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#include <fsl_sleep.h>
+#endif
 
 #if (CONFIG_CHIP_SELECTS_PER_CTRL > 4)
 #error Invalid setting for CONFIG_CHIP_SELECTS_PER_CTRL
 #endif
-
-DECLARE_GLOBAL_DATA_PTR;
 
 /*
  * regs has the to-be-set values for DDR controller registers
@@ -42,16 +43,6 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 #endif
 #ifdef CONFIG_SYS_FSL_ERRATUM_DDR_A003
 	u32 save1, save2;
-#endif
-
-#ifdef CONFIG_DEEP_SLEEP
-	const ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	bool sleep_flag = 0;
-#endif
-
-#ifdef CONFIG_DEEP_SLEEP
-	if (in_be32(&gur->scrtsr[0]) & (1 << 3))
-		sleep_flag = 1;
 #endif
 
 	switch (ctrl_num) {
@@ -130,8 +121,8 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	out_be32(&ddr->timing_cfg_0, regs->timing_cfg_0);
 	out_be32(&ddr->timing_cfg_1, regs->timing_cfg_1);
 	out_be32(&ddr->timing_cfg_2, regs->timing_cfg_2);
-#ifdef CONFIG_DEEP_SLEEP
-	if (sleep_flag)
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot())
 		out_be32(&ddr->sdram_cfg_2,
 			 regs->ddr_sdram_cfg_2 & ~SDRAM_CFG2_D_INIT);
 	else
@@ -149,8 +140,8 @@ void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
 	out_be32(&ddr->sdram_interval, regs->ddr_sdram_interval);
 	out_be32(&ddr->sdram_data_init, regs->ddr_data_init);
 	out_be32(&ddr->sdram_clk_cntl, regs->ddr_sdram_clk_cntl);
-#ifdef CONFIG_DEEP_SLEEP
-	if (sleep_flag) {
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot()) {
 		out_be32(&ddr->init_addr, 0);
 		out_be32(&ddr->init_ext_addr, (1 << 31));
 	} else
@@ -399,18 +390,18 @@ step2:
 	udelay(500);
 	asm volatile("sync;isync");
 
-#ifdef CONFIG_DEEP_SLEEP
-	if (sleep_flag) {
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot()) {
 		/* enter self-refresh */
 		setbits_be32(&ddr->sdram_cfg_2, (1 << 31));
 		/* do board specific memory setup */
-		board_mem_sleep_setup();
+		fsl_dp_mem_setup();
 	}
 #endif
 
 	/* Let the controller go */
-#ifdef CONFIG_DEEP_SLEEP
-	if (sleep_flag)
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot())
 		temp_sdram_cfg = (in_be32(&ddr->sdram_cfg) | SDRAM_CFG_BI);
 	else
 #endif
@@ -565,8 +556,8 @@ step2:
 		clrbits_be32(&ddr->sdram_cfg, 0x2);
 	}
 #endif /* CONFIG_SYS_FSL_ERRATUM_DDR111_DDR134 */
-#ifdef CONFIG_DEEP_SLEEP
-	if (sleep_flag)
+#ifdef CONFIG_FSL_DEEP_SLEEP
+	if (is_warm_boot())
 		/* exit self-refresh */
 		clrbits_be32(&ddr->sdram_cfg_2, (1 << 31));
 #endif

@@ -479,7 +479,7 @@ ulong cpu_init_f(void)
 #endif
 
 #ifdef CONFIG_SYS_DCSRBAR_PHYS
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
 	/* disable the console if boot from deep sleep */
 	if (in_be32(&gur->scrtsr[0]) & (1 << 3))
 		flag = GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE;
