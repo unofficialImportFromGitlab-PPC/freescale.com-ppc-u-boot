@@ -106,13 +106,69 @@ void ft_board_setup(void *blob, bd_t *bd)
 #endif
 }
 
-#ifdef CONFIG_DEEP_SLEEP
-void board_mem_sleep_setup(void)
+#ifdef CONFIG_FSL_DEEP_SLEEP
+/* determine if it is a warm boot */
+bool is_warm_boot(void)
+{
+#define DCFG_CCSR_CRSTSR_WDRFR	(1 << 3)
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
+
+	if (in_be32(&gur->scrtsr[0]) & DCFG_CCSR_CRSTSR_WDRFR)
+		return 1;
+
+	return 0;
+}
+
+void fsl_dp_mem_setup(void)
 {
 	/* does not provide HW signals for power management */
 	CPLD_WRITE(misc_ctl_status, (CPLD_READ(misc_ctl_status) & ~0x40));
 	/* Disable MCKE isolation */
 	gpio_set_value(2, 0);
 	udelay(1);
+}
+
+void fsl_dp_ddr_restore(void)
+{
+#define DDR_BUFF_LEN	128
+	volatile u64 *src, *dst;
+	int i;
+	struct ccsr_scfg __iomem *scfg = (void *)CONFIG_SYS_MPC85xx_SCFG;
+
+	if (!is_warm_boot())
+		return;
+
+	/* get the address of ddr date from SPARECR3 */
+	src = (u64 *)in_be32(&scfg->sparecr[2]);
+	dst = (u64 *)CONFIG_SYS_SDRAM_BASE;
+
+	for (i = 0; i < DDR_BUFF_LEN / 8; i++)
+		*dst++ = *src++;
+}
+
+int fsl_dp_resume(void)
+{
+	u32 start_addr;
+	void (*kernel_resume)(void);
+	struct ccsr_scfg __iomem *scfg = (void *)CONFIG_SYS_MPC85xx_SCFG;
+
+	if (!is_warm_boot())
+		return 0;
+
+	fsl_dp_ddr_restore();
+
+	l2cache_init();
+#if defined(CONFIG_RAMBOOT_PBL)
+	disable_cpc_sram();
+#endif
+	enable_cpc();
+
+	/* Get the entry address and jump to kernel */
+	start_addr = in_be32(&scfg->sparecr[1]);
+	debug("Entry address is 0x%08x\n", start_addr);
+	kernel_resume = (void (*)(void))start_addr;
+	kernel_resume();
+
+	return 0;
 }
 #endif

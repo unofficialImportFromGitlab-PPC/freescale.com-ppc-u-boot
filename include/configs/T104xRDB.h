@@ -99,7 +99,7 @@
 #define CONFIG_MP			/* support multiple processors */
 
 /* support deep sleep */
-#define CONFIG_DEEP_SLEEP
+#define CONFIG_FSL_DEEP_SLEEP
 #define CONFIG_SILENT_CONSOLE
 
 #ifndef CONFIG_SYS_TEXT_BASE

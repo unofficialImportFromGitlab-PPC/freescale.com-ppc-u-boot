@@ -15,6 +15,30 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifdef CONFIG_FSL_DEEP_SLEEP
+bool is_warm_boot(void)
+{
+#define DCFG_CCSR_CRSTSR_WDRFR	(1 << 3)
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
+
+	if (in_be32(&gur->scrtsr[0]) & DCFG_CCSR_CRSTSR_WDRFR)
+		return 1;
+
+	return 0;
+}
+
+void fsl_dp_mem_setup(void)
+{
+	void __iomem *cpld_base = (void *)CONFIG_SYS_CPLD_BASE;
+
+	/* does not provide HW signals for power management */
+	clrbits_8(cpld_base + 0x17, 0x40);
+	/* Disable MCKE isolation */
+	gpio_set_value(2, 0);
+	udelay(1);
+}
+#endif
+
 phys_size_t get_effective_memsize(void)
 {
 	return CONFIG_SYS_L3_SIZE;
@@ -62,9 +86,9 @@ void board_init_f(ulong bootflag)
 	/* Update GD pointer */
 	gd = (gd_t *)(CONFIG_SPL_GD_ADDR);
 
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
 	/* disable the console if boot from deep sleep */
-	if (in_be32(&gur->scrtsr[0]) & (1 << 3))
+	if (is_warm_boot())
 		gd->flags |= GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE;
 #endif
 	/* compiler optimization barrier needed for GCC >= 3.4 */
@@ -132,16 +156,3 @@ void board_init_r(gd_t *gd, ulong dest_addr)
 	nand_boot();
 #endif
 }
-
-#ifdef CONFIG_DEEP_SLEEP
-void board_mem_sleep_setup(void)
-{
-	void __iomem *cpld_base = (void *)CONFIG_SYS_CPLD_BASE;
-
-	/* does not provide HW signals for power management */
-	clrbits_8(cpld_base + 0x17, 0x40);
-	/* Disable MCKE isolation */
-	gpio_set_value(2, 0);
-	udelay(1);
-}
-#endif
