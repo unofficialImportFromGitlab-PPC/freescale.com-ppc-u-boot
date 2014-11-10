@@ -14,6 +14,10 @@
 .arch_extension sec
 .arch_extension virt
 
+.globl non_sec_start
+non_sec_start:
+	.word .
+
 	.align	5
 /* the vector table for secure state and HYP mode */
 _monitor_vectors:
@@ -193,3 +197,7 @@ ENTRY(_switch_to_hyp)
 
 	bx	lr
 ENDPROC(_switch_to_hyp)
+
+.globl non_sec_end
+non_sec_end:
+	.word .

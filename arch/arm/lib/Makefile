@@ -48,6 +48,10 @@ ifndef CONFIG_ARM64
 obj-y	+= cache-cp15.o
 endif
 
+ifneq ($(CONFIG_ARMV7_NONSEC)$(CONFIG_ARMV7_VIRT),)
+obj-y   += nonsecure.o
+endif
+
 # For EABI conformant tool chains, provide eabi_compat()
 ifneq (,$(findstring -mabi=aapcs-linux,$(PLATFORM_CPPFLAGS)))
 extra-y	+= eabi_compat.o
