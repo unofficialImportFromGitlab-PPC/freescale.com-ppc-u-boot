@@ -50,3 +50,18 @@ void ls1021x_config_smmu3(uint32_t liodn)
 
 	out_le32(addr, s2cr);
 }
+
+void ls1021x_config_caam_stream_id(struct liodn_id_table *tbl, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i++) {
+		u32 liodn;
+		if (tbl[i].num_ids == 2)
+			liodn = (tbl[i].id[0] << 16) | tbl[i].id[1];
+		else
+			liodn = tbl[i].id[0];
+
+		out_le32((uint32_t *)(tbl[i].reg_offset), liodn);
+	}
+}
