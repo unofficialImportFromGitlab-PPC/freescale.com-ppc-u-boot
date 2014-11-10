@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <asm/processor.h>
 #include <asm/arch/clock.h>
+#include <asm/nonsecure.h>
 #include <linux/ctype.h>
 #ifdef CONFIG_FSL_ESDHC
 #include <fsl_esdhc.h>
@@ -99,6 +100,10 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 #endif
 
 	fdt_fixup_ethernet(blob);
+
+#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
+	fdt_add_non_sec_mem_rsv(blob);
+#endif
 
 	off = fdt_node_offset_by_prop_value(blob, -1, "device_type", "cpu", 4);
 	while (off != -FDT_ERR_NOTFOUND) {
