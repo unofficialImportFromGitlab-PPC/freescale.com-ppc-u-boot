@@ -35,7 +35,7 @@
 #define CONFIG_ENV_OVERWRITE
 
 /* support deep sleep */
-#define CONFIG_DEEP_SLEEP
+#define CONFIG_FSL_DEEP_SLEEP
 #define CONFIG_SILENT_CONSOLE
 
 #ifdef CONFIG_RAMBOOT_PBL

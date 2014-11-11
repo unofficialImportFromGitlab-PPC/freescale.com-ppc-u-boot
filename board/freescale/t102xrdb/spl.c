@@ -11,6 +11,7 @@
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <spi_flash.h>
+#include <asm/mpc85xx_gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -28,6 +29,30 @@ unsigned long get_board_ddr_clk(void)
 {
 	return CONFIG_DDR_CLK_FREQ;
 }
+
+#ifdef CONFIG_FSL_DEEP_SLEEP
+bool is_warm_boot(void)
+{
+#define DCFG_CCSR_CRSTSR_WDRFR	(1 << 3)
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_MPC85xx_GUTS_ADDR;
+
+	if (in_be32(&gur->scrtsr[0]) & DCFG_CCSR_CRSTSR_WDRFR)
+		return 1;
+
+	return 0;
+}
+
+void fsl_dp_mem_setup(void)
+{
+	void __iomem *cpld_base = (void *)CONFIG_SYS_CPLD_BASE;
+
+	/* does not provide HW signals for power management */
+	clrbits_8(cpld_base + 0x17, 0x40);
+	/* Disable MCKE isolation */
+	gpio_set_value(2, 0);
+	udelay(1);
+}
+#endif
 
 void board_init_f(ulong bootflag)
 {
