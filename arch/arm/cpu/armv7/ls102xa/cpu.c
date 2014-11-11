@@ -109,6 +109,13 @@ int cpu_eth_init(bd_t *bis)
 void smp_set_core_boot_addr(unsigned long addr, int corenr)
 {
 	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	struct ccsr_scfg __iomem *scfg = (void *)CONFIG_SYS_FSL_SCFG_ADDR;
+
+	/*
+	 * kernel will use this secondary core start address for secondary
+	 * core soft reset, so we save it here for cpu-hotplug usage.
+	 */
+	out_be32(&scfg->sparecr[3], addr);
 
 	/* After setting the secondary cores start address, just release
 	 * them to boot.
