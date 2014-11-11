@@ -9,12 +9,15 @@
 
 #include "common.h"
 #include <command.h>
+#ifdef CONFIG_LS102XA
+#include <asm/arch/immap_ls102xa.h>
+#endif
 #include "asm/errno.h"
 #include "asm/io.h"
 #include "linux/immap_qe.h"
 #include "qe.h"
 
-#define MPC85xx_DEVDISR_QE_DISABLE	0x1
+#define DEVDISR_QE_DISABLE	0x1
 
 qe_map_t		*qe_immr = NULL;
 static qe_snum_t	snums[QE_NUM_OF_SNUM];
@@ -346,7 +349,7 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
 	size_t calc_size = sizeof(struct qe_firmware);
 	size_t length;
 	const struct qe_header *hdr;
-#ifdef CONFIG_DEEP_SLEEP
+#if defined(CONFIG_FSL_DEEP_SLEEP) && defined(CONFIG_QE)
 	ccsr_gur_t *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
 #endif
 	if (!firmware) {
@@ -361,8 +364,8 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
 	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
 	    (hdr->magic[2] != 'F')) {
 		printf("Not a microcode\n");
-#ifdef CONFIG_DEEP_SLEEP
-		setbits_be32(&gur->devdisr, MPC85xx_DEVDISR_QE_DISABLE);
+#if defined(CONFIG_FSL_DEEP_SLEEP) && defined(CONFIG_QE)
+		setbits_be32(&gur->devdisr, DEVDISR_QE_DISABLE);
 #endif
 		return -EPERM;
 	}
@@ -481,8 +484,12 @@ int u_qe_upload_firmware(const struct qe_firmware *firmware)
 	size_t calc_size = sizeof(struct qe_firmware);
 	size_t length;
 	const struct qe_header *hdr;
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#ifdef CONFIG_LS102XA
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
+#else
 	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+#endif
 #endif
 	if (!firmware) {
 		printf("Invalid address\n");
@@ -496,8 +503,8 @@ int u_qe_upload_firmware(const struct qe_firmware *firmware)
 	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
 	    (hdr->magic[2] != 'F')) {
 		printf("Not a microcode\n");
-#ifdef CONFIG_DEEP_SLEEP
-		setbits_be32(&gur->devdisr, MPC85xx_DEVDISR_QE_DISABLE);
+#ifdef CONFIG_FSL_DEEP_SLEEP
+		setbits_be32(&gur->devdisr, DEVDISR_QE_DISABLE);
 #endif
 		return -EPERM;
 	}
@@ -588,8 +595,12 @@ int u_qe_firmware_resume(const struct qe_firmware *firmware, qe_map_t *qe_immrr)
 	unsigned int j;
 	const struct qe_header *hdr;
 	const u32 *code;
-#ifdef CONFIG_DEEP_SLEEP
+#ifdef CONFIG_FSL_DEEP_SLEEP
+#ifdef CONFIG_LS102XA
+	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
+#else
 	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+#endif
 #endif
 
 	if (!firmware)
@@ -600,8 +611,8 @@ int u_qe_firmware_resume(const struct qe_firmware *firmware, qe_map_t *qe_immrr)
 	/* Check the magic */
 	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
 	    (hdr->magic[2] != 'F')) {
-#ifdef CONFIG_DEEP_SLEEP
-		setbits_be32(&gur->devdisr, MPC85xx_DEVDISR_QE_DISABLE);
+#ifdef CONFIG_FSL_DEEP_SLEEP
+		setbits_be32(&gur->devdisr, DEVDISR_QE_DISABLE);
 #endif
 		return -EPERM;
 	}
