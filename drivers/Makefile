@@ -16,4 +16,4 @@ obj-y += watchdog/
 obj-$(CONFIG_QE) += qe/
 obj-$(CONFIG_U_QE) += qe/
 obj-y += memory/
-obj-$(CONFIG_SECURE_BOOT) += sec/
+obj-y += sec/

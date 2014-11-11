@@ -5,3 +5,4 @@
 #
 
 obj-$(CONFIG_SECURE_BOOT) += jr.o sha.o rsa_sec.o jobdesc.o error.o rng.o fsl_sfp_snvs.o
+obj-y += sec.o
