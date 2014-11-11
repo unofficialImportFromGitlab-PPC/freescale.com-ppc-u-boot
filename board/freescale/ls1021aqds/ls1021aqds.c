@@ -202,10 +202,9 @@ int board_early_init_f(void)
 		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
 
 	/*
-	 * Set CCI-400 Slave interface S0, S1, S2 Shareable Override Register
+	 * Set CCI-400 Slave interface S1, S2 Shareable Override Register
 	 * All transactions are treated as non-shareable
 	 */
-	out_le32(&cci->slave[0].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 

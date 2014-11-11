@@ -438,10 +438,9 @@ int board_init(void)
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
 
 	/*
-	 * Set CCI-400 Slave interface S0, S1, S2 Shareable Override Register
+	 * Set CCI-400 Slave interface S1, S2 Shareable Override Register
 	 * All transactions are treated as non-shareable
 	 */
-	out_le32(&cci->slave[0].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(0x1185000, 0x3);
