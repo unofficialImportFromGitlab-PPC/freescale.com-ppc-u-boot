@@ -261,6 +261,9 @@
 #define CONFIG_FSL_ESDHC
 #define CONFIG_GENERIC_MMC
 
+#define CONFIG_CMD_FAT
+#define CONFIG_DOS_PARTITION
+
 /*SPI device */
 #define CONFIG_CMD_SF
 #define CONFIG_SPI_FLASH
