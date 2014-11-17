@@ -55,8 +55,12 @@ static struct fsl_spi_driver fsl_spi_drivers[] = {
 };
 
 enum fsl_spi_driver_sel {
+#ifdef CONFIG_FSL_DSPI
 	DSPI_DRIVER,
+#endif
+#ifdef CONFIG_FSL_QSPI
 	QSPI_DRIVER,
+#endif
 };
 
 struct fsl_spi_driver *find_fsl_spi_driver(unsigned int bus, unsigned int cs)
@@ -71,32 +75,32 @@ struct fsl_spi_driver *find_fsl_spi_driver(unsigned int bus, unsigned int cs)
 	}
 
 	switch (bus) {
-#ifdef SPI_BUS_FSL_DSPI1
+#if defined(CONFIG_FSL_DSPI) && defined(SPI_BUS_FSL_DSPI1)
 	case SPI_BUS_FSL_DSPI1:
 		driver_sel = DSPI_DRIVER;
 		break;
 #endif
-#ifdef SPI_BUS_FSL_DSPI2
+#if defined(CONFIG_FSL_DSPI) && defined(SPI_BUS_FSL_DSPI2)
 	case SPI_BUS_FSL_DSPI2:
 		driver_sel = DSPI_DRIVER;
 		break;
 #endif
-#ifdef SPI_BUS_FSL_DSPI3
+#if defined(CONFIG_FSL_DSPI) && defined(SPI_BUS_FSL_DSPI3)
 	case SPI_BUS_FSL_DSPI3:
 		driver_sel = DSPI_DRIVER;
 		break;
 #endif
-#ifdef SPI_BUS_FSL_DSPI4
+#if defined(CONFIG_FSL_DSPI) && defined(SPI_BUS_FSL_DSPI4)
 	case SPI_BUS_FSL_DSPI4:
 		driver_sel = DSPI_DRIVER;
 		break;
 #endif
-#ifdef SPI_BUS_FSL_QSPI
+#if defined(CONFIG_FSL_QSPI) && defined(SPI_BUS_FSL_QSPI)
 	case SPI_BUS_FSL_QSPI:
 		driver_sel = QSPI_DRIVER;
 		break;
 #endif
-#ifdef SPI_BUS_FSL_QSPI2
+#if defined(CONFIG_FSL_QSPI) && defined(SPI_BUS_FSL_QSPI2)
 	case SPI_BUS_FSL_QSPI2:
 		driver_sel = QSPI_DRIVER;
 		break;
@@ -219,13 +223,7 @@ int spi_xfer(struct spi_slave *slave, unsigned int bitlen,
 
 void spi_release_bus(struct spi_slave *slave)
 {
-	struct fsl_spi_driver *driver = find_fsl_spi_driver(slave->bus,
-								slave->cs);
-
-	if (driver && driver->release_bus)
-		driver->release_bus(slave);
 }
-
 
 void spi_cs_activate(struct spi_slave *slave)
 {
