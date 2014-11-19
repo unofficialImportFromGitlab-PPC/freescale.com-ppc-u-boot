@@ -187,6 +187,8 @@ void fsl_dp_ddr_restore(void)
 	dst = (u64 *)CONFIG_SYS_SDRAM_BASE;
 	for (i = 0; i < DDR_BUFF_LEN / 8; i++)
 		*dst++ = *src++;
+
+	flush_dcache();
 }
 
 int fsl_dp_resume(void)
