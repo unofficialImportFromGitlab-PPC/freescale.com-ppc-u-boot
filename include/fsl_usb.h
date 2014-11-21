@@ -165,6 +165,30 @@ static inline bool has_erratum_a007792(void)
 	return false;
 }
 
+static inline bool has_erratum_a004477(void)
+{
+	u32 svr = get_svr();
+	u32 soc = SVR_SOC_VER(svr);
+
+	switch (soc) {
+	case SVR_P1010:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0);
+	case SVR_P1022:
+	case SVR_9131:
+	case SVR_9132:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
+	case SVR_P2020:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0) ||
+			IS_SVR_REV(svr, 2, 1);
+	case SVR_B4860:
+	case SVR_B4420:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0);
+	case SVR_P4080:
+		return IS_SVR_REV(svr, 2, 0) || IS_SVR_REV(svr, 3, 0);
+	}
+
+	return false;
+}
 #else
 
 static inline bool has_erratum_a006261(void)
@@ -183,6 +207,10 @@ static inline bool has_erratum_a007798(void)
 }
 
 static inline bool has_erratum_a007792(void)
+{
+	return false;
+}
+static inline bool has_erratum_a004477(void)
 {
 	return false;
 }
