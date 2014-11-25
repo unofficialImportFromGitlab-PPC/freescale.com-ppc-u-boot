@@ -268,7 +268,7 @@ void board_ft_fman_fixup_port(void *blob, char * prop, phys_addr_t pa,
 			break;
 		}
 	} else if (interface == PHY_INTERFACE_MODE_XGMII &&
-		  ((prtcl2 == 56) || (prtcl2 == 57))) {
+		  ((prtcl2 == 55) || (prtcl2 == 57))) {
 		/*
 		 * if the 10G is XFI, check hwconfig to see what is the
 		 * media type, there are two types, fiber or copper,
@@ -354,7 +354,7 @@ void fdt_fixup_board_enet(void *fdt)
 			break;
 		case PHY_INTERFACE_MODE_XGMII:
 			/* check if it's XFI interface for 10g */
-			if ((prtcl2 == 56) || (prtcl2 == 57)) {
+			if ((prtcl2 == 55) || (prtcl2 == 57)) {
 				if (i == FM1_10GEC1 && hwconfig_sub(
 					"fsl_10gkr_copper", "fm1_10g1"))
 					fdt_status_okay_by_alias(
@@ -534,7 +534,7 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC4, slot_qsgmii_phyaddr[2][3]);
 		fm_info_set_phy_address(FM1_DTSEC5, slot_qsgmii_phyaddr[1][0]);
 		fm_info_set_phy_address(FM1_DTSEC6, slot_qsgmii_phyaddr[1][1]);
-		if ((srds_prtcl_s2 != 56) && (srds_prtcl_s2 != 57)) {
+		if ((srds_prtcl_s2 != 55) && (srds_prtcl_s2 != 57)) {
 			fm_info_set_phy_address(FM1_DTSEC9,
 						slot_qsgmii_phyaddr[1][3]);
 			fm_info_set_phy_address(FM1_DTSEC10,
@@ -549,7 +549,7 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM1_DTSEC4, slot_qsgmii_phyaddr[2][3]);
 		fm_info_set_phy_address(FM1_DTSEC5, slot_qsgmii_phyaddr[1][0]);
 		fm_info_set_phy_address(FM1_DTSEC6, slot_qsgmii_phyaddr[1][1]);
-		if ((srds_prtcl_s2 != 56) && (srds_prtcl_s2 != 57)) {
+		if ((srds_prtcl_s2 != 55) && (srds_prtcl_s2 != 57)) {
 			fm_info_set_phy_address(FM1_DTSEC9,
 						slot_qsgmii_phyaddr[1][2]);
 			fm_info_set_phy_address(FM1_DTSEC10,
@@ -564,7 +564,7 @@ int board_eth_init(bd_t *bis)
 	case 48:
 		fm_info_set_phy_address(FM1_DTSEC5, slot_qsgmii_phyaddr[1][0]);
 		fm_info_set_phy_address(FM1_DTSEC6, slot_qsgmii_phyaddr[1][1]);
-		if ((srds_prtcl_s2 != 56) && (srds_prtcl_s2 != 57)) {
+		if ((srds_prtcl_s2 != 55) && (srds_prtcl_s2 != 57)) {
 			fm_info_set_phy_address(FM1_DTSEC10,
 						slot_qsgmii_phyaddr[1][2]);
 			fm_info_set_phy_address(FM1_DTSEC9,
@@ -641,7 +641,7 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM1_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
-			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57)) {
+			if ((srds_prtcl_s2 == 55) || (srds_prtcl_s2 == 57)) {
 				/* A fake PHY address to make U-boot happy */
 				fm_info_set_phy_address(i, i);
 			} else {
@@ -745,7 +745,7 @@ int board_eth_init(bd_t *bis)
 		fm_info_set_phy_address(FM2_DTSEC3, slot_qsgmii_phyaddr[4][2]);
 		fm_info_set_phy_address(FM2_DTSEC4, slot_qsgmii_phyaddr[4][3]);
 		break;
-	case 56:
+	case 55:
 	case 57:
 		/* XFI in Slot3, SGMII in Slot4 */
 		fm_info_set_phy_address(FM2_DTSEC1, slot_qsgmii_phyaddr[4][0]);
@@ -822,7 +822,7 @@ int board_eth_init(bd_t *bis)
 		idx = i - FM2_10GEC1;
 		switch (fm_info_get_enet_if(i)) {
 		case PHY_INTERFACE_MODE_XGMII:
-			if ((srds_prtcl_s2 == 56) || (srds_prtcl_s2 == 57)) {
+			if ((srds_prtcl_s2 == 55) || (srds_prtcl_s2 == 57)) {
 				/* A fake PHY address to make U-boot happy */
 				fm_info_set_phy_address(i, i);
 			} else {
