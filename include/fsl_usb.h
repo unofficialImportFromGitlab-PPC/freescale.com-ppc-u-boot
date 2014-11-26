@@ -156,8 +156,9 @@ static inline bool has_erratum_a007792(void)
 	case SVR_T4240:
 	case SVR_T4160:
 		return IS_SVR_REV(svr, 2, 0);
-	case SVR_T1040:
+	case SVR_T1024:
 		return IS_SVR_REV(svr, 1, 0);
+	case SVR_T1040:
 	case SVR_T2080:
 	case SVR_T2081:
 		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
