@@ -42,6 +42,7 @@ struct jobring jr;
 
 enum {
 	MUX_TYPE_CAN,
+	MUX_TYPE_GPIO,
 	MUX_TYPE_IIC2,
 	MUX_TYPE_RGMII,
 	MUX_TYPE_SAI,
@@ -305,6 +306,11 @@ int config_board_mux(int ctrl_type)
 
 		reg14 = (reg14 & 0xf0) | 0x03;
 		break;
+	case MUX_TYPE_GPIO:
+		config_etseccm_source(GE2_CLK125);
+
+		reg14 = (reg14 & 0x0f) | 0x20;
+		break;
 	case MUX_TYPE_IIC2:
 		reg14 = (reg14 & 0x0f) | 0xa0;
 		break;
@@ -495,6 +501,8 @@ int misc_init_r(void)
 		conflict_flag++;
 	if (hwconfig("can"))
 		conflict_flag++;
+	if (hwconfig("gpio"))
+		conflict_flag++;
 	if (hwconfig("sai"))
 		conflict_flag++;
 	if (conflict_flag > 1) {
@@ -504,6 +512,8 @@ int misc_init_r(void)
 
 	if (hwconfig("can"))
 		config_board_mux(MUX_TYPE_CAN);
+	if (hwconfig("gpio"))
+		config_board_mux(MUX_TYPE_GPIO);
 	else if (hwconfig("rgmii"))
 		config_board_mux(MUX_TYPE_RGMII);
 	else if (hwconfig("sai"))
