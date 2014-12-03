@@ -20,35 +20,30 @@ void inhibit_bman_portals(void)
 	void __iomem *addr = (void *)CONFIG_SYS_BMAN_CINH_BASE +
 		CONFIG_SYS_BMAN_SWP_ISDR_REG;
 	uint32_t val;
-	int portal_count = 0;
+	int i, max_portals = CONFIG_SYS_BMAN_NUM_PORTALS;
 
-	/* Dynamically determine number of portals */
-	do {
-		val = in_be32(addr);
-		if (val) {
-			printf("ERROR: should be zero at 0x%p\n", addr);
-			goto done;
-		}
+	/* MAX_PORTALS is the maximum based on memory size. This includes the
+	 * reserved memory in the SoC.  CONFIG_SYS_BMAN_NUM_PORTALS is the
+	 * number of physical portals in the SoC */
+	if (CONFIG_SYS_BMAN_NUM_PORTALS > MAX_PORTALS) {
+		printf("ERROR: BMAN portal config error\n");
+		max_portals = MAX_PORTALS;
+	}
+
+	for (i = 0; i < max_portals; i++) {
 		out_be32(addr, -1);
 		val = in_be32(addr);
 		if (!val) {
-			/* end of portals */
-			if (!portal_count)
-				printf("ERROR: No portals\n");
+			printf("ERROR: Stopped after %d BMan portals\n", i);
 			goto done;
 		}
-		portal_count++;
 		addr += CONFIG_SYS_BMAN_SP_CINH_SIZE;
-		if (portal_count >= MAX_PORTALS)
-			goto done;
-	} while (1);
-
+	}
+#ifdef DEBUG
+	printf("Cleared %d Bman portals\n", i);
+#endif
 done:
 
-#ifdef DEBUG
-	printf("BMan portal counted %u, defined is %u\n",
-	       portal_count, CONFIG_SYS_BMAN_NUM_PORTALS);
-#endif
 	return;
 }
 
