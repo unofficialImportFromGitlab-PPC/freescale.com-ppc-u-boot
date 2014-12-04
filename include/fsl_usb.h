@@ -124,6 +124,26 @@ static inline bool has_erratum_a006261(void)
 	return false;
 }
 
+static inline bool has_dual_phy(void)
+{
+	u32 svr = get_svr();
+	u32 soc = SVR_SOC_VER(svr);
+
+	switch (soc) {
+	case SVR_T1040:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
+	case SVR_T1023:
+		return IS_SVR_REV(svr, 1, 0);
+	case SVR_T2080:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1) ||
+				IS_SVR_REV(svr, 2, 0);
+	case SVR_T4240:
+		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 2, 0);
+	}
+
+	return false;
+}
+
 static inline bool has_erratum_a007075(void)
 {
 	u32 svr = get_svr();

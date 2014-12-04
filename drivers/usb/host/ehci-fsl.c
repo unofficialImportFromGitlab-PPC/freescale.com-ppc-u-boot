@@ -269,7 +269,7 @@ static int fdt_fixup_usb_erratum(void *blob, const char *prop_erratum,
 void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 {
 	static const char * const modes[] = { "host", "peripheral", "otg" };
-	static const char * const phys[] = { "ulpi", "utmi" };
+	static const char * const phys[] = { "ulpi", "utmi", "utmi_dual" };
 	int usb_erratum_a006261_off = -1;
 	int usb_erratum_a007075_off = -1;
 	int usb_erratum_a007792_off = -1;
@@ -313,6 +313,9 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 				dr_phy_type = phys[phy_idx];
 		}
 
+		if (has_dual_phy())
+			dr_phy_type = phys[2];
+
 		usb_mode_off = fdt_fixup_usb_mode_phy_type(blob,
 							   dr_mode_type, NULL,
 							   usb_mode_off);
@@ -335,6 +338,7 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 			if (usb_erratum_a006261_off < 0)
 				return;
 		}
+
 		if (has_erratum_a007075()) {
 			usb_erratum_a007075_off =  fdt_fixup_usb_erratum
 						   (blob,
@@ -343,6 +347,7 @@ void fdt_fixup_dr_usb(void *blob, bd_t *bd)
 			if (usb_erratum_a007075_off < 0)
 				return;
 		}
+
 		if (has_erratum_a007792()) {
 			usb_erratum_a007792_off =  fdt_fixup_usb_erratum
 						   (blob,
