@@ -264,9 +264,6 @@ void config_etseccm_source(int etsec_gtx_125_mux)
 {
 	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
 
-	/* Apply LS1021A specific quirk, to write to the BE SCFG space */
-	out_be32(&scfg->scfgrevcr, 0xFFFFFFFF);
-
 	switch (etsec_gtx_125_mux) {
 	case GE0_CLK125:
 		out_be32(&scfg->etsecmcr, 0x00000000);
@@ -287,9 +284,6 @@ void config_etseccm_source(int etsec_gtx_125_mux)
 		printf("Error! trying to set etseccm to invalid value\n");
 		break;
 	}
-
-	/* Revert back the quirk */
-	out_be32(&scfg->scfgrevcr, 0x00000000);
 }
 
 int config_board_mux(int ctrl_type)
