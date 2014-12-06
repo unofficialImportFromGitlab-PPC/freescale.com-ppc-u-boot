@@ -184,7 +184,6 @@ int board_early_init_f(void)
 
 #ifdef CONFIG_TSEC_ENET
 	out_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
-	out_be32(&scfg->etsecmcr, SCFG_ETSECCMCR_GE2_CLK125);
 #endif
 
 #ifdef CONFIG_FSL_IFC
@@ -318,6 +317,8 @@ int config_board_mux(int ctrl_type)
 		reg14 = (reg14 & 0xf0) | 0x0;
 		break;
 	case MUX_TYPE_SAI:
+		config_etseccm_source(GE2_CLK125);
+
 		reg14 = (reg14 & 0xf0) | 0x0c;
 		break;
 	case MUX_TYPE_SDHC:
