@@ -133,6 +133,7 @@ static inline bool has_dual_phy(void)
 	case SVR_T1040:
 		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1);
 	case SVR_T1023:
+	case SVR_T1024:
 		return IS_SVR_REV(svr, 1, 0);
 	case SVR_T2080:
 		return IS_SVR_REV(svr, 1, 0) || IS_SVR_REV(svr, 1, 1) ||
