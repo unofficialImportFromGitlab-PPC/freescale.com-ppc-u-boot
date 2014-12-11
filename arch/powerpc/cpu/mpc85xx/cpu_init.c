@@ -452,11 +452,14 @@ void fsl_erratum_a007212_workaround(void)
 #endif
 #endif
 	setbits_be32(dpdovrcr4, 0xe0000000);
-	out_be32(plldgdcr1, 0x08000001 | (ddr_pll_ratio << 1));
+	out_be32(plldgdcr1, 0x88000001 | (ddr_pll_ratio << 1));
+	clrbits_be32(plldgdcr1, 0x80000000);
 #if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
-	out_be32(plldgdcr2, 0x08000001 | (ddr_pll_ratio << 1));
+	out_be32(plldgdcr2, 0x88000001 | (ddr_pll_ratio << 1));
+	clrbits_be32(plldgdcr2, 0x80000000);
 #if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
-	out_be32(plldgdcr3, 0x08000001 | (ddr_pll_ratio << 1));
+	out_be32(plldgdcr3, 0x88000001 | (ddr_pll_ratio << 1));
+	clrbits_be32(plldgdcr3, 0x80000000);
 #endif
 #endif
 	udelay(100);
