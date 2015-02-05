@@ -685,8 +685,13 @@ void fdt_fixup_esdhc(void *blob, bd_t *bd)
 	}
 #endif
 
+#ifdef CONFIG_FSL_ESDHC_USE_PERIPHERAL_CLK
+	do_fixup_by_compat_u32(blob, compat, "peripheral-frequency",
+			       gd->arch.sdhc_clk, 1);
+#else
 	do_fixup_by_compat_u32(blob, compat, "clock-frequency",
 			       gd->arch.sdhc_clk, 1);
+#endif
 #ifdef CONFIG_FSL_ESDHC_ADAPTER_IDENT
 	do_fixup_by_compat_u32(blob, compat, "adapter-type",
 			       (u32)(gd->arch.sdhc_adapter), 1);
