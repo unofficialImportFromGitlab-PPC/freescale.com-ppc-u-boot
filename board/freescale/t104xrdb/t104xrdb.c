@@ -28,7 +28,11 @@ int checkboard(void)
 	struct cpu_type *cpu = gd->arch.cpu;
 	u8 sw;
 
+#ifdef CONFIG_T104XD4RDB
+	printf("Board: %sD4RDB\n", cpu->name);
+#else
 	printf("Board: %sRDB\n", cpu->name);
+#endif
 	printf("Board rev: 0x%02x CPLD ver: 0x%02x, ",
 	       CPLD_READ(hw_ver), CPLD_READ(sw_ver));
 
@@ -91,6 +95,23 @@ int board_early_init_r(void)
 
 int misc_init_r(void)
 {
+	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u32 srds_s1;
+
+	srds_s1 = in_be32(&gur->rcwsr[4]) >> 24;
+
+	printf("SERDES Reference : 0x%X\n", srds_s1);
+
+	/* select SGMII*/
+	if (srds_s1 == 0x86)
+		CPLD_WRITE(misc_ctl_status, CPLD_READ(misc_ctl_status) |
+					 MISC_CTL_SG_SEL);
+
+	/* select SGMII and Aurora*/
+	if (srds_s1 == 0x8E)
+		CPLD_WRITE(misc_ctl_status, CPLD_READ(misc_ctl_status) |
+					 MISC_CTL_SG_SEL | MISC_CTL_AURORA_SEL);
+
 	return 0;
 }
 
