@@ -49,6 +49,11 @@
 #define USBOTGSS_IRQ_SET_1_OEVT_EN	(1 << 16)
 #define USBOTGSS_IRQ_SET_1_DMADISABLECLR_EN	(1 << 17)
 
+#ifdef CONFIG_LS102XA
+#define CONFIG_SYS_FSL_XHCI_USB1_ADDR CONFIG_SYS_LS102XA_XHCI_USB1_ADDR
+#define CONFIG_SYS_FSL_XHCI_USB2_ADDR 0
+#endif
+
 struct fsl_xhci {
 	struct xhci_hccr *hcd;
 	struct dwc3 *dwc3_reg;
