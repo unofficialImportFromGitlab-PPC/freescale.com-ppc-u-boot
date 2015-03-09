@@ -28,6 +28,34 @@
 #define CONFIG_SYS_INIT_RAM_SIZE	OCRAM_SIZE
 
 /*
+ * USB
+ */
+/*EHCI Support*/
+/*#define CONFIG_HAS_FSL_DR_USB*/
+
+#ifdef CONFIG_HAS_FSL_DR_USB
+#define CONFIG_USB_EHCI
+#define CONFIG_USB_EHCI_FSL
+#define CONFIG_EHCI_HCD_INIT_AFTER_RESET
+#endif
+
+/*XHCI Support*/
+#define CONFIG_HAS_FSL_XHCI_USB
+
+#ifdef CONFIG_HAS_FSL_XHCI_USB
+#define CONFIG_USB_XHCI
+#define CONFIG_USB_XHCI_FSL
+#define CONFIG_USB_MAX_CONTROLLER_COUNT        1
+#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS     2
+#endif
+
+#if defined(CONFIG_HAS_FSL_DR_USB) || defined(CONFIG_HAS_FSL_XHCI_USB)
+#define CONFIG_CMD_USB
+#define CONFIG_USB_STORAGE
+#define CONFIG_CMD_EXT2
+#endif
+
+/*
  * Generic Timer Definitions
  */
 #define GENERIC_TIMER_CLK		12500000
