@@ -42,7 +42,9 @@ struct fsl_e_tlb_entry tlb_table[] = {
 
 	/* TLB 1 */
 	/* *I*** - Covers boot page */
-#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L3_ADDR)
+	/* In Case of Secure RAM Boot L3 address is defined at 0xbff00000 */
+#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L3_ADDR) && \
+	!defined(CONFIG_SECURE_BOOT)
 	/*
 	 * *I*G - L3SRAM. When L3 is used as 1M SRAM, the address of the
 	 * SRAM is at 0xfff00000, it covered the 0xfffff000.
@@ -76,11 +78,24 @@ struct fsl_e_tlb_entry tlb_table[] = {
 		      MAS3_SX|MAS3_SR, MAS2_W|MAS2_G,
 		      0, 2, BOOKE_PAGESZ_256M, 1),
 
+#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L3_ADDR) && \
+	defined(CONFIG_SECURE_BOOT)
+	/* In case of Secure Boot, L3 is used as 1M SRAM
+	 * and the address of the SRAM is at 0xbff00000.
+	 * The PCIE TLB entry conflicts with the above entry.
+	 * So, the entry for PCIE is not created at this point of time.
+	 * It will be created later on in cpu_init_r()
+	 * when U-Boot has relocated to DDR
+	 */
+	SET_TLB_ENTRY(1, CONFIG_SYS_INIT_L3_ADDR, CONFIG_SYS_INIT_L3_ADDR,
+		      MAS3_SX|MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
+		      0, 3, BOOKE_PAGESZ_1M, 1),
+#else
 	/* *I*G* - PCI */
 	SET_TLB_ENTRY(1, CONFIG_SYS_PCIE1_MEM_VIRT, CONFIG_SYS_PCIE1_MEM_PHYS,
 		      MAS3_SW|MAS3_SR, MAS2_I|MAS2_G,
 		      0, 3, BOOKE_PAGESZ_1G, 1),
-
+#endif
 	/* *I*G* - PCI */
 	SET_TLB_ENTRY(1, CONFIG_SYS_PCIE1_MEM_VIRT + 0x40000000,
 		      CONFIG_SYS_PCIE1_MEM_PHYS + 0x40000000,

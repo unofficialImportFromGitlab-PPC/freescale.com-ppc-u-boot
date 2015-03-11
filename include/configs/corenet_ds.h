@@ -16,6 +16,26 @@
 #include "../board/freescale/common/ics307_clk.h"
 
 #ifdef CONFIG_RAMBOOT_PBL
+#ifdef CONFIG_SECURE_BOOT
+#define CONFIG_RAMBOOT_TEXT_BASE	CONFIG_SYS_TEXT_BASE
+#define CONFIG_RESET_VECTOR_ADDRESS	0xbffffffc
+#define CONFIG_BPTR_VIRT_ADDR		0xbffff000
+
+/* In case of Secure Boot, L3 is used as 1M SRAM
+ * and the address of the SRAM is at 0xbff00000.
+ * The PCIE TLB entry conflicts with L3 TLB entry.
+ * The creation of PCIE TLB entry will be delayed
+ * till the time L3 entry is not required.
+ */
+#define CONFIG_SECBOOT_TLB_VIRT_ADDR	CONFIG_SYS_PCIE1_MEM_VIRT
+#define CONFIG_SECBOOT_TLB_PHYS_ADDR	CONFIG_SYS_PCIE1_MEM_PHYS
+#define CONFIG_SECBOOT_TLB_PERM	MAS3_SW|MAS3_SR
+#define CONFIG_SECBOOT_TLB_ATTR		MAS2_I|MAS2_G
+#define CONFIG_SECBOOT_TLB_PAGESZ	BOOKE_PAGESZ_1G
+#ifdef CONFIG_NAND
+#define CONFIG_RAMBOOT_NAND
+#endif
+#else
 #define CONFIG_RAMBOOT_TEXT_BASE	CONFIG_SYS_TEXT_BASE
 #define CONFIG_RESET_VECTOR_ADDRESS	0xfffffffc
 #define CONFIG_SYS_FSL_PBL_PBI board/freescale/corenet_ds/pbi.cfg
@@ -27,6 +47,7 @@
 #define CONFIG_SYS_FSL_PBL_RCW board/freescale/corenet_ds/rcw_p5020ds.cfg
 #elif defined(CONFIG_P5040DS)
 #define CONFIG_SYS_FSL_PBL_RCW board/freescale/corenet_ds/rcw_p5040ds.cfg
+#endif
 #endif
 #endif
 

@@ -843,6 +843,23 @@ int cpu_init_r(void)
 	setup_mp();
 #endif
 
+#if defined(CONFIG_SYS_RAMBOOT) && defined(CONFIG_SYS_INIT_L3_ADDR) && \
+	defined(CONFIG_SECURE_BOOT)
+	/* Disable the TLB Created for L3 and create the TLB required for
+	 * PCIE which was not created earlier.
+	 */
+	int tlb_index;
+	tlb_index = find_tlb_idx((void *)CONFIG_BPTR_VIRT_ADDR, 1);
+	if (tlb_index != -1) {
+		disable_tlb(tlb_index);
+
+		set_tlb(1, CONFIG_SECBOOT_TLB_VIRT_ADDR,
+			CONFIG_SECBOOT_TLB_PHYS_ADDR,
+			CONFIG_SECBOOT_TLB_PERM, CONFIG_SECBOOT_TLB_ATTR,
+			0, tlb_index, CONFIG_SECBOOT_TLB_PAGESZ, 1);
+	}
+#endif
+
 #ifdef CONFIG_SYS_FSL_ERRATUM_ESDHC13
 	{
 		if (SVR_MAJ(svr) < 3) {
