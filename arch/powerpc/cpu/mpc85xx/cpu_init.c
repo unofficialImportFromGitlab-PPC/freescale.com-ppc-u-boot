@@ -410,7 +410,6 @@ void fsl_erratum_a006918_workaround(void)
 void fsl_erratum_a007212_workaround(void)
 {
 	ccsr_gur_t __iomem *gur = (void *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
-	u32 svr;
 	u32 ddr_pll_ratio;
 	u32 __iomem *plldgdcr1 = (void *)(CONFIG_SYS_DCSRBAR + 0x21c20);
 	u32 __iomem *plldadcr1 = (void *)(CONFIG_SYS_DCSRBAR + 0x21c28);
@@ -423,49 +422,52 @@ void fsl_erratum_a007212_workaround(void)
 	u32 __iomem *plldadcr3 = (void *)(CONFIG_SYS_DCSRBAR + 0x21c68);
 #endif
 #endif
-	svr = get_svr();
-	while ((SVR_SOC_VER(svr) == SVR_B4860 && SVR_MAJ(svr) < 3) ||
-	    (SVR_SOC_VER(svr) == SVR_B4420 && SVR_MAJ(svr) < 3)) {
-		ddr_pll_ratio = (in_be32(&gur->rcwsr[0]) >>
-			FSL_CORENET_RCWSR0_MEM_PLL_RAT_SHIFT) &
-			FSL_CORENET_RCWSR0_MEM_PLL_RAT_MASK;
-		/* check if RCW sets ratio to 0, required by this workaround */
-		if (ddr_pll_ratio != 0)
-			break;
-		ddr_pll_ratio = (in_be32(&gur->rcwsr[0]) >>
-			FSL_CORENET_RCWSR0_MEM_PLL_RAT_RESV_SHIFT) &
-			FSL_CORENET_RCWSR0_MEM_PLL_RAT_MASK;
-		/* check if reserved bits have the desired ratio */
-		if (ddr_pll_ratio == 0)
-			break;
-		ddr_pll_ratio >>= 1;
-
-		setbits_be32(plldadcr1, 0x02000001);
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
-		setbits_be32(plldadcr2, 0x02000001);
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
-		setbits_be32(plldadcr3, 0x02000001);
-#endif
-#endif
-		setbits_be32(dpdovrcr4, 0xe0000000);
-		out_be32(plldgdcr1, 0x08000001 | (ddr_pll_ratio << 1));
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
-		out_be32(plldgdcr2, 0x08000001 | (ddr_pll_ratio << 1));
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
-		out_be32(plldgdcr3, 0x08000001 | (ddr_pll_ratio << 1));
-#endif
-#endif
-		udelay(100);
-		clrbits_be32(plldadcr1, 0x02000001);
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
-		clrbits_be32(plldadcr2, 0x02000001);
-#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
-		clrbits_be32(plldadcr3, 0x02000001);
-#endif
-#endif
-		clrbits_be32(dpdovrcr4, 0xe0000000);
-		break;
+	/*
+	 * Even this workaround applies to selected version of SoCs, it is
+	 * safe to apply to all versions, wth the limitation of odd ratios.
+	 * If RCW has disabled DDR PLL, we have to apply this workaround,
+	 * otherwise DDR will not work.
+	 */
+	ddr_pll_ratio = (in_be32(&gur->rcwsr[0]) >>
+		FSL_CORENET_RCWSR0_MEM_PLL_RAT_SHIFT) &
+		FSL_CORENET_RCWSR0_MEM_PLL_RAT_MASK;
+	/* check if RCW sets ratio to 0, required by this workaround */
+	if (ddr_pll_ratio != 0)
+		return;
+	ddr_pll_ratio = (in_be32(&gur->rcwsr[0]) >>
+		FSL_CORENET_RCWSR0_MEM_PLL_RAT_RESV_SHIFT) &
+		FSL_CORENET_RCWSR0_MEM_PLL_RAT_MASK;
+	/* check if reserved bits have the desired ratio */
+	if (ddr_pll_ratio == 0) {
+		printf("Error: Unknown DDR PLL ratio!\n");
+		return;
 	}
+	ddr_pll_ratio >>= 1;
+
+	setbits_be32(plldadcr1, 0x02000001);
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
+	setbits_be32(plldadcr2, 0x02000001);
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
+	setbits_be32(plldadcr3, 0x02000001);
+#endif
+#endif
+	setbits_be32(dpdovrcr4, 0xe0000000);
+	out_be32(plldgdcr1, 0x08000001 | (ddr_pll_ratio << 1));
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
+	out_be32(plldgdcr2, 0x08000001 | (ddr_pll_ratio << 1));
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
+	out_be32(plldgdcr3, 0x08000001 | (ddr_pll_ratio << 1));
+#endif
+#endif
+	udelay(100);
+	clrbits_be32(plldadcr1, 0x02000001);
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 2)
+	clrbits_be32(plldadcr2, 0x02000001);
+#if (CONFIG_NUM_DDR_CONTROLLERS >= 3)
+	clrbits_be32(plldadcr3, 0x02000001);
+#endif
+#endif
+	clrbits_be32(dpdovrcr4, 0xe0000000);
 }
 #endif
 
