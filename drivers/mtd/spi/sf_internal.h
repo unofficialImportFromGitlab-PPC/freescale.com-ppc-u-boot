@@ -43,6 +43,7 @@ enum {
 	SST_BP		= 1 << 3,
 	SST_WP		= 1 << 4,
 	WR_QPP		= 1 << 5,
+	AT45DB_CMD	= 1 << 6,
 };
 
 #define SST_WR		(SST_BP | SST_WP)
@@ -105,6 +106,12 @@ enum {
 #define SPI_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
 #define SPI_FLASH_PAGE_ERASE_TIMEOUT		(5 * CONFIG_SYS_HZ)
 #define SPI_FLASH_SECTOR_ERASE_TIMEOUT	(10 * CONFIG_SYS_HZ)
+
+/* Atmel AT45DB specific */
+#define CMD_ATMEL_PAGE_PROGRAM		0x82
+#define CMD_ATMEL_READ_STATUS		0xd7
+#define CMD_ATMEL_FLAG_STATUS		0xd7
+#define CMD_ATMEL_BLK_ERASE	        0x50
 
 /* SST specific */
 #ifdef CONFIG_SPI_FLASH_SST

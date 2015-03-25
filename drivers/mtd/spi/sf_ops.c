@@ -165,7 +165,7 @@ int spi_flash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	u8 poll_bit = STATUS_WIP;
 	u8 cmd = flash->poll_cmd;
 
-	if (cmd == CMD_FLAG_STATUS) {
+	if (cmd == CMD_FLAG_STATUS || cmd == CMD_ATMEL_FLAG_STATUS) {
 		poll_bit = STATUS_PEC;
 		check_status = poll_bit;
 	}

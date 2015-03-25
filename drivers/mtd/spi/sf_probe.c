@@ -226,6 +226,16 @@ static int spi_flash_validate_params(struct spi_slave *spi, u8 *idcode,
 		flash->poll_cmd = CMD_FLAG_STATUS;
 #endif
 
+#ifdef CONFIG_SPI_FLASH_ATMEL
+	if (params->flags & AT45DB_CMD) {
+		flash->poll_cmd = CMD_ATMEL_READ_STATUS;
+		flash->write_cmd = CMD_ATMEL_PAGE_PROGRAM;
+		/* use block-erase command, eight pages */
+		flash->erase_cmd = CMD_ATMEL_BLK_ERASE;
+		flash->erase_size = flash->page_size * 8;
+	}
+#endif
+
 	/* Configure the BAR - discover bank cmds and read current bank */
 #ifdef CONFIG_SPI_FLASH_BAR
 	u8 curr_bank = 0;
