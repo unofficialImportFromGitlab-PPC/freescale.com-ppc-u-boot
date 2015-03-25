@@ -109,7 +109,11 @@ struct dwc3 {					/* offset: 0xC100 */
 
 	u32 g_hwparams8;
 
-	u32 reserved4[63];
+	u32 reserved4[11];
+
+	u32 g_fladj;
+
+	u32 reserved5[51];
 
 	u32 d_cfg;
 	u32 d_ctl;
@@ -118,15 +122,15 @@ struct dwc3 {					/* offset: 0xC100 */
 	u32 d_gcmdpar;
 	u32 d_gcmd;
 
-	u32 reserved5[2];
+	u32 reserved6[2];
 
 	u32 d_alepena;
 
-	u32 reserved6[55];
+	u32 reserved7[55];
 
 	struct d_physical_endpoint d_phy_ep_cmd[32];
 
-	u32 reserved7[128];
+	u32 reserved8[128];
 
 	u32 o_cfg;
 	u32 o_ctl;
@@ -134,7 +138,7 @@ struct dwc3 {					/* offset: 0xC100 */
 	u32 o_evten;
 	u32 o_sts;
 
-	u32 reserved8[3];
+	u32 reserved9[3];
 
 	u32 adp_cfg;
 	u32 adp_ctl;
@@ -143,7 +147,7 @@ struct dwc3 {					/* offset: 0xC100 */
 
 	u32 bc_cfg;
 
-	u32 reserved9;
+	u32 reserved10;
 
 	u32 bc_evt;
 	u32 bc_evten;
@@ -191,4 +195,7 @@ struct dwc3 {					/* offset: 0xC100 */
 #define DWC3_DCTL_CSFTRST			(1 << 30)
 #define DWC3_DCTL_LSFTRST			(1 << 29)
 
+/* Global Frame Length Adjustment Register */
+#define GFLADJ_30MHZ_REG_SEL			(1 << 7)
+#define GFLADJ_30MHZ(n)				((n) & 0x3f)
 #endif /* __DWC3_H_ */

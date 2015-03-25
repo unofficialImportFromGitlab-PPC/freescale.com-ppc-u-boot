@@ -28,6 +28,12 @@ inline int __board_usb_init(int index, enum usb_init_type init)
 int board_usb_init(int index, enum usb_init_type init)
 	__attribute__((weak, alias("__board_usb_init")));
 
+static void dwc3_set_fladj(struct dwc3 *dwc3_reg, u32 val)
+{
+	setbits_le32(&dwc3_reg->g_fladj, GFLADJ_30MHZ_REG_SEL |
+		     GFLADJ_30MHZ(val));
+}
+
 static void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode)
 {
 	clrsetbits_le32(&dwc3_reg->g_ctl,
@@ -112,6 +118,9 @@ static int fsl_xhci_core_init(struct fsl_xhci *fsl_xhci)
 
 	/* We are hard-coding DWC3 core to Host Mode */
 	dwc3_set_mode(fsl_xhci->dwc3_reg, DWC3_GCTL_PRTCAP_HOST);
+
+	/* Set GFLADJ_30MHZ value as per Erratum A009116 */
+	dwc3_set_fladj(fsl_xhci->dwc3_reg, GFLADJ_30MHZ_DEFAULT);
 
 	return ret;
 }
