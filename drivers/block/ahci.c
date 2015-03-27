@@ -467,6 +467,10 @@ static int ahci_fill_sg(u8 port, unsigned char *buf, int buf_len)
 					  (buf_len < MAX_DATA_BYTE_COUNT
 					   ? (buf_len - 1)
 					   : (MAX_DATA_BYTE_COUNT - 1)));
+#ifdef	CONFIG_SYS_FSL_ERRATUM_A008402
+		if (ahci_sg->flags_size == 0x3FFFFF)
+			ahci_sg->flags_size = 0;
+#endif
 		ahci_sg++;
 		buf_len -= MAX_DATA_BYTE_COUNT;
 	}
