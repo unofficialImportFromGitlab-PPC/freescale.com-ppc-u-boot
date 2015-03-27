@@ -288,8 +288,11 @@ $(SRCTREE)/board/freescale/t104xrdb/t1042d4_rcw.cfg
 #define CPLD_LBMAP_DFLTBANK		0x40 /* BANK OR | BANK0 */
 #define CPLD_LBMAP_RESET		0xFF
 #define CPLD_LBMAP_SHIFT		0x03
-#if defined(CONFIG_T1042RDB_PI) || defined(CONFIG_T104XD4RDB)
+
+#if defined(CONFIG_T1042RDB_PI)
 #define CPLD_DIU_SEL_DFP		0x80
+#elif defined(CONFIG_T1042D4RDB)
+#define CPLD_DIU_SEL_DFP		0xc0
 #endif
 
 #define CONFIG_SYS_CPLD_BASE	0xffdf0000
@@ -458,7 +461,7 @@ $(SRCTREE)/board/freescale/t104xrdb/t1042d4_rcw.cfg
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2 "> "
 
-#if defined(CONFIG_T1042RDB_PI) || defined(CONFIG_T104XD4RDB)
+#if defined(CONFIG_T1042RDB_PI) || defined(CONFIG_T1042D4RDB)
 /* Video */
 #define CONFIG_FSL_DIU_FB
 
