@@ -12,6 +12,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/fsl_serdes.h>
 #include <asm/arch/ls102xa_stream_id.h>
+#include <asm/arch/ls102xa_sata.h>
 #include <hwconfig.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -229,6 +230,7 @@ int board_early_init_f(void)
 	if (is_warm_boot())
 		fsl_dp_disable_console();
 #endif
+	ls1021a_sata_init();
 
 	return 0;
 }
@@ -274,6 +276,7 @@ void board_init_f(ulong dummy)
 	i2c_init_all();
 #endif
 	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+	ls1021a_sata_init();
 
 	dram_init();
 
@@ -581,6 +584,15 @@ int board_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_BOARD_LATE_INIT
+int board_late_init(void)
+{
+	ls1021a_sata_start();
+
+	return 0;
+}
+#endif
 
 #if defined(CONFIG_DEEP_SLEEP)
 void board_sleep_prepare(void)

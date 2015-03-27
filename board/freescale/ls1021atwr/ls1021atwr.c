@@ -12,6 +12,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/fsl_serdes.h>
 #include <asm/arch/ls102xa_stream_id.h>
+#include <asm/arch/ls102xa_sata.h>
 #include <hwconfig.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
@@ -376,6 +377,8 @@ int board_early_init_f(void)
 	out_le32(&cci->slave[2].qos_ctrl, CCI400_REGULATION_READ_EN);
 	out_le32(&cci->slave[2].max_ot, CCI400_INT_MAX_OUT_TRANS);
 
+	ls1021a_sata_init();
+
 	return 0;
 }
 
@@ -388,6 +391,7 @@ void board_init_f(ulong dummy)
 	get_clocks();
 
 	preloader_console_init();
+	ls1021a_sata_init();
 
 	dram_init();
 
@@ -552,6 +556,15 @@ int misc_init_r(void)
 #ifdef CONFIG_FSL_CAAM
 	return sec_init();
 #endif
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_BOARD_LATE_INIT
+int board_late_init(void)
+{
+	ls1021a_sata_start();
+
 	return 0;
 }
 #endif
