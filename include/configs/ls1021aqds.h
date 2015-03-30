@@ -465,7 +465,6 @@ unsigned long get_board_ddr_clk(void);
 /*
  * Video
  */
-#define CONFIG_FSL_DCU_FB
 
 #ifdef CONFIG_FSL_DCU_FB
 #define CONFIG_VIDEO
