@@ -241,6 +241,7 @@ int phy_teranetics_init(void);
 int phy_vitesse_init(void);
 
 int board_phy_config(struct phy_device *phydev);
+int get_phy_id(struct mii_dev *bus, int addr, int devad, u32 *phy_id);
 
 /* PHY UIDs for various PHYs that are referenced in external code */
 #define PHY_UID_CS4340  0x13e51002
