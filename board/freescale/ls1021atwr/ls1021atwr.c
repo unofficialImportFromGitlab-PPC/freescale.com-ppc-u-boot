@@ -369,13 +369,6 @@ int board_early_init_f(void)
 	 */
 	out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 	out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
-	/*
-	 * To fix interleaving issue on VER1.0, regulation of
-	 * outstanding read transactions for slave interface S2
-	 * is enabled
-	 */
-	out_le32(&cci->slave[2].qos_ctrl, CCI400_REGULATION_READ_EN);
-	out_le32(&cci->slave[2].max_ot, CCI400_INT_MAX_OUT_TRANS);
 
 	ls1021a_sata_init();
 
