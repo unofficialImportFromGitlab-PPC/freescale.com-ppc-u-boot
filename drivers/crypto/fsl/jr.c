@@ -11,6 +11,9 @@
 #include "fsl_sec.h"
 #include "jr.h"
 #include "jobdesc.h"
+#ifdef CONFIG_FSL_CORENET
+#include <asm/fsl_pamu.h>
+#endif
 
 #define CIRC_CNT(head, tail, size)	(((head) - (tail)) & (size - 1))
 #define CIRC_SPACE(head, tail, size)	CIRC_CNT((tail), (head) + 1, (size))
@@ -438,17 +441,41 @@ int sec_init(void)
 {
 	int ret = 0;
 
+#ifdef CONFIG_FSL_CORENET
+	uint32_t liodnr;
+	uint32_t liodn_ns;
+	uint32_t liodn_s;
+#endif
+
 #ifdef CONFIG_PHYS_64BIT
 	ccsr_sec_t *sec = (void *)CONFIG_SYS_FSL_SEC_ADDR;
 	uint32_t mcr = sec_in32(&sec->mcfgr);
 
 	sec_out32(&sec->mcfgr, mcr | 1 << MCFGR_PS_SHIFT);
 #endif
+
+#ifdef CONFIG_FSL_CORENET
+	liodnr = sec_in32(&sec->jrliodnr[0].ls);
+	liodn_ns = (liodnr & JRNSLIODN_MASK) >> JRNSLIODN_SHIFT;
+	liodn_s = (liodnr & JRSLIODN_MASK) >> JRSLIODN_SHIFT;
+#endif
+
 	ret = jr_init();
 	if (ret < 0) {
 		printf("SEC initialization failed\n");
 		return -1;
 	}
+
+#ifdef CONFIG_FSL_CORENET
+	ret = sec_config_pamu_table(liodn_ns, liodn_s);
+	if (ret < 0)
+		return -1;
+
+#ifdef CONFIG_FSL_CORENET
+	pamu_enable();
+#endif
+
+#endif
 
 	if (get_rng_vid() >= 4) {
 		if (rng_init() < 0) {

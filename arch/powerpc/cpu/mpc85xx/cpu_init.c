@@ -30,6 +30,10 @@
 #ifdef CONFIG_FSL_CAAM
 #include <fsl_sec.h>
 #endif
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+#include <asm/fsl_pamu.h>
+#include <fsl_secboot_err.h>
+#endif
 #ifdef CONFIG_SYS_QE_FMAN_FW_IN_NAND
 #include <nand.h>
 #include <errno.h>
@@ -948,6 +952,11 @@ int cpu_init_r(void)
 
 #ifdef CONFIG_FMAN_ENET
 	fman_enet_init();
+#endif
+
+#if defined(CONFIG_SECURE_BOOT) && defined(CONFIG_FSL_CORENET)
+	if (pamu_init() < 0)
+		fsl_secboot_handle_error(ERROR_ESBC_PAMU_INIT);
 #endif
 
 #ifdef CONFIG_FSL_CAAM
