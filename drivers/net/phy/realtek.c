@@ -60,6 +60,22 @@ static int rtl8211x_config(struct phy_device *phydev)
 	return 0;
 }
 
+static int rtl8211f_config(struct phy_device *phydev)
+{
+	phy_write(phydev, MDIO_DEVAD_NONE, MII_BMCR, BMCR_RESET);
+
+	if (phydev->interface == PHY_INTERFACE_MODE_RGMII) {
+		/* enable TXDLY */
+		phy_write(phydev, MDIO_DEVAD_NONE,
+			  MIIM_RTL8211F_PAGE_SELECT, 0xd08);
+		phy_write(phydev, MDIO_DEVAD_NONE, 0x11, 0x109);
+	}
+
+	genphy_config_aneg(phydev);
+
+	return 0;
+}
+
 static int rtl8211x_parse_status(struct phy_device *phydev)
 {
 	unsigned int speed;
@@ -157,13 +173,6 @@ static int rtl8211f_parse_status(struct phy_device *phydev)
 		phydev->speed = SPEED_10;
 	}
 
-	if (phydev->interface == PHY_INTERFACE_MODE_RGMII) {
-		/* enable TXDLY */
-		phy_write(phydev, MDIO_DEVAD_NONE,
-			  MIIM_RTL8211F_PAGE_SELECT, 0xd08);
-		phy_write(phydev, MDIO_DEVAD_NONE, 0x11, 0x109);
-	}
-
 	return 0;
 }
 
@@ -223,7 +232,7 @@ static struct phy_driver RTL8211F_driver = {
 	.uid = 0x1cc916,
 	.mask = 0xffffff,
 	.features = PHY_GBIT_FEATURES,
-	.config = &rtl8211x_config,
+	.config = &rtl8211f_config,
 	.startup = &rtl8211f_startup,
 	.shutdown = &genphy_shutdown,
 };
