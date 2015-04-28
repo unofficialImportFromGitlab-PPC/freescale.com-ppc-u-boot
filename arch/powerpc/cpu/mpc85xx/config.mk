@@ -5,7 +5,8 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-PLATFORM_CPPFLAGS += -Wa,-me500 -msoft-float -mno-string
+PLATFORM_CPPFLAGS += -Wa,-me500 -msoft-float -mno-string \
+					-fno-delete-null-pointer-checks
 
 # -mspe=yes is needed to have -mno-spe accepted by a buggy GCC;
 # see "[PATCH,rs6000] make -mno-spe work as expected" on
