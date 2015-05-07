@@ -324,7 +324,15 @@ SW1: 00100000
 SW2: 00111001
 SW3: 11100001
 
-By default PBI_SRC=14 (which is for IFC-NAND/NOR), which needs to be changed for SPI and SD.
+PBL-based image generation
+==========================
+Changes only the required register bit in in PBI commands.
+
+Provides reference code which might needs some
+modification as per requirement.
+example:
+By default PBI_SRC=14 (which is for IFC-NAND/NOR) in rcw.cfg file
+which needs to be changed for SPI and SD.
 
 For SD-boot
 ==============
@@ -337,6 +345,10 @@ Change
 66000002 40000002 ec027000 01000000
 to
 66000002 40000002 6c027000 01000000
+
+2. SD does not support flush so remove flush from pbl, make changes in
+   tools/pblimage.c file, Update value of pbl_end_cmd[0] = 0x09138000
+   with 0x091380c0
 
 For SPI-boot
 ==============
