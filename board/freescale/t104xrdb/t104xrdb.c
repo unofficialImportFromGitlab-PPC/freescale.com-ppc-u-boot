@@ -112,6 +112,17 @@ int misc_init_r(void)
 		CPLD_WRITE(misc_ctl_status, CPLD_READ(misc_ctl_status) |
 					 MISC_CTL_SG_SEL | MISC_CTL_AURORA_SEL);
 
+#if defined(CONFIG_T1040D4RDB)
+	/* Mask all CPLD interrupt sources, except QSGMII interrupts */
+	if (CPLD_READ(sw_ver) < 0x03) {
+		debug("CPLD SW version 0x%02x doesn't support int_mask\n",
+		      CPLD_READ(sw_ver));
+	} else {
+		CPLD_WRITE(int_mask, CPLD_INT_MASK_ALL &
+			   ~(CPLD_INT_MASK_QSGMII1 | CPLD_INT_MASK_QSGMII2));
+	}
+#endif
+
 	return 0;
 }
 
