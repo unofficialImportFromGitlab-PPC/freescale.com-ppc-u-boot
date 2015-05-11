@@ -21,13 +21,6 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static struct fsl_xhci fsl_xhci;
 
-inline int __board_usb_init(int index, enum usb_init_type init)
-{
-	return 0;
-}
-int board_usb_init(int index, enum usb_init_type init)
-	__attribute__((weak, alias("__board_usb_init")));
-
 static void dwc3_set_fladj(struct dwc3 *dwc3_reg, u32 val)
 {
 	setbits_le32(&dwc3_reg->g_fladj, GFLADJ_30MHZ_REG_SEL |
@@ -147,12 +140,6 @@ int xhci_hcd_init(int index, struct xhci_hccr **hccr, struct xhci_hcor **hcor)
 	};
 
 	ctx->dwc3_reg = (struct dwc3 *)((char *)(ctx->hcd) + DWC3_REG_OFFSET);
-
-	ret = board_usb_init(index, USB_INIT_HOST);
-	if (ret != 0) {
-		puts("Failed to initialize board for USB\n");
-		return ret;
-	}
 
 	ret = fsl_xhci_core_init(ctx);
 	if (ret < 0) {
