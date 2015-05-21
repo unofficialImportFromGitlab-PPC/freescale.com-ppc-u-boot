@@ -40,6 +40,8 @@
 #define MIIM_RTL8211F_PHYSTAT_LINK	0x0004
 /* RTL8211F PHY Page Select Register */
 #define MIIM_RTL8211F_PAGE_SELECT	0x1f
+/* RTL8211F PHY LCR Register */
+#define MIIM_RTL8211F_LCR		0x10
 
 /* RealTek RTL8211x */
 static int rtl8211x_config(struct phy_device *phydev)
@@ -70,6 +72,13 @@ static int rtl8211f_config(struct phy_device *phydev)
 			  MIIM_RTL8211F_PAGE_SELECT, 0xd08);
 		phy_write(phydev, MDIO_DEVAD_NONE, 0x11, 0x109);
 	}
+
+	/* Set green LED for Link, yellow LED for Active */
+	phy_write(phydev, MDIO_DEVAD_NONE,
+		  MIIM_RTL8211F_PAGE_SELECT, 0xd04);
+	phy_write(phydev, MDIO_DEVAD_NONE, MIIM_RTL8211F_LCR, 0x617f);
+	phy_write(phydev, MDIO_DEVAD_NONE,
+		  MIIM_RTL8211F_PAGE_SELECT, 0x0);
 
 	genphy_config_aneg(phydev);
 
