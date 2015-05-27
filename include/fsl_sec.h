@@ -213,6 +213,9 @@ struct sg_entry {
 };
 
 int sec_init(void);
+#if defined(CONFIG_PPC_C29X)
+int sec_init_idx(uint8_t);
+#endif
 #endif
 
 #endif /* __FSL_SEC_H */
