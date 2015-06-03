@@ -93,30 +93,6 @@ int spi_flash_cmd_write_config(struct spi_flash *flash, u8 wc)
 }
 #endif
 
-#if defined(CONFIG_SPI_FLASH_STMICRO)
-int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash, int enable)
-{
-	int ret;
-	u8 cmd;
-
-	cmd = enable ? CMD_ENTER_4B_ADDR : CMD_EXIT_4B_ADDR;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: unable to claim SPI bus\n");
-		return ret;
-	}
-
-	ret = spi_flash_cmd_write_enable(flash);
-	if (ret < 0) {
-		debug("SF: enabling write failed\n");
-		return ret;
-	}
-
-	return spi_flash_cmd(flash->spi, cmd, NULL, 0);
-}
-#endif
-
 #ifdef CONFIG_SPI_FLASH_BAR
 static int spi_flash_cmd_bankaddr_write(struct spi_flash *flash, u8 bank_sel)
 {
@@ -184,7 +160,6 @@ int spi_flash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 	unsigned long timebase;
 	unsigned long flags = SPI_XFER_BEGIN;
 	int ret;
-	int out_of_time = 1;
 	u8 status;
 	u8 check_status = 0x0;
 	u8 poll_bit = STATUS_WIP;
@@ -211,45 +186,22 @@ int spi_flash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 		WATCHDOG_RESET();
 
 		ret = spi_xfer(spi, 8, NULL, &status, 0);
-		if (ret) {
-			spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
+		if (ret)
 			return -1;
-		}
 
-		if ((status & poll_bit) == check_status) {
-			out_of_time = 0;
+		if ((status & poll_bit) == check_status)
 			break;
-		}
 
 	} while (get_timer(timebase) < timeout);
 
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
 
-	if (out_of_time) {
-		/* Timed out */
-		debug("SF: time out!\n");
-		if (cmd == CMD_FLAG_STATUS) {
-			if (spi_flash_cmd_clear_flag_status(flash) < 0)
-				debug("SF: clear flag status failed\n");
-		}
-		ret = -1;
-	}
-#ifdef CONFIG_SPI_FLASH_STMICRO
-	else if (cmd == CMD_FLAG_STATUS) {
-		if (!(status & (STATUS_PROT | STATUS_ERASE))) {
-			ret = 0;
-		} else {
-			debug("SF: flag status error");
-			ret = -1;
-		}
+	if ((status & poll_bit) == check_status)
+		return 0;
 
-		if (spi_flash_cmd_clear_flag_status(flash) < 0) {
-			debug("SF: clear flag status failed\n");
-			ret = -1;
-		}
-	}
-#endif
-	return ret;
+	/* Timed out */
+	debug("SF: time out!\n");
+	return -1;
 }
 
 int spi_flash_write_common(struct spi_flash *flash, const u8 *cmd,
@@ -282,7 +234,7 @@ int spi_flash_write_common(struct spi_flash *flash, const u8 *cmd,
 
 	ret = spi_flash_cmd_wait_ready(flash, timeout);
 	if (ret < 0) {
-		debug("SF: write %s failed\n",
+		debug("SF: write %s timed out\n",
 		      timeout == SPI_FLASH_PROG_TIMEOUT ?
 			"program" : "page erase");
 		return ret;
