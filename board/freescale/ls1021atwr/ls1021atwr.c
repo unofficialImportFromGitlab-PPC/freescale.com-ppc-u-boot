@@ -417,8 +417,14 @@ int board_early_init_f(void)
 
 	/*
 	 * Enable snoop requests and DVM message requests for
-	 * Slave insterface S4 (A7 core cluster)
+	 * All the slave insterfaces.
 	 */
+	out_le32(&cci->slave[0].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
+	out_le32(&cci->slave[1].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
+	out_le32(&cci->slave[2].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
 	out_le32(&cci->slave[4].snoop_ctrl,
 		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
 
