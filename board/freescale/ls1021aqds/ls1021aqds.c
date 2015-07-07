@@ -214,6 +214,16 @@ int board_early_init_f(void)
 	out_be32(&scfg->endiancr, SCFG_ENDIANCR_LE);
 
 	/*
+	 * Memory controller require a register write before being enabled.
+	 * Affects: DDR
+	 * Register: EDDRTQCFG
+	 * Description: Memory controller performance is not optimal with
+	 *		default internal target queue register values.
+	 * Workaround: Write a value of 63b2_0002h to address: 157_020Ch.
+	 */
+	out_be32(0x0157020C, 0x63b20002);
+
+	/*
 	 * Enable snoop requests and DVM message requests for
 	 * All the slave insterfaces.
 	 */
