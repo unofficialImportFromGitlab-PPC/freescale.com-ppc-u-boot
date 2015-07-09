@@ -479,7 +479,7 @@ int board_early_init_f(void)
 {
 	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
-	unsigned int major;
+	unsigned int major, reg;
 
 	setbits_be32(&scfg->snpcnfgcr, SCFG_SNPCNFGCR_SEC_RD_WR);
 
@@ -512,6 +512,17 @@ int board_early_init_f(void)
 	 * Workaround: Write a value of 63b2_0002h to address: 157_020Ch.
 	 */
 	out_be32(0x0157020C, 0x63b20002);
+
+	/*
+	 * EDDRTQCFG Registers are Integration Strap values which controls
+	 * performance parameters for DDR Controller.
+	 * The bit 25 is used for disable priorities within DDR.
+	 * This is a workaround because of the DDR are connected backwards
+	 * on Rev2.0.
+	 */
+	reg = in_be32(0x157020c);
+	reg |= 0x40;
+	out_be32(0x0157020C, reg);
 
 	/*
 	 * Enable snoop requests and DVM message requests for
