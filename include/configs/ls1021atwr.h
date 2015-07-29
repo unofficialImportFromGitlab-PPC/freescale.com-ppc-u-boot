@@ -297,10 +297,8 @@
 #define FSL_QSPI_FLASH_NUM		2
 
 #define CONFIG_SPI_FLASH_STMICRO
-#endif
 
 /* DSPI */
-#ifndef CONFIG_SD_BOOT
 #define CONFIG_FSL_DSPI
 #define CONFIG_SPI_FLASH_ATMEL
 #endif
