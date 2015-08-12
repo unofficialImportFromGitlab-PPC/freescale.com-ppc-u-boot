@@ -484,7 +484,8 @@ int board_early_init_f(void)
 	setbits_be32(&scfg->snpcnfgcr, SCFG_SNPCNFGCR_SEC_RD_WR);
 
 #ifdef CONFIG_TSEC_ENET
-	out_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
+	/* clear BD & FR bits for BE BD's and frame data */
+	clrbits_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
 	out_be32(&scfg->etsecmcr, SCFG_ETSECCMCR_GE2_CLK125);
 #endif
 
