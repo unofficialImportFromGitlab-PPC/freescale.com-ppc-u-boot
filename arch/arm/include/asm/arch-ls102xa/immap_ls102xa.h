@@ -17,6 +17,9 @@
 #define SOC_VER_LS1021		0x11
 #define SOC_VER_LS1022		0x12
 
+#define SOC_MAJOR_VER_1_0	0x1
+#define SOC_MAJOR_VER_2_0	0x2
+
 #define CCSR_BRR_OFFSET		0xe4
 #define CCSR_SCRATCHRW1_OFFSET	0x200
 
@@ -28,7 +31,7 @@
 #define RCWSR4_SRDS1_PRTCL_SHIFT	24
 #define RCWSR4_SRDS1_PRTCL_MASK		0xff000000
 
-#define TIMER_COMP_VAL			0xffffffff
+#define TIMER_COMP_VAL			0xffffffffffffffffull
 #define ARCH_TIMER_CTRL_ENABLE		(1 << 0)
 #define SYS_COUNTER_CTRL_ENABLE		(1 << 24)
 
@@ -141,11 +144,13 @@ struct ccsr_gur {
 };
 
 #define SCFG_ETSECDMAMCR_LE_BD_FR	0xf8001a0f
+#define SCFG_SNPCNFGCR_SEC_RD_WR	0xc0000000
 #define SCFG_ETSECCMCR_GE2_CLK125	0x04000000
 #define SCFG_ETSECCMCR_GE0_CLK125	0x00000000
 #define SCFG_ETSECCMCR_GE1_CLK125	0x08000000
 #define SCFG_PIXCLKCR_PXCKEN		0x80000000
 #define SCFG_QSPI_CLKSEL		0xc0100000
+#define SCFG_ENDIANCR_LE		0x80000000
 
 /* Supplemental Configuration Unit */
 struct ccsr_scfg {
@@ -204,7 +209,7 @@ struct ccsr_scfg {
 	u32 qos2;
 	u32 qos3;
 	u32 cci_cfg;
-	u32 resv8[1];
+	u32 endiancr;
 	u32 etsecdmamcr;
 	u32 usb3prm3cr;
 	u32 resv9[1];

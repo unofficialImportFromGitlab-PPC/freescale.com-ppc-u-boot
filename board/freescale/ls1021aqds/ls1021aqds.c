@@ -55,6 +55,92 @@ enum {
 	GE1_CLK125,
 };
 
+#ifdef CONFIG_LS102XA_NS_ACCESS
+static struct csu_ns_dev ns_dev[] = {
+	{ CSU_CSLX_PCIE2_IO, CSU_ALL_RW },
+	{ CSU_CSLX_PCIE1_IO, CSU_ALL_RW },
+	{ CSU_CSLX_MG2TPR_IP, CSU_ALL_RW },
+	{ CSU_CSLX_IFC_MEM, CSU_ALL_RW },
+	{ CSU_CSLX_OCRAM, CSU_ALL_RW },
+	{ CSU_CSLX_GIC, CSU_ALL_RW },
+	{ CSU_CSLX_PCIE1, CSU_ALL_RW },
+	{ CSU_CSLX_OCRAM2, CSU_ALL_RW },
+	{ CSU_CSLX_QSPI_MEM, CSU_ALL_RW },
+	{ CSU_CSLX_PCIE2, CSU_ALL_RW },
+	{ CSU_CSLX_SATA, CSU_ALL_RW },
+	{ CSU_CSLX_USB3, CSU_ALL_RW },
+	{ CSU_CSLX_SERDES, CSU_ALL_RW },
+	{ CSU_CSLX_QDMA, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART2, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART1, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART4, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART3, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART6, CSU_ALL_RW },
+	{ CSU_CSLX_LPUART5, CSU_ALL_RW },
+	{ CSU_CSLX_DSPI2, CSU_ALL_RW },
+	{ CSU_CSLX_DSPI1, CSU_ALL_RW },
+	{ CSU_CSLX_QSPI, CSU_ALL_RW },
+	{ CSU_CSLX_ESDHC, CSU_ALL_RW },
+	{ CSU_CSLX_2D_ACE, CSU_ALL_RW },
+	{ CSU_CSLX_IFC, CSU_ALL_RW },
+	{ CSU_CSLX_I2C1, CSU_ALL_RW },
+	{ CSU_CSLX_USB2, CSU_ALL_RW },
+	{ CSU_CSLX_I2C3, CSU_ALL_RW },
+	{ CSU_CSLX_I2C2, CSU_ALL_RW },
+	{ CSU_CSLX_DUART2, CSU_ALL_RW },
+	{ CSU_CSLX_DUART1, CSU_ALL_RW },
+	{ CSU_CSLX_WDT2, CSU_ALL_RW },
+	{ CSU_CSLX_WDT1, CSU_ALL_RW },
+	{ CSU_CSLX_EDMA, CSU_ALL_RW },
+	{ CSU_CSLX_SYS_CNT, CSU_ALL_RW },
+	{ CSU_CSLX_DMA_MUX2, CSU_ALL_RW },
+	{ CSU_CSLX_DMA_MUX1, CSU_ALL_RW },
+	{ CSU_CSLX_DDR, CSU_ALL_RW },
+	{ CSU_CSLX_QUICC, CSU_ALL_RW },
+	{ CSU_CSLX_DCFG_CCU_RCPM, CSU_ALL_RW },
+	{ CSU_CSLX_SECURE_BOOTROM, CSU_ALL_RW },
+	{ CSU_CSLX_SFP, CSU_ALL_RW },
+	{ CSU_CSLX_TMU, CSU_ALL_RW },
+	{ CSU_CSLX_SECURE_MONITOR, CSU_ALL_RW },
+	{ CSU_CSLX_RESERVED0, CSU_ALL_RW },
+	{ CSU_CSLX_ETSEC1, CSU_ALL_RW },
+	{ CSU_CSLX_SEC5_5, CSU_ALL_RW },
+	{ CSU_CSLX_ETSEC3, CSU_ALL_RW },
+	{ CSU_CSLX_ETSEC2, CSU_ALL_RW },
+	{ CSU_CSLX_GPIO2, CSU_ALL_RW },
+	{ CSU_CSLX_GPIO1, CSU_ALL_RW },
+	{ CSU_CSLX_GPIO4, CSU_ALL_RW },
+	{ CSU_CSLX_GPIO3, CSU_ALL_RW },
+	{ CSU_CSLX_PLATFORM_CONT, CSU_ALL_RW },
+	{ CSU_CSLX_CSU, CSU_ALL_RW },
+	{ CSU_CSLX_ASRC, CSU_ALL_RW },
+	{ CSU_CSLX_SPDIF, CSU_ALL_RW },
+	{ CSU_CSLX_FLEXCAN2, CSU_ALL_RW },
+	{ CSU_CSLX_FLEXCAN1, CSU_ALL_RW },
+	{ CSU_CSLX_FLEXCAN4, CSU_ALL_RW },
+	{ CSU_CSLX_FLEXCAN3, CSU_ALL_RW },
+	{ CSU_CSLX_SAI2, CSU_ALL_RW },
+	{ CSU_CSLX_SAI1, CSU_ALL_RW },
+	{ CSU_CSLX_SAI4, CSU_ALL_RW },
+	{ CSU_CSLX_SAI3, CSU_ALL_RW },
+	{ CSU_CSLX_FTM2, CSU_ALL_RW },
+	{ CSU_CSLX_FTM1, CSU_ALL_RW },
+	{ CSU_CSLX_FTM4, CSU_ALL_RW },
+	{ CSU_CSLX_FTM3, CSU_ALL_RW },
+	{ CSU_CSLX_FTM6, CSU_ALL_RW },
+	{ CSU_CSLX_FTM5, CSU_ALL_RW },
+	{ CSU_CSLX_FTM8, CSU_ALL_RW },
+	{ CSU_CSLX_FTM7, CSU_ALL_RW },
+	{ CSU_CSLX_COP_DCSR, CSU_ALL_RW },
+	{ CSU_CSLX_EPU, CSU_ALL_RW },
+	{ CSU_CSLX_GDI, CSU_ALL_RW },
+	{ CSU_CSLX_DDI, CSU_ALL_RW },
+	{ CSU_CSLX_RESERVED1, CSU_ALL_RW },
+	{ CSU_CSLX_USB3_PHY, CSU_ALL_RW },
+	{ CSU_CSLX_RESERVED2, CSU_ALL_RW },
+};
+#endif
+
 int checkboard(void)
 {
 #ifndef CONFIG_QSPI_BOOT
@@ -138,6 +224,17 @@ unsigned long get_board_ddr_clk(void)
 	return 66666666;
 }
 
+unsigned int get_soc_major_rev(void)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	unsigned int svr, major;
+
+	svr = in_be32(&gur->svr);
+	major = SVR_MAJ(svr);
+
+	return major;
+}
+
 int select_i2c_ch_pca9547(u8 ch)
 {
 	int ret;
@@ -181,6 +278,9 @@ int board_early_init_f(void)
 {
 	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+	unsigned int major, reg;
+
+	setbits_be32(&scfg->snpcnfgcr, SCFG_SNPCNFGCR_SEC_RD_WR);
 
 #ifdef CONFIG_TSEC_ENET
 	out_be32(&scfg->etsecdmamcr, SCFG_ETSECDMAMCR_LE_BD_FR);
@@ -198,26 +298,59 @@ int board_early_init_f(void)
 	out_be32(&scfg->pixclkcr, SCFG_PIXCLKCR_PXCKEN);
 #endif
 
+	/* Configure Little endian for SAI, ASRC and SPDIF */
+	out_be32(&scfg->endiancr, SCFG_ENDIANCR_LE);
+
+	/*
+	 * Memory controller require a register write before being enabled.
+	 * Affects: DDR
+	 * Register: EDDRTQCFG
+	 * Description: Memory controller performance is not optimal with
+	 *		default internal target queue register values.
+	 * Workaround: Write a value of 63b2_0002h to address: 157_020Ch.
+	 */
+	out_be32(0x0157020C, 0x63b20002);
+
+	/*
+	 * EDDRTQCFG Registers are Integration Strap values which controls
+	 * performance parameters for DDR Controller.
+	 * The bit 25 is used for disable priorities within DDR.
+	 * This is a workaround because of the DDR are connected backwards
+	 * on Rev2.0.
+	 */
+	reg = in_be32(0x157020c);
+	reg |= 0x40;
+	out_be32(0x0157020C, reg);
+
 	/*
 	 * Enable snoop requests and DVM message requests for
-	 * Slave insterface S4 (A7 core cluster)
+	 * All the slave insterfaces.
 	 */
+	out_le32(&cci->slave[0].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
+	out_le32(&cci->slave[1].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
+	out_le32(&cci->slave[2].snoop_ctrl,
+		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
 	out_le32(&cci->slave[4].snoop_ctrl,
 		 CCI400_DVM_MESSAGE_REQ_EN | CCI400_SNOOP_REQ_EN);
 
-	/*
-	 * Set CCI-400 Slave interface S1, S2 Shareable Override Register
-	 * All transactions are treated as non-shareable
-	 */
-	out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
-	out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
+	major = get_soc_major_rev();
+	if (major == SOC_MAJOR_VER_1_0) {
+		/*
+		 * Set CCI-400 Slave interface S1, S2 Shareable Override
+		 * Register All transactions are treated as non-shareable
+		 */
+		out_le32(&cci->slave[1].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
+		out_le32(&cci->slave[2].sha_ord, CCI400_SHAORD_NON_SHAREABLE);
 
-	/* Workaround for the issue that DDR could not respond to
-	 * barrier transaction which is generated by executing DSB/ISB
-	 * instruction. Set CCI-400 control override register to
-	 * terminate the barrier transaction. After DDR is initialized,
-	 * allow barrier transaction to DDR again */
-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+		/* Workaround for the issue that DDR could not respond to
+		 * barrier transaction which is generated by executing DSB/ISB
+		 * instruction. Set CCI-400 control override register to
+		 * terminate the barrier transaction. After DDR is initialized,
+		 * allow barrier transaction to DDR again */
+		out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+	}
 
 #if defined(CONFIG_DEEP_SLEEP)
 	if (is_warm_boot())
@@ -232,6 +365,7 @@ int board_early_init_f(void)
 void board_init_f(ulong dummy)
 {
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+	unsigned int major;
 
 #ifdef CONFIG_NAND_BOOT
 	struct ccsr_gur __iomem *gur = (void *)CONFIG_SYS_FSL_GUTS_ADDR;
@@ -268,10 +402,19 @@ void board_init_f(ulong dummy)
 #ifdef CONFIG_SPL_I2C_SUPPORT
 	i2c_init_all();
 #endif
-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+
+	major = get_soc_major_rev();
+	if (major == SOC_MAJOR_VER_1_0)
+		out_le32(&cci->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+
 	ls1021a_sata_init();
 
 	dram_init();
+
+#ifdef CONFIG_LS102XA_NS_ACCESS
+	enable_devices_ns_access(&ns_dev[4], 1);
+	enable_devices_ns_access(&ns_dev[7], 1);
+#endif
 
 	board_init_r(NULL, 0);
 }
@@ -425,92 +568,6 @@ int misc_init_r(void)
 	return 0;
 }
 
-#ifdef CONFIG_LS102XA_NS_ACCESS
-static struct csu_ns_dev ns_dev[] = {
-	{ CSU_CSLX_PCIE2_IO, CSU_ALL_RW },
-	{ CSU_CSLX_PCIE1_IO, CSU_ALL_RW },
-	{ CSU_CSLX_MG2TPR_IP, CSU_ALL_RW },
-	{ CSU_CSLX_IFC_MEM, CSU_ALL_RW },
-	{ CSU_CSLX_OCRAM, CSU_ALL_RW },
-	{ CSU_CSLX_GIC, CSU_ALL_RW },
-	{ CSU_CSLX_PCIE1, CSU_ALL_RW },
-	{ CSU_CSLX_OCRAM2, CSU_ALL_RW },
-	{ CSU_CSLX_QSPI_MEM, CSU_ALL_RW },
-	{ CSU_CSLX_PCIE2, CSU_ALL_RW },
-	{ CSU_CSLX_SATA, CSU_ALL_RW },
-	{ CSU_CSLX_USB3, CSU_ALL_RW },
-	{ CSU_CSLX_SERDES, CSU_ALL_RW },
-	{ CSU_CSLX_QDMA, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART2, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART1, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART4, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART3, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART6, CSU_ALL_RW },
-	{ CSU_CSLX_LPUART5, CSU_ALL_RW },
-	{ CSU_CSLX_DSPI2, CSU_ALL_RW },
-	{ CSU_CSLX_DSPI1, CSU_ALL_RW },
-	{ CSU_CSLX_QSPI, CSU_ALL_RW },
-	{ CSU_CSLX_ESDHC, CSU_ALL_RW },
-	{ CSU_CSLX_2D_ACE, CSU_ALL_RW },
-	{ CSU_CSLX_IFC, CSU_ALL_RW },
-	{ CSU_CSLX_I2C1, CSU_ALL_RW },
-	{ CSU_CSLX_USB2, CSU_ALL_RW },
-	{ CSU_CSLX_I2C3, CSU_ALL_RW },
-	{ CSU_CSLX_I2C2, CSU_ALL_RW },
-	{ CSU_CSLX_DUART2, CSU_ALL_RW },
-	{ CSU_CSLX_DUART1, CSU_ALL_RW },
-	{ CSU_CSLX_WDT2, CSU_ALL_RW },
-	{ CSU_CSLX_WDT1, CSU_ALL_RW },
-	{ CSU_CSLX_EDMA, CSU_ALL_RW },
-	{ CSU_CSLX_SYS_CNT, CSU_ALL_RW },
-	{ CSU_CSLX_DMA_MUX2, CSU_ALL_RW },
-	{ CSU_CSLX_DMA_MUX1, CSU_ALL_RW },
-	{ CSU_CSLX_DDR, CSU_ALL_RW },
-	{ CSU_CSLX_QUICC, CSU_ALL_RW },
-	{ CSU_CSLX_DCFG_CCU_RCPM, CSU_ALL_RW },
-	{ CSU_CSLX_SECURE_BOOTROM, CSU_ALL_RW },
-	{ CSU_CSLX_SFP, CSU_ALL_RW },
-	{ CSU_CSLX_TMU, CSU_ALL_RW },
-	{ CSU_CSLX_SECURE_MONITOR, CSU_ALL_RW },
-	{ CSU_CSLX_RESERVED0, CSU_ALL_RW },
-	{ CSU_CSLX_ETSEC1, CSU_ALL_RW },
-	{ CSU_CSLX_SEC5_5, CSU_ALL_RW },
-	{ CSU_CSLX_ETSEC3, CSU_ALL_RW },
-	{ CSU_CSLX_ETSEC2, CSU_ALL_RW },
-	{ CSU_CSLX_GPIO2, CSU_ALL_RW },
-	{ CSU_CSLX_GPIO1, CSU_ALL_RW },
-	{ CSU_CSLX_GPIO4, CSU_ALL_RW },
-	{ CSU_CSLX_GPIO3, CSU_ALL_RW },
-	{ CSU_CSLX_PLATFORM_CONT, CSU_ALL_RW },
-	{ CSU_CSLX_CSU, CSU_ALL_RW },
-	{ CSU_CSLX_ASRC, CSU_ALL_RW },
-	{ CSU_CSLX_SPDIF, CSU_ALL_RW },
-	{ CSU_CSLX_FLEXCAN2, CSU_ALL_RW },
-	{ CSU_CSLX_FLEXCAN1, CSU_ALL_RW },
-	{ CSU_CSLX_FLEXCAN4, CSU_ALL_RW },
-	{ CSU_CSLX_FLEXCAN3, CSU_ALL_RW },
-	{ CSU_CSLX_SAI2, CSU_ALL_RW },
-	{ CSU_CSLX_SAI1, CSU_ALL_RW },
-	{ CSU_CSLX_SAI4, CSU_ALL_RW },
-	{ CSU_CSLX_SAI3, CSU_ALL_RW },
-	{ CSU_CSLX_FTM2, CSU_ALL_RW },
-	{ CSU_CSLX_FTM1, CSU_ALL_RW },
-	{ CSU_CSLX_FTM4, CSU_ALL_RW },
-	{ CSU_CSLX_FTM3, CSU_ALL_RW },
-	{ CSU_CSLX_FTM6, CSU_ALL_RW },
-	{ CSU_CSLX_FTM5, CSU_ALL_RW },
-	{ CSU_CSLX_FTM8, CSU_ALL_RW },
-	{ CSU_CSLX_FTM7, CSU_ALL_RW },
-	{ CSU_CSLX_COP_DCSR, CSU_ALL_RW },
-	{ CSU_CSLX_EPU, CSU_ALL_RW },
-	{ CSU_CSLX_GDI, CSU_ALL_RW },
-	{ CSU_CSLX_DDI, CSU_ALL_RW },
-	{ CSU_CSLX_RESERVED1, CSU_ALL_RW },
-	{ CSU_CSLX_USB3_PHY, CSU_ALL_RW },
-	{ CSU_CSLX_RESERVED2, CSU_ALL_RW },
-};
-#endif
-
 struct liodn_id_table sec_liodn_tbl[] = {
 	SET_SEC_JR_LIODN_ENTRY(0, 0x10, 0x10),
 	SET_SEC_JR_LIODN_ENTRY(1, 0x10, 0x10),
@@ -550,10 +607,14 @@ struct smmu_stream_id dev_stream_id[] = {
 int board_init(void)
 {
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+	unsigned int major;
 
-	/* Set CCI-400 control override register to
-	 * enable barrier transaction */
-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+	major = get_soc_major_rev();
+	if (major == SOC_MAJOR_VER_1_0) {
+		/* Set CCI-400 control override register to
+		 * enable barrier transaction */
+		out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+	}
 
 	select_i2c_ch_pca9547(I2C_MUX_CH_DEFAULT);
 
@@ -566,10 +627,6 @@ int board_init(void)
 				      ARRAY_SIZE(sec_liodn_tbl));
 	ls102xa_config_smmu_stream_id(dev_stream_id,
 				      ARRAY_SIZE(dev_stream_id));
-	/* Configure SMMU3 to make transactions with CAAM stream ID
-	 * as cacheable
-	 */
-	ls1021x_config_smmu3(0x10);
 
 #ifdef CONFIG_LS102XA_NS_ACCESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));
@@ -595,10 +652,15 @@ int board_late_init(void)
 void board_sleep_prepare(void)
 {
 	struct ccsr_cci400 __iomem *cci = (void *)CONFIG_SYS_CCI400_ADDR;
+	unsigned int major;
 
-	/* Set CCI-400 control override register to
-	 * enable barrier transaction */
-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+	major = get_soc_major_rev();
+	if (major == SOC_MAJOR_VER_1_0) {
+		/* Set CCI-400 control override register to
+		 * enable barrier transaction */
+		out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+	}
+
 
 #ifdef CONFIG_LS102XA_NS_ACCESS
 	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev));

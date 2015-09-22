@@ -56,7 +56,8 @@ static inline unsigned long long us_to_tick(unsigned long long usec)
 int timer_init(void)
 {
 	struct sctr_regs *sctr = (struct sctr_regs *)SCTR_BASE_ADDR;
-	unsigned long ctrl, val, freq;
+	unsigned long ctrl, freq;
+	unsigned long long val64;
 
 	/* Enable System Counter */
 	writel(SYS_COUNTER_CTRL_ENABLE, &sctr->cntcr);
@@ -69,8 +70,8 @@ int timer_init(void)
 	asm("mcr p15, 0, %0, c14, c2, 1" : : "r" (ctrl));
 
 	/* Set PL1 Physical Comp Value */
-	val = TIMER_COMP_VAL;
-	asm("mcrr p15, 2, %Q0, %R0, c14" : : "r" (val));
+	val64 = TIMER_COMP_VAL;
+	asm("mcrr p15, 2, %Q0, %R0, c14" : : "r" (val64));
 
 	gd->arch.tbl = 0;
 	gd->arch.tbu = 0;
