@@ -290,6 +290,7 @@ int cpu_eth_init(bd_t *bis)
 int arch_cpu_init(void)
 {
 	void *epu_base = (void *)(CONFIG_SYS_DCSRBAR + EPU_BLOCK_OFFSET);
+	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
 
 	/*
 	 * After wakeup from deep sleep, Clear EPU registers
@@ -297,6 +298,14 @@ int arch_cpu_init(void)
 	 * It's also safe to clear at normal boot.
 	 */
 	fsl_epu_clean(epu_base);
+
+	/* Enable all the snoop signal for various masters */
+	out_be32(&scfg->snpcnfgcr, SCFG_SNPCNFGCR_SEC_RD_WR |
+				SCFG_SNPCNFGCR_DCU_RD_WR |
+				SCFG_SNPCNFGCR_SATA_RD_WR |
+				SCFG_SNPCNFGCR_USB3_RD_WR |
+				SCFG_SNPCNFGCR_DBG_RD_WR |
+				SCFG_SNPCNFGCR_eDMA_SNP);
 
 	return 0;
 }
