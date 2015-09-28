@@ -305,7 +305,7 @@ int arch_cpu_init(void)
 				SCFG_SNPCNFGCR_SATA_RD_WR |
 				SCFG_SNPCNFGCR_USB3_RD_WR |
 				SCFG_SNPCNFGCR_DBG_RD_WR |
-				SCFG_SNPCNFGCR_eDMA_SNP);
+				SCFG_SNPCNFGCR_EDMA_SNP);
 
 	return 0;
 }
