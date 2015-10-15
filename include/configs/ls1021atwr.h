@@ -100,9 +100,11 @@
 
 #ifdef CONFIG_SD_BOOT
 #ifdef CONFIG_SD_BOOT_QSPI
-#define CONFIG_SYS_FSL_PBL_RCW	board/freescale/ls1021atwr/ls102xa_rcw_sd_qspi.cfg
+#define CONFIG_SYS_FSL_PBL_RCW	\
+	board/freescale/ls1021atwr/ls102xa_rcw_sd_qspi.cfg
 #else
-#define CONFIG_SYS_FSL_PBL_RCW	board/freescale/ls1021atwr/ls102xa_rcw_sd_ifc.cfg
+#define CONFIG_SYS_FSL_PBL_RCW	\
+	board/freescale/ls1021atwr/ls102xa_rcw_sd_ifc.cfg
 #endif
 #define CONFIG_SPL_FRAMEWORK
 #define CONFIG_SPL_LDSCRIPT	"arch/$(ARCH)/cpu/u-boot-spl.lds"
