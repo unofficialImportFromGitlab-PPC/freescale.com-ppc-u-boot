@@ -16,6 +16,7 @@
 / {
 	model = "LS1043A QDS Board";
 	aliases {
+		spi0 = &qspi;
 		spi1 = &dspi0;
 	};
 };
@@ -46,6 +47,19 @@
 		compatible = "spi-flash";
 		spi-max-frequency = <3500000>;
 		reg = <2>;
+	};
+};
+
+&qspi {
+	bus-num = <0>;
+	status = "okay";
+
+	qflash0: s25fl128s@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
 	};
 };
 
