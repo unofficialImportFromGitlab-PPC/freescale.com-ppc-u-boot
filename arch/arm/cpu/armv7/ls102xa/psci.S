@@ -99,7 +99,7 @@ holdoff_release:
 	dsb
 
 	@ Return
-	mov	r0, #ARM_PSCI_RET_SUCCESS
+	mov	r0, #PSCI_RET_SUCCESS
 
 	pop	{lr}
 	bx	lr

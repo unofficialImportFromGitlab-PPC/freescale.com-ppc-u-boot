@@ -73,16 +73,16 @@ static int fdt_psci(void *fdt)
 	tmp = fdt_setprop_string(fdt, nodeoff, "method", "smc");
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_suspend", ARM_PSCI_FN_CPU_SUSPEND);
+	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_suspend", PSCI_FN_CPU_SUSPEND);
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_off", ARM_PSCI_FN_CPU_OFF);
+	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_off", PSCI_FN_CPU_OFF);
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_on", ARM_PSCI_FN_CPU_ON);
+	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_on", PSCI_FN_CPU_ON);
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "migrate", ARM_PSCI_FN_MIGRATE);
+	tmp = fdt_setprop_u32(fdt, nodeoff, "migrate", PSCI_FN_MIGRATE);
 	if (tmp)
 		return tmp;
 #endif

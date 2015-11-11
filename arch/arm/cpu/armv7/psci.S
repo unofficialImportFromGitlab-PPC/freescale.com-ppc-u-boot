@@ -50,7 +50,7 @@ ENTRY(psci_cpu_suspend)
 ENTRY(psci_cpu_off)
 ENTRY(psci_cpu_on)
 ENTRY(psci_migrate)
-	mov	r0, #ARM_PSCI_RET_NI	@ Return -1 (Not Implemented)
+	mov	r0, #PSCI_RET_NOT_SUPPORTED	@ Return -1 (Not Implemented)
 	mov	pc, lr
 ENDPROC(psci_migrate)
 ENDPROC(psci_cpu_on)
@@ -62,13 +62,13 @@ ENDPROC(psci_cpu_suspend)
 .weak psci_migrate
 
 _psci_table:
-	.word	ARM_PSCI_FN_CPU_SUSPEND
+	.word	PSCI_FN_CPU_SUSPEND
 	.word	psci_cpu_suspend
-	.word	ARM_PSCI_FN_CPU_OFF
+	.word	PSCI_FN_CPU_OFF
 	.word	psci_cpu_off
-	.word	ARM_PSCI_FN_CPU_ON
+	.word	PSCI_FN_CPU_ON
 	.word	psci_cpu_on
-	.word	ARM_PSCI_FN_MIGRATE
+	.word	PSCI_FN_MIGRATE
 	.word	psci_migrate
 	.word	0
 	.word	0
@@ -86,7 +86,7 @@ _smc_psci:
 1:	ldr	r5, [r4]		@ Load PSCI function ID
 	ldr	r6, [r4, #4]		@ Load target PC
 	cmp	r5, #0			@ If reach the end, bail out
-	moveq	r0, #ARM_PSCI_RET_INVAL	@ Return -2 (Invalid)
+	moveq	r0, #PSCI_RET_INVALID_PARAMS	@ Return -2 (Invalid)
 	beq	2f
 	cmp	r0, r5			@ If not matching, try next entry
 	addne	r4, r4, #8

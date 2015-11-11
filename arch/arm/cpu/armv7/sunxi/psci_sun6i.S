@@ -204,7 +204,7 @@ psci_cpu_on:
 	orr	r6, r6, r4
 	str	r6, [r0, #0x1e4]
 
-	mov	r0, #ARM_PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
+	mov	r0, #PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
 	pop	{pc}
 
 .globl	psci_cpu_off

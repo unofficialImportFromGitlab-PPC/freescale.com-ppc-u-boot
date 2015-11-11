@@ -105,7 +105,7 @@ ENTRY(psci_cpu_on)
 	mov	r5, #(CSR_IMMEDIATE_WAKE | CSR_ENABLE)
 	str	r5, [r6, r2]
 
-	mov	r0, #ARM_PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
+	mov	r0, #PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
 	pop	{pc}
 ENDPROC(psci_cpu_on)
 

@@ -18,19 +18,24 @@
 #ifndef __ARM_PSCI_H__
 #define __ARM_PSCI_H__
 
-/* PSCI interface */
-#define ARM_PSCI_FN_BASE		0x84000000
-#define ARM_PSCI_FN(n)			(ARM_PSCI_FN_BASE + (n))
 
-#define ARM_PSCI_FN_CPU_SUSPEND		ARM_PSCI_FN(1)
-#define ARM_PSCI_FN_CPU_OFF		ARM_PSCI_FN(2)
-#define ARM_PSCI_FN_CPU_ON		ARM_PSCI_FN(3)
-#define ARM_PSCI_FN_MIGRATE		ARM_PSCI_FN(5)
+#define PSCI_FN_BASE			0x84000000
+#define PSCI_FN_ID(n)			(PSCI_FN_BASE + (n))
 
-#define ARM_PSCI_RET_SUCCESS		0
-#define ARM_PSCI_RET_NI			(-1)
-#define ARM_PSCI_RET_INVAL		(-2)
-#define ARM_PSCI_RET_DENIED		(-3)
+/* PSCI v0.1 interface */
+#define PSCI_FN_CPU_SUSPEND		PSCI_FN_ID(1)
+#define PSCI_FN_CPU_OFF			PSCI_FN_ID(2)
+#define PSCI_FN_CPU_ON			PSCI_FN_ID(3)
+#define PSCI_FN_MIGRATE			PSCI_FN_ID(5)
+
+/*
+ * Original from Linux kernel: include/uapi/linux/psci.h
+ */
+/* PSCI return values (inclusive of all PSCI versions) */
+#define PSCI_RET_SUCCESS		0
+#define PSCI_RET_NOT_SUPPORTED		(-1)
+#define PSCI_RET_INVALID_PARAMS		(-2)
+#define PSCI_RET_DENIED			(-3)
 
 #ifndef __ASSEMBLY__
 int psci_update_dt(void *fdt);
