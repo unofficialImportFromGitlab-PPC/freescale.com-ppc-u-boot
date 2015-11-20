@@ -209,6 +209,14 @@ void enable_caches(void)
 }
 #endif /* #ifndef CONFIG_SYS_DCACHE_OFF */
 
+
+uint get_svr(void)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+
+	return in_be32(&gur->svr);
+}
+
 #if defined(CONFIG_DISPLAY_CPUINFO)
 int print_cpuinfo(void)
 {
