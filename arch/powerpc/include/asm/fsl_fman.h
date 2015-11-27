@@ -370,6 +370,8 @@ typedef struct fm_fpm {
 #define FMFP_RCR_MDEC		0x00008000 /* double ECC error in muram */
 #define FMFP_RCR_IDEC		0x00004000 /* double ECC error in iram */
 
+#define FPM_RSTC_FM_RESET	0x80000000 /* FM soft reset */
+
 typedef struct fm_imem {
 	u32	iadd;		/* instruction address register */
 	u32	idata;		/* instruction data register */

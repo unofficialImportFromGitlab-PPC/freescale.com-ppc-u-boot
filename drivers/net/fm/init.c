@@ -120,6 +120,41 @@ static int fm_port_to_index(enum fm_port port)
 	return -1;
 }
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A007273
+
+/* FMAN soft reset is not finished properly if at least one of the
+ * Ethernet MAC clocks is disabled by setting the corresponding bit
+ * of the DCFG_CCSR_DEVDISR2 register
+ * */
+void fm_erratum_007273(void)
+{
+	int i;
+	struct ccsr_fman *reg;
+
+	reg = (void *)CONFIG_SYS_FSL_FM1_ADDR;
+	/* Reset FMan */
+	out_be32(&reg->fm_fpm.fmrstc, FPM_RSTC_FM_RESET);
+	udelay(100);
+	/* Disable all disabled ports */
+	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
+		if ((!fm_info[i].enabled) && (fm_info[i].index == 1))
+			fman_disable_port(fm_info[i].port);
+	}
+
+#if (CONFIG_SYS_NUM_FMAN == 2)
+	reg = (void *)CONFIG_SYS_FSL_FM2_ADDR;
+	/* Reset FMan */
+	out_be32(&reg->fm_fpm.fmrstc, FPM_RSTC_FM_RESET);
+	udelay(100);
+	/* Disable all disabled ports */
+	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
+		if ((!fm_info[i].enabled) && (fm_info[i].index == 2))
+			fman_disable_port(fm_info[i].port);
+	}
+#endif
+}
+#endif
+
 /*
  * Determine if an interface is actually active based on HW config
  * we expect fman_port_enet_if() to report PHY_INTERFACE_MODE_NONE if
@@ -152,7 +187,9 @@ void fm_disable_port(enum fm_port port)
 		return;
 
 	fm_info[i].enabled = 0;
+#ifndef CONFIG_SYS_FSL_ERRATUM_A007273
 	fman_disable_port(port);
+#endif
 }
 
 void fm_enable_port(enum fm_port port)
