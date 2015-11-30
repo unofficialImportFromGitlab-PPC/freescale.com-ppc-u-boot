@@ -130,6 +130,8 @@ void fm_erratum_007273(void)
 {
 	int i;
 	struct ccsr_fman *reg;
+	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
+	u32 reg_val = 0;
 
 	reg = (void *)CONFIG_SYS_FSL_FM1_ADDR;
 	/* Reset FMan */
@@ -138,7 +140,14 @@ void fm_erratum_007273(void)
 	/* Disable all disabled ports */
 	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
 		if ((!fm_info[i].enabled) && (fm_info[i].index == 1))
-			fman_disable_port(fm_info[i].port);
+			reg_val |= get_devdisr_bit(fm_info[i].port);
+	}
+	/* Because MAC disabled mask bit is overlap for DTSEC and TGSEC,
+	 * so make sure all enabled port is enabled.
+	 */
+	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
+		if ((fm_info[i].enabled) && (fm_info[i].index == 1))
+			reg_val &= ~get_devdisr_bit(fm_info[i].port);
 	}
 
 #if (CONFIG_SYS_NUM_FMAN == 2)
@@ -149,9 +158,18 @@ void fm_erratum_007273(void)
 	/* Disable all disabled ports */
 	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
 		if ((!fm_info[i].enabled) && (fm_info[i].index == 2))
-			fman_disable_port(fm_info[i].port);
+			reg_val |= get_devdisr_bit(fm_info[i].port);
+	}
+	/* Because MAC disabled mask bit is overlap for DTSEC and TGSEC,
+	 * so make sure all enabled port is enabled.
+	 */
+	for (i = 0; i < ARRAY_SIZE(fm_info); i++) {
+		if ((fm_info[i].enabled) && (fm_info[i].index == 2))
+			reg_val &= ~get_devdisr_bit(fm_info[i].port);
 	}
 #endif
+	/* Write the value to the register to disable unused MACs */
+	out_be32(&gur->devdisr2, reg_val);
 }
 #endif
 

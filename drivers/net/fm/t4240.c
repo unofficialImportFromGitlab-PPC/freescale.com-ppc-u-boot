@@ -49,6 +49,11 @@ void fman_disable_port(enum fm_port port)
 	setbits_be32(&gur->devdisr2, port_to_devdisr[port]);
 }
 
+u32 get_devdisr_bit(enum fm_port port)
+{
+	return port_to_devdisr[port];
+}
+
 void fman_enable_port(enum fm_port port)
 {
 	ccsr_gur_t *gur = (void __iomem *)(CONFIG_SYS_MPC85xx_GUTS_ADDR);
