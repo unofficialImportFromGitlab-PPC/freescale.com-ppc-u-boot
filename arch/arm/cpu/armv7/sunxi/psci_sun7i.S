@@ -121,11 +121,6 @@ out:	mcr	p15, 0, r7, c1, c1, 0
 	@ r2 = target PC
 .globl	psci_cpu_on
 psci_cpu_on:
-	push	{lr}
-
-	mov	r0, r1
-	bl	psci_save_target_pc
-
 	movw	r0, #(SUN7I_CPUCFG_BASE & 0xffff)
 	movt	r0, #(SUN7I_CPUCFG_BASE >> 16)
 
@@ -178,7 +173,7 @@ psci_cpu_on:
 	str	r6, [r0, #0x1e4]
 
 	mov	r0, #PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
-	pop	{pc}
+	bx	lr
 
 .globl	psci_cpu_off
 psci_cpu_off:

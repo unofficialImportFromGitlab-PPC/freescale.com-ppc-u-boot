@@ -29,9 +29,6 @@ psci_arch_init:
 psci_cpu_on:
 	push	{lr}
 
-	mov	r0, r1
-	bl	psci_save_target_pc
-
 	ldr	r2, =psci_cpu_entry
 	bl	imx_cpu_on
 

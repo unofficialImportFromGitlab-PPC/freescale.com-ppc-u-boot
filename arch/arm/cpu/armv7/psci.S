@@ -69,7 +69,7 @@ _psci_table:
 	.word	PSCI_FN_CPU_OFF
 	.word	psci_cpu_off
 	.word	PSCI_FN_CPU_ON
-	.word	psci_cpu_on
+	.word	psci_cpu_on_common
 	.word	PSCI_FN_MIGRATE
 	.word	psci_migrate
 	.word	0
@@ -177,6 +177,40 @@ ENTRY(psci_enable_smp)
 ENDPROC(psci_enable_smp)
 .weak psci_enable_smp
 
+@ Expect target CPU in r1, return the target cpu number in r0.
+@ If detect an error, please return #PSCI_RET_INVALID_PARAMS.
+ENTRY(psci_get_target_cpu_id)
+	mov	r0, r1
+	bx	lr
+ENDPROC(psci_get_target_cpu_id)
+.weak psci_get_target_cpu_id
+
+	@ r1 = target CPU
+	@ r2 = target PC
+	@ r3 = target Conetxt ID
+ENTRY(psci_cpu_on_common)
+	push	{lr}
+
+	bl	psci_get_target_cpu_id
+	cmp	r0, #PSCI_RET_INVALID_PARAMS
+	beq	out_psci_cpu_on_common
+
+	@ Update the target CPU ID, translation have been completed.
+	mov	r1, r0
+
+	@ Save target PC into stack
+	bl	psci_save_target_pc
+
+	@ Still pass on:
+	@ r1 = target CPU
+	@ r2 = target PC
+	@ r3 = target Conetxt ID
+	bl	psci_cpu_on
+
+out_psci_cpu_on_common:
+	pop	{pc}
+ENDPROC(psci_cpu_on_common)
+
 ENTRY(psci_cpu_off_common)
 	push	{lr}
 
@@ -238,8 +272,7 @@ ENTRY(psci_save_target_pc)
 	str	r2, [r0, #SAVE_SPACE_TARGET_PC_OFFSET]
 	dsb
 
-	pop	{lr}
-	bx	lr
+	pop	{pc}
 ENDPROC(psci_save_target_pc)
 
 ENTRY(psci_cpu_entry)

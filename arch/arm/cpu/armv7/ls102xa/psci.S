@@ -25,19 +25,19 @@
 #define	ONE_MS		(GENERIC_TIMER_CLK / 1000)
 #define	RESET_WAIT	(30 * ONE_MS)
 
+@ Expect target CPU in r1, return the target cpu number in R0
+.globl	psci_get_target_cpu_id
+psci_get_target_cpu_id:
+	@ Clear and Get the correct CPU number
+	and	r1, r1, #0xff
+	mov	r0, r1
+
+	bx	lr
+
 	@ r1 = target CPU
 	@ r2 = target PC
 .globl	psci_cpu_on
 psci_cpu_on:
-	push	{lr}
-
-	@ Clear and Get the correct CPU number
-	@ r1 = 0xf01
-	and	r1, r1, #0xff
-
-	mov	r0, r1
-	bl	psci_save_target_pc
-
 	@ Get DCFG base address
 	movw	r4, #(CONFIG_SYS_FSL_GUTS_ADDR & 0xffff)
 	movt	r4, #(CONFIG_SYS_FSL_GUTS_ADDR >> 16)
@@ -98,8 +98,6 @@ holdoff_release:
 
 	@ Return
 	mov	r0, #PSCI_RET_SUCCESS
-
-	pop	{lr}
 	bx	lr
 
 .globl	psci_cpu_off

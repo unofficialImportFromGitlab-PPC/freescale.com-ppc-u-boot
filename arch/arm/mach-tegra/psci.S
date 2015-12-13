@@ -88,11 +88,6 @@ _loop:	wfi
 ENDPROC(psci_cpu_off)
 
 ENTRY(psci_cpu_on)
-	push	{lr}
-
-	mov	r0, r1
-	bl	psci_save_target_pc
-
 	ldr	r6, =TEGRA_RESET_EXCEPTION_VECTOR
 	ldr	r5, =psci_cpu_entry
 	str	r5, [r6]
@@ -104,7 +99,7 @@ ENTRY(psci_cpu_on)
 	str	r5, [r6, r2]
 
 	mov	r0, #PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
-	pop	{pc}
+	bx	lr
 ENDPROC(psci_cpu_on)
 
 	.globl psci_text_end
