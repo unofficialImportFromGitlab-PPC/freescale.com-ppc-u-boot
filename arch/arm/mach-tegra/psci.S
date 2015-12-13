@@ -91,9 +91,7 @@ ENTRY(psci_cpu_on)
 	push	{lr}
 
 	mov	r0, r1
-	bl	psci_get_cpu_stack_top	@ get stack top of target CPU
-	str	r2, [r0]		@ store target PC at stack top
-	dsb
+	bl	psci_save_target_pc
 
 	ldr	r6, =TEGRA_RESET_EXCEPTION_VECTOR
 	ldr	r5, =psci_cpu_entry

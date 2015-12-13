@@ -135,9 +135,7 @@ psci_cpu_on:
 	push	{lr}
 
 	mov	r0, r1
-	bl	psci_get_cpu_stack_top	@ get stack top of target CPU
-	str	r2, [r0]		@ store target PC at stack top
-	dsb
+	bl	psci_save_target_pc
 
 	movw	r0, #(SUN6I_CPUCFG_BASE & 0xffff)
 	movt	r0, #(SUN6I_CPUCFG_BASE >> 16)

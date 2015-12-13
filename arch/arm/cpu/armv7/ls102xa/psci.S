@@ -36,9 +36,7 @@ psci_cpu_on:
 	and	r1, r1, #0xff
 
 	mov	r0, r1
-	bl	psci_get_cpu_stack_top
-	str	r2, [r0]
-	dsb
+	bl	psci_save_target_pc
 
 	@ Get DCFG base address
 	movw	r4, #(CONFIG_SYS_FSL_GUTS_ADDR & 0xffff)

@@ -20,6 +20,8 @@
 #include <asm/macro.h>
 #include <asm/psci.h>
 
+#define SAVE_SPACE_TARGET_PC_OFFSET	0x0
+
 	.pushsection ._secure.text, "ax"
 
 	.arch_extension	sec
@@ -196,18 +198,49 @@ ENDPROC(psci_cpu_off_common)
 
 @ expects CPU ID in r0 and returns stack top in r0
 ENTRY(psci_get_cpu_stack_top)
-	mov	r5, #0x400			@ 1kB of stack per CPU
-	mul	r0, r0, r5
-
+	@ Align psci_text_end minumum page size. Even if page is greater than
+	@ 4K, we still can ensure that data is always safe access by the CPU.
 	ldr	r5, =psci_text_end		@ end of monitor text
-	add	r5, r5, #0x2000			@ Skip two pages
-	lsr	r5, r5, #12			@ Align to start of page
+	@ Detect page border
+	lsl	r4, r5, #20
+	cmp	r4, #0
+	beq	out_psci_stack_align
+	add	r5, r5, #PSCI_STACK_ALIGN_SIZE
+	lsr	r5, r5, #12
 	lsl	r5, r5, #12
-	sub	r5, r5, #4			@ reserve 1 word for target PC
-	sub	r0, r5, r0			@ here's our stack!
+
+out_psci_stack_align:
+	mov	r4, #PSCI_PERCPU_STACK_SIZE
+	add	r0, r0, #1
+	mul	r0, r0, r4
+	add	r0, r0, r5
 
 	bx	lr
 ENDPROC(psci_get_cpu_stack_top)
+
+@ Save space in percpu stack tail.
+@ expects CPU ID in r0 and returns save space address in r0.
+ENTRY(psci_get_cpu_save_space)
+	mov	r10, lr
+
+	bl	psci_get_cpu_stack_top
+	sub	r0, r0, #PSCI_PERCPU_STACK_SIZE
+
+	bx	r10
+ENDPROC(psci_get_cpu_save_space)
+
+@ Expects cpu ID in r0 and PC in r2, please ignore the return value.
+ENTRY(psci_save_target_pc)
+	push	{lr}
+
+	@ Save target PC into stack
+	bl	psci_get_cpu_save_space
+	str	r2, [r0, #SAVE_SPACE_TARGET_PC_OFFSET]
+	dsb
+
+	pop	{lr}
+	bx	lr
+ENDPROC(psci_save_target_pc)
 
 ENTRY(psci_cpu_entry)
 	bl	psci_enable_smp
@@ -215,8 +248,8 @@ ENTRY(psci_cpu_entry)
 	bl	_nonsec_init
 
 	bl	psci_get_cpu_id			@ CPU ID => r0
-	bl	psci_get_cpu_stack_top		@ stack top => r0
-	ldr	r0, [r0]			@ target PC at stack top
+	bl	psci_get_cpu_save_space
+	ldr	r0, [r0, #SAVE_SPACE_TARGET_PC_OFFSET]
 	b	_do_nonsec_entry
 ENDPROC(psci_cpu_entry)
 

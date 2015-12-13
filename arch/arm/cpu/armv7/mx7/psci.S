@@ -30,9 +30,7 @@ psci_cpu_on:
 	push	{lr}
 
 	mov	r0, r1
-	bl	psci_get_cpu_stack_top
-	str	r2, [r0]
-	dsb
+	bl	psci_save_target_pc
 
 	ldr	r2, =psci_cpu_entry
 	bl	imx_cpu_on

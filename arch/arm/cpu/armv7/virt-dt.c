@@ -126,7 +126,8 @@ int psci_update_dt(void *fdt)
 #ifndef CONFIG_ARMV7_SECURE_BASE
 	/* secure code lives in RAM, keep it alive */
 	fdt_add_mem_rsv(fdt, (unsigned long)__secure_start,
-			__secure_end - __secure_start);
+			__secure_end + CONFIG_MAX_CPUS * PSCI_PERCPU_STACK_SIZE
+			+ PSCI_STACK_ALIGN_SIZE - __secure_start);
 #endif
 
 	return fdt_psci(fdt);

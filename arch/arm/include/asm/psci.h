@@ -18,6 +18,10 @@
 #ifndef __ARM_PSCI_H__
 #define __ARM_PSCI_H__
 
+#define PSCI_STACK_ALIGN_SIZE		0x1000
+
+/* 1kB for percpu stack */
+#define PSCI_PERCPU_STACK_SIZE		0x400
 
 #define PSCI_FN_BASE			0x84000000
 #define PSCI_FN_ID(n)			(PSCI_FN_BASE + (n))
