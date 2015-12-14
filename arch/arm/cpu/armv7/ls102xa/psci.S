@@ -25,13 +25,34 @@
 #define	ONE_MS		(GENERIC_TIMER_CLK / 1000)
 #define	RESET_WAIT	(30 * ONE_MS)
 
+#define AFFINITY_LEVEL_PROCESSOR_SHIFT		8
 @ Expect target CPU in r1, return the target cpu number in R0
 .globl	psci_get_target_cpu_id
 psci_get_target_cpu_id:
-	@ Clear and Get the correct CPU number
-	and	r1, r1, #0xff
-	mov	r0, r1
+	@ Get the CPU number
+	and	r0, r1, #0xff
 
+	@ Verify bit[31:24], bits must be zero.
+	tst	r1, #0xff000000
+	bne	out_psci_get_target_cpu_id
+
+	@ Verify Affinity level 2: Cluster, only one cluster in LS1021xa SoC.
+	tst	r1, #0xff0000
+	bne	out_psci_get_target_cpu_id
+
+	@ Verify Affinity level 1: Processors, should in 0xf00 processor.
+	lsr	r1, r1, #AFFINITY_LEVEL_PROCESSOR_SHIFT
+	teq	r1, #0xf
+	bne	out_psci_get_target_cpu_id
+
+	@ Verify CPU, Affinity level 0: Only 0, 1 is effective value.
+	cmp	r0, #2
+	bge	out_psci_get_target_cpu_id
+
+	bx	lr
+
+out_psci_get_target_cpu_id:
+	mov	r0, #PSCI_RET_INVALID_PARAMS
 	bx	lr
 
 	@ r1 = target CPU
