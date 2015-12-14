@@ -500,7 +500,10 @@ static void qspi_op_rdid(struct fsl_qspi_priv *priv, u32 *rxbuf, u32 len)
 		if (rbsr_reg & QSPI_RBSR_RDBFL_MASK) {
 			data = qspi_read32(priv->flags, &regs->rbdr[i]);
 			data = qspi_endian_xchg(data);
-			memcpy(rxbuf, &data, 4);
+			if (size < 4)
+				memcpy(rxbuf, &data, size);
+			else
+				memcpy(rxbuf, &data, 4);
 			rxbuf++;
 			size -= 4;
 			i++;
