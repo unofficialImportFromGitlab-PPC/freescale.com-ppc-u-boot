@@ -21,6 +21,7 @@
 #include <asm/psci.h>
 
 #define SAVE_SPACE_TARGET_PC_OFFSET	0x0
+#define SAVE_SPACE_CONTEXT_ID_OFFSET	0x4
 
 	.pushsection ._secure.text, "ax"
 
@@ -201,6 +202,10 @@ ENTRY(psci_cpu_on_common)
 	@ Save target PC into stack
 	bl	psci_save_target_pc
 
+	@ Save target context into stack
+	mov	r0, r1
+	bl	psci_save_cpu_context_id
+
 	@ Still pass on:
 	@ r1 = target CPU
 	@ r2 = target PC
@@ -274,6 +279,29 @@ ENTRY(psci_save_target_pc)
 
 	pop	{pc}
 ENDPROC(psci_save_target_pc)
+
+@ Expects cpu ID in r0 and context ID in r3, please ignore the return value.
+ENTRY(psci_save_cpu_context_id)
+	push	{lr}
+
+	@ Save context id
+	bl	psci_get_cpu_save_space
+	str	r3, [r0, #SAVE_SPACE_CONTEXT_ID_OFFSET]
+	dsb
+
+	pop	{pc}
+ENDPROC(psci_save_cpu_context_id)
+
+@ Expect cpu ID in r0, return context ID in r0.
+ENTRY(psci_get_cpu_context_id)
+	push	{lr}
+
+	@ Get context id
+	bl	psci_get_cpu_save_space
+	ldr	r0, [r0, #SAVE_SPACE_CONTEXT_ID_OFFSET]
+
+	pop	{pc}
+ENDPROC(psci_get_cpu_context_id)
 
 ENTRY(psci_cpu_entry)
 	bl	psci_enable_smp
