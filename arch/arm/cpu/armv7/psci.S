@@ -53,8 +53,18 @@ ENTRY(psci_cpu_suspend)
 ENTRY(psci_cpu_off)
 ENTRY(psci_cpu_on)
 ENTRY(psci_migrate)
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+ENTRY(psci_migrate_info_type)
+ENTRY(psci_migrate_info_up_cpu)
+ENTRY(psci_system_suspend)
+#endif
 	mov	r0, #PSCI_RET_NOT_SUPPORTED	@ Return -1 (Not Implemented)
 	mov	pc, lr
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+ENDPROC(psci_system_suspend)
+ENDPROC(psci_migrate_info_up_cpu)
+ENDPROC(psci_migrate_info_type)
+#endif
 ENDPROC(psci_migrate)
 ENDPROC(psci_cpu_on)
 ENDPROC(psci_cpu_off)
@@ -63,8 +73,14 @@ ENDPROC(psci_cpu_suspend)
 .weak psci_cpu_off
 .weak psci_cpu_on
 .weak psci_migrate
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+.weak psci_migrate_info_type
+.weak psci_migrate_info_up_cpu
+.weak psci_system_suspend
+#endif
 
 _psci_table:
+	/* PSCI v0.1 */
 	.word	PSCI_FN_CPU_SUSPEND
 	.word	psci_cpu_suspend
 	.word	PSCI_FN_CPU_OFF
@@ -73,6 +89,26 @@ _psci_table:
 	.word	psci_cpu_on_common
 	.word	PSCI_FN_MIGRATE
 	.word	psci_migrate
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+	/* PSCI v0.2 */
+	.word	PSCI_FN_PSCI_VERSION
+	.word	psci_version
+	.word	PSCI_FN_AFFINITY_INFO
+	.word	psci_affinity_info
+	.word	PSCI_FN_MIGRATE_INFO_TYPE
+	.word	psci_migrate_info_type
+	.word	PSCI_FN_MIGRATE_INFO_UP_CPU
+	.word	psci_migrate_info_up_cpu
+	.word	PSCI_FN_SYSTEM_OFF
+	.word	psci_system_off
+	.word	PSCI_FN_SYSTEM_RESET
+	.word	psci_system_reset
+	/* PSCI v1.0 */
+	.word	PSCI_FN_PSCI_FEATURES
+	.word	psci_features
+	.word	PSCI_FN_SYSTEM_SUSPEND
+	.word	psci_system_suspend
+#endif
 	.word	0
 	.word	0
 
