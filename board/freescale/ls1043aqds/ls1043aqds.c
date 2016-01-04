@@ -43,15 +43,19 @@ enum {
 
 int checkboard(void)
 {
+#ifndef CONFIG_QSPI_BOOT
 	char buf[64];
 #ifndef CONFIG_SD_BOOT
 	u8 sw;
+#endif
 #endif
 
 	puts("Board: LS1043AQDS, boot from ");
 
 #ifdef CONFIG_SD_BOOT
 	puts("SD\n");
+#elif defined(CONFIG_QSPI_BOOT)
+	puts("QSPI\n");
 #else
 	sw = QIXIS_READ(brdcfg[0]);
 	sw = (sw & QIXIS_LBMAP_MASK) >> QIXIS_LBMAP_SHIFT;
@@ -68,12 +72,15 @@ int checkboard(void)
 		printf("invalid setting of SW%u\n", QIXIS_LBMAP_SWITCH);
 #endif
 
+#ifndef CONFIG_QSPI_BOOT
+	/* For QSPI boot, here I2C is not ready yet. */
 	printf("Sys ID: 0x%02x, Sys Ver: 0x%02x\n",
 	       QIXIS_READ(id), QIXIS_READ(arch));
 
 	printf("FPGA:  v%d (%s), build %d\n",
 	       (int)QIXIS_READ(scver), qixis_read_tag(buf),
 	       (int)qixis_read_minor());
+#endif
 
 	return 0;
 }
