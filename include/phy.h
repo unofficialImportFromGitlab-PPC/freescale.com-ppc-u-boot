@@ -16,6 +16,7 @@
 #include <linux/mdio.h>
 
 #define PHY_MAX_ADDR 32
+#define PHY_BROKEN_RESET	(1 << 0) /* soft reset not supported */
 
 #define PHY_BASIC_FEATURES	(SUPPORTED_10baseT_Half | \
 				 SUPPORTED_10baseT_Full | \
