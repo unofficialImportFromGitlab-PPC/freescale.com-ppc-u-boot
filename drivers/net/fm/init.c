@@ -125,6 +125,32 @@ static int fm_port_to_index(enum fm_port port)
 	return -1;
 }
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A007273
+
+/* FMAN soft reset is not finished properly if at least one of the
+ * Ethernet MAC clocks is disabled by setting the corresponding bit
+ * of the DCFG_CCSR_DEVDISR2 register, so we don't disable any
+ * MACs, add a soft reet in u-boot when transfer to kernel to make
+ * sure FMan is resetted.
+ * */
+void fm_erratum_007273(void)
+{
+	struct ccsr_fman *reg;
+
+	reg = (void *)CONFIG_SYS_FSL_FM1_ADDR;
+	/* Reset FMan */
+	out_be32(&reg->fm_fpm.fmrstc, FPM_RSTC_FM_RESET);
+	udelay(100);
+
+#if (CONFIG_SYS_NUM_FMAN == 2)
+	reg = (void *)CONFIG_SYS_FSL_FM2_ADDR;
+	/* Reset FMan */
+	out_be32(&reg->fm_fpm.fmrstc, FPM_RSTC_FM_RESET);
+	udelay(100);
+#endif
+}
+#endif
+
 /*
  * Determine if an interface is actually active based on HW config
  * we expect fman_port_enet_if() to report PHY_INTERFACE_MODE_NONE if

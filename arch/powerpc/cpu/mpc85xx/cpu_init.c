@@ -976,6 +976,9 @@ void arch_preboot_os(void)
 {
 	u32 msr;
 
+#ifdef CONFIG_SYS_FSL_ERRATUM_A007273
+	fm_erratum_007273();
+#endif
 	/*
 	 * We are changing interrupt offsets and are about to boot the OS so
 	 * we need to make sure we disable all async interrupts. EE is already
