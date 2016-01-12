@@ -34,6 +34,11 @@ static int fdt_psci_gte_1_0_fixup(void *fdt, int nodeoff)
 }
 #endif
 
+static int fdt_psci_0_2_fixup(void *fdt, int nodeoff)
+{
+	return fdt_appendprop_string(fdt, nodeoff, "compatible", "arm,psci-0.2");
+}
+
 static int fdt_psci_0_1_fixup(void *fdt, int nodeoff)
 {
 	int ret;
@@ -105,6 +110,10 @@ static int fdt_psci(void *fdt)
 	if (tmp)
 		return tmp;
 #endif
+	tmp = fdt_psci_0_2_fixup(fdt, nodeoff);
+	if (tmp)
+		return tmp;
+
 	tmp = fdt_psci_0_1_fixup(fdt, nodeoff);
 	if (tmp)
 		return tmp;
