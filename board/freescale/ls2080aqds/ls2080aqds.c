@@ -61,8 +61,7 @@ int checkboard(void)
 					    "100 separate SSCG"};
 	int clock;
 
-	cpu_name(buf);
-	printf("Board: %s-QDS, ", buf);
+	printf("Board: LS2085A-QDS, ");
 
 	sw = QIXIS_READ(arch);
 	printf("Board Arch: V%d, ", sw >> 4);

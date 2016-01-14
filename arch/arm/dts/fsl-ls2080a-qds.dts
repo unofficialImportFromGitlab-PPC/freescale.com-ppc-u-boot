@@ -11,7 +11,7 @@
 #include "fsl-ls2080a.dtsi"
 
 / {
-	model = "Freescale Layerscape 2080a QDS Board";
+	model = "Freescale Layerscape 2085a QDS Board";
 	compatible = "fsl,ls2080a-qds", "fsl,ls2080a";
 
 	aliases {

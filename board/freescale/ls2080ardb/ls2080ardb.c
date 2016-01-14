@@ -54,10 +54,8 @@ unsigned long long get_qixis_addr(void)
 int checkboard(void)
 {
 	u8 sw;
-	char buf[15];
 
-	cpu_name(buf);
-	printf("Board: %s-RDB, ", buf);
+	printf("Board: LS2085A-RDB, ");
 
 	sw = QIXIS_READ(arch);
 	printf("Board Arch: V%d, ", sw >> 4);
