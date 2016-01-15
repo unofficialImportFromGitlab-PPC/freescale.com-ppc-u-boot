@@ -18,6 +18,8 @@
 /* Errata fixes */
 #define CONFIG_ARM_ERRATA_828024
 #define CONFIG_ARM_ERRATA_826974
+#define CONFIG_ARM_ERRATA_833471
+#define CONFIG_ARM_ERRATA_829520
 
 #include <asm/arch/ls2080a_stream_id.h>
 #include <asm/arch/config.h>
