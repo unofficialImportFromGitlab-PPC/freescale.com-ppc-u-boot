@@ -26,6 +26,35 @@
 #include <asm/armv7.h>
 #include <asm/psci.h>
 
+#ifdef CONFIG_ARMV7_PSCI
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+static int fdt_psci_gte_1_0_fixup(void *fdt, int nodeoff)
+{
+	return fdt_setprop_string(fdt, nodeoff, "compatible", "arm,psci-1.0");
+}
+#endif
+
+static int fdt_psci_0_1_fixup(void *fdt, int nodeoff)
+{
+	int ret;
+
+	ret = fdt_appendprop_string(fdt, nodeoff, "compatible", "arm,psci");
+	if (ret)
+		return ret;
+	ret = fdt_setprop_u32(fdt, nodeoff, "cpu_suspend", PSCI_FN_CPU_SUSPEND);
+	if (ret)
+		return ret;
+	ret = fdt_setprop_u32(fdt, nodeoff, "cpu_off", PSCI_FN_CPU_OFF);
+	if (ret)
+		return ret;
+	ret = fdt_setprop_u32(fdt, nodeoff, "cpu_on", PSCI_FN_CPU_ON);
+	if (ret)
+		return ret;
+
+	return fdt_setprop_u32(fdt, nodeoff, "migrate", PSCI_FN_MIGRATE);
+}
+#endif
+
 static int fdt_psci(void *fdt)
 {
 #ifdef CONFIG_ARMV7_PSCI
@@ -67,22 +96,16 @@ static int fdt_psci(void *fdt)
 			return nodeoff;
 	}
 
-	tmp = fdt_setprop_string(fdt, nodeoff, "compatible", "arm,psci");
-	if (tmp)
-		return tmp;
 	tmp = fdt_setprop_string(fdt, nodeoff, "method", "smc");
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_suspend", ARM_PSCI_FN_CPU_SUSPEND);
+
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+	tmp = fdt_psci_gte_1_0_fixup(fdt, nodeoff);
 	if (tmp)
 		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_off", ARM_PSCI_FN_CPU_OFF);
-	if (tmp)
-		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_on", ARM_PSCI_FN_CPU_ON);
-	if (tmp)
-		return tmp;
-	tmp = fdt_setprop_u32(fdt, nodeoff, "migrate", ARM_PSCI_FN_MIGRATE);
+#endif
+	tmp = fdt_psci_0_1_fixup(fdt, nodeoff);
 	if (tmp)
 		return tmp;
 #endif
@@ -126,7 +149,8 @@ int psci_update_dt(void *fdt)
 #ifndef CONFIG_ARMV7_SECURE_BASE
 	/* secure code lives in RAM, keep it alive */
 	fdt_add_mem_rsv(fdt, (unsigned long)__secure_start,
-			__secure_end - __secure_start);
+			__secure_end + CONFIG_MAX_CPUS * PSCI_PERCPU_STACK_SIZE
+			+ PSCI_STACK_ALIGN_SIZE - __secure_start);
 #endif
 
 	return fdt_psci(fdt);

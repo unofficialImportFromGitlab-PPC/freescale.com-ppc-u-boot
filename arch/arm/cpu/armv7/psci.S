@@ -20,6 +20,9 @@
 #include <asm/macro.h>
 #include <asm/psci.h>
 
+#define SAVE_SPACE_TARGET_PC_OFFSET	0x0
+#define SAVE_SPACE_CONTEXT_ID_OFFSET	0x4
+
 	.pushsection ._secure.text, "ax"
 
 	.arch_extension	sec
@@ -50,8 +53,18 @@ ENTRY(psci_cpu_suspend)
 ENTRY(psci_cpu_off)
 ENTRY(psci_cpu_on)
 ENTRY(psci_migrate)
-	mov	r0, #ARM_PSCI_RET_NI	@ Return -1 (Not Implemented)
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+ENTRY(psci_migrate_info_type)
+ENTRY(psci_migrate_info_up_cpu)
+ENTRY(psci_system_suspend)
+#endif
+	mov	r0, #PSCI_RET_NOT_SUPPORTED	@ Return -1 (Not Implemented)
 	mov	pc, lr
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+ENDPROC(psci_system_suspend)
+ENDPROC(psci_migrate_info_up_cpu)
+ENDPROC(psci_migrate_info_type)
+#endif
 ENDPROC(psci_migrate)
 ENDPROC(psci_cpu_on)
 ENDPROC(psci_cpu_off)
@@ -60,16 +73,42 @@ ENDPROC(psci_cpu_suspend)
 .weak psci_cpu_off
 .weak psci_cpu_on
 .weak psci_migrate
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+.weak psci_migrate_info_type
+.weak psci_migrate_info_up_cpu
+.weak psci_system_suspend
+#endif
 
 _psci_table:
-	.word	ARM_PSCI_FN_CPU_SUSPEND
+	/* PSCI v0.1 */
+	.word	PSCI_FN_CPU_SUSPEND
 	.word	psci_cpu_suspend
-	.word	ARM_PSCI_FN_CPU_OFF
+	.word	PSCI_FN_CPU_OFF
 	.word	psci_cpu_off
-	.word	ARM_PSCI_FN_CPU_ON
-	.word	psci_cpu_on
-	.word	ARM_PSCI_FN_MIGRATE
+	.word	PSCI_FN_CPU_ON
+	.word	psci_cpu_on_common
+	.word	PSCI_FN_MIGRATE
 	.word	psci_migrate
+#ifdef CONFIG_ARMV7_PSCI_GTE_1_0
+	/* PSCI v0.2 */
+	.word	PSCI_FN_PSCI_VERSION
+	.word	psci_version
+	.word	PSCI_FN_AFFINITY_INFO
+	.word	psci_affinity_info
+	.word	PSCI_FN_MIGRATE_INFO_TYPE
+	.word	psci_migrate_info_type
+	.word	PSCI_FN_MIGRATE_INFO_UP_CPU
+	.word	psci_migrate_info_up_cpu
+	.word	PSCI_FN_SYSTEM_OFF
+	.word	psci_system_off
+	.word	PSCI_FN_SYSTEM_RESET
+	.word	psci_system_reset
+	/* PSCI v1.0 */
+	.word	PSCI_FN_PSCI_FEATURES
+	.word	psci_features
+	.word	PSCI_FN_SYSTEM_SUSPEND
+	.word	psci_system_suspend
+#endif
 	.word	0
 	.word	0
 
@@ -86,7 +125,7 @@ _smc_psci:
 1:	ldr	r5, [r4]		@ Load PSCI function ID
 	ldr	r6, [r4, #4]		@ Load target PC
 	cmp	r5, #0			@ If reach the end, bail out
-	moveq	r0, #ARM_PSCI_RET_INVAL	@ Return -2 (Invalid)
+	moveq	r0, #PSCI_RET_INVALID_PARAMS	@ Return -2 (Invalid)
 	beq	2f
 	cmp	r0, r5			@ If not matching, try next entry
 	addne	r4, r4, #8
@@ -175,6 +214,44 @@ ENTRY(psci_enable_smp)
 ENDPROC(psci_enable_smp)
 .weak psci_enable_smp
 
+@ Expect target CPU in r1, return the target cpu number in r0.
+@ If detect an error, please return #PSCI_RET_INVALID_PARAMS.
+ENTRY(psci_get_target_cpu_id)
+	mov	r0, r1
+	bx	lr
+ENDPROC(psci_get_target_cpu_id)
+.weak psci_get_target_cpu_id
+
+	@ r1 = target CPU
+	@ r2 = target PC
+	@ r3 = target Conetxt ID
+ENTRY(psci_cpu_on_common)
+	push	{lr}
+
+	bl	psci_get_target_cpu_id
+	cmp	r0, #PSCI_RET_INVALID_PARAMS
+	beq	out_psci_cpu_on_common
+
+	@ Update the target CPU ID, translation have been completed.
+	mov	r1, r0
+
+	@ Save target PC into stack
+	bl	psci_save_target_pc
+
+	@ Save target context into stack
+	mov	r0, r1
+	bl	psci_save_cpu_context_id
+
+	@ Still pass on:
+	@ r1 = target CPU
+	@ r2 = target PC
+	@ r3 = target Conetxt ID
+	bl	psci_cpu_on
+
+out_psci_cpu_on_common:
+	pop	{pc}
+ENDPROC(psci_cpu_on_common)
+
 ENTRY(psci_cpu_off_common)
 	push	{lr}
 
@@ -196,18 +273,71 @@ ENDPROC(psci_cpu_off_common)
 
 @ expects CPU ID in r0 and returns stack top in r0
 ENTRY(psci_get_cpu_stack_top)
-	mov	r5, #0x400			@ 1kB of stack per CPU
-	mul	r0, r0, r5
-
+	@ Align psci_text_end minumum page size. Even if page is greater than
+	@ 4K, we still can ensure that data is always safe access by the CPU.
 	ldr	r5, =psci_text_end		@ end of monitor text
-	add	r5, r5, #0x2000			@ Skip two pages
-	lsr	r5, r5, #12			@ Align to start of page
+	@ Detect page border
+	lsl	r4, r5, #20
+	cmp	r4, #0
+	beq	out_psci_stack_align
+	add	r5, r5, #PSCI_STACK_ALIGN_SIZE
+	lsr	r5, r5, #12
 	lsl	r5, r5, #12
-	sub	r5, r5, #4			@ reserve 1 word for target PC
-	sub	r0, r5, r0			@ here's our stack!
+
+out_psci_stack_align:
+	mov	r4, #PSCI_PERCPU_STACK_SIZE
+	add	r0, r0, #1
+	mul	r0, r0, r4
+	add	r0, r0, r5
 
 	bx	lr
 ENDPROC(psci_get_cpu_stack_top)
+
+@ Save space in percpu stack tail.
+@ expects CPU ID in r0 and returns save space address in r0.
+ENTRY(psci_get_cpu_save_space)
+	mov	r10, lr
+
+	bl	psci_get_cpu_stack_top
+	sub	r0, r0, #PSCI_PERCPU_STACK_SIZE
+
+	bx	r10
+ENDPROC(psci_get_cpu_save_space)
+
+@ Expects cpu ID in r0 and PC in r2, please ignore the return value.
+ENTRY(psci_save_target_pc)
+	push	{lr}
+
+	@ Save target PC into stack
+	bl	psci_get_cpu_save_space
+	str	r2, [r0, #SAVE_SPACE_TARGET_PC_OFFSET]
+	dsb
+
+	pop	{pc}
+ENDPROC(psci_save_target_pc)
+
+@ Expects cpu ID in r0 and context ID in r3, please ignore the return value.
+ENTRY(psci_save_cpu_context_id)
+	push	{lr}
+
+	@ Save context id
+	bl	psci_get_cpu_save_space
+	str	r3, [r0, #SAVE_SPACE_CONTEXT_ID_OFFSET]
+	dsb
+
+	pop	{pc}
+ENDPROC(psci_save_cpu_context_id)
+
+@ Expect cpu ID in r0, return context ID in r0.
+ENTRY(psci_get_cpu_context_id)
+	push	{lr}
+
+	@ Get context id
+	bl	psci_get_cpu_save_space
+	ldr	r0, [r0, #SAVE_SPACE_CONTEXT_ID_OFFSET]
+
+	pop	{pc}
+ENDPROC(psci_get_cpu_context_id)
 
 ENTRY(psci_cpu_entry)
 	bl	psci_enable_smp
@@ -215,8 +345,8 @@ ENTRY(psci_cpu_entry)
 	bl	_nonsec_init
 
 	bl	psci_get_cpu_id			@ CPU ID => r0
-	bl	psci_get_cpu_stack_top		@ stack top => r0
-	ldr	r0, [r0]			@ target PC at stack top
+	bl	psci_get_cpu_save_space
+	ldr	r0, [r0, #SAVE_SPACE_TARGET_PC_OFFSET]
 	b	_do_nonsec_entry
 ENDPROC(psci_cpu_entry)
 

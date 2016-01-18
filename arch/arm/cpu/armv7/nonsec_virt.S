@@ -89,6 +89,10 @@ _secure_monitor:
 	movne	r4, #0
 	mcrrne	p15, 4, r4, r4, c14		@ Reset CNTVOFF to zero
 1:
+#ifdef CONFIG_ARMV7_PSCI
+	bl	psci_get_cpu_id
+	bl	psci_get_cpu_context_id		@ Context ID must in R0
+#endif
 	mov	lr, ip
 	mov	ip, #(F_BIT | I_BIT | A_BIT)	@ Set A, I and F
 	tst	lr, #1				@ Check for Thumb PC

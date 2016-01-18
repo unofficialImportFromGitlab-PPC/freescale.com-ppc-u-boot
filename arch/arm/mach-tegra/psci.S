@@ -88,13 +88,6 @@ _loop:	wfi
 ENDPROC(psci_cpu_off)
 
 ENTRY(psci_cpu_on)
-	push	{lr}
-
-	mov	r0, r1
-	bl	psci_get_cpu_stack_top	@ get stack top of target CPU
-	str	r2, [r0]		@ store target PC at stack top
-	dsb
-
 	ldr	r6, =TEGRA_RESET_EXCEPTION_VECTOR
 	ldr	r5, =psci_cpu_entry
 	str	r5, [r6]
@@ -105,8 +98,8 @@ ENTRY(psci_cpu_on)
 	mov	r5, #(CSR_IMMEDIATE_WAKE | CSR_ENABLE)
 	str	r5, [r6, r2]
 
-	mov	r0, #ARM_PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
-	pop	{pc}
+	mov	r0, #PSCI_RET_SUCCESS	@ Return PSCI_RET_SUCCESS
+	bx	lr
 ENDPROC(psci_cpu_on)
 
 	.globl psci_text_end
