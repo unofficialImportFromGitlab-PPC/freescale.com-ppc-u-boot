@@ -9,6 +9,15 @@
 
 #include "ls1043a_common.h"
 
+#if defined(CONFIG_FSL_LS_PPA)
+#define CONFIG_SYS_LS_PPA_DRAM_BLOCK_MIN_SIZE		(1UL * 1024 * 1024)
+
+#define CONFIG_SYS_LS_PPA_FW_IN_NOR
+#ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
+#define	CONFIG_SYS_LS_PPA_FW_ADDR	0x60500000
+#endif
+#endif
+
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
