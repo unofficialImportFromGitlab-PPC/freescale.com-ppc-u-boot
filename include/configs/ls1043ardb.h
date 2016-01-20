@@ -9,6 +9,7 @@
 
 #include "ls1043a_common.h"
 
+#define CONFIG_FSL_LS_PPA
 #if defined(CONFIG_FSL_LS_PPA)
 #define CONFIG_SYS_LS_PPA_DRAM_BLOCK_MIN_SIZE		(1UL * 1024 * 1024)
 
