@@ -95,6 +95,11 @@ unsigned long get_board_ddr_clk(void);
 #endif
 #endif
 
+/* LPUART */
+#ifdef CONFIG_LPUART
+#define CONFIG_LPUART_32B_REG
+#endif
+
 /* SATA */
 #define CONFIG_LIBATA
 #define CONFIG_SCSI_AHCI
