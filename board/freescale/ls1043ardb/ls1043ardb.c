@@ -9,6 +9,7 @@
 #include <asm/io.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/fsl_serdes.h>
+#include <asm/arch/ppa.h>
 #include <asm/arch/soc.h>
 #include <hwconfig.h>
 #include <ahci.h>
@@ -94,6 +95,9 @@ int board_early_init_f(void)
 int board_init(void)
 {
 	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
+#ifdef CONFIG_FSL_LS_PPA
+	u64 ppa_entry;
+#endif
 
 	/*
 	 * Set CCI-400 control override register to enable barrier
@@ -111,6 +115,13 @@ int board_init(void)
 
 #ifdef CONFIG_LAYERSCAPE_NS_ACCESS
 	enable_layerscape_ns_access();
+#endif
+
+#ifdef CONFIG_FSL_LS_PPA
+	ppa_init_pre(&ppa_entry);
+
+	if (ppa_entry)
+		ppa_init_entry((void *)ppa_entry);
 #endif
 
 	return 0;
