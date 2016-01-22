@@ -23,7 +23,7 @@
 #include <fsl_sec.h>
 #include "cpld.h"
 #ifdef CONFIG_U_QE
-#include "../../../drivers/qe/qe.h"
+#include <fsl_qe.h>
 #endif
 
 
