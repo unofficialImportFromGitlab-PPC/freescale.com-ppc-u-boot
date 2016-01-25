@@ -22,6 +22,10 @@
 #include <environment.h>
 #include <fsl_sec.h>
 #include "cpld.h"
+#ifdef CONFIG_U_QE
+#include "../../../drivers/qe/qe.h"
+#endif
+
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -122,6 +126,10 @@ int board_init(void)
 
 	if (ppa_entry)
 		ppa_init_entry((void *)ppa_entry);
+#endif
+
+#ifdef CONFIG_U_QE
+	u_qe_init();
 #endif
 
 	return 0;
