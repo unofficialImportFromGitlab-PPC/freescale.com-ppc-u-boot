@@ -299,6 +299,8 @@ static u32 read_validate_ie_tbl(struct fsl_secboot_img_priv *img)
 			 * future verification process.
 			 */
 			char *s = getenv("img_addr");
+			if (!s)
+				return ERROR_IE_TABLE_NOT_FOUND;
 
 			uintptr_t ie_tbl_addr =
 				(uintptr_t)simple_strtoull(s, NULL, 16);
@@ -876,10 +878,11 @@ static int secboot_init(struct fsl_secboot_img_priv **img_ptr)
 	/* Init global data only once */
 	if (!glb) {
 		glb = malloc(sizeof(struct fsl_secboot_glb));
-		memset(glb, 0, sizeof(struct fsl_secboot_glb));
 
-	if (!glb)
-		return -ENOMEM;
+		if (!glb)
+			return -ENOMEM;
+
+		memset(glb, 0, sizeof(struct fsl_secboot_glb));
 	}
 
 	*img_ptr = malloc(sizeof(struct fsl_secboot_img_priv));
