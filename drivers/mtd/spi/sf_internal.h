@@ -82,6 +82,10 @@ enum spi_nor_option_flags {
 #define CMD_READ_CONFIG			0x35
 #define CMD_FLAG_STATUS			0x70
 
+/* Used for Micron, Macronix and Winbond flashes */
+#define	CMD_ENTER_4B_ADDR		0xB7
+#define	CMD_EXIT_4B_ADDR		0xE9
+
 /* Read commands */
 #define CMD_READ_ARRAY_SLOW		0x03
 #define CMD_READ_ARRAY_FAST		0x0b
@@ -219,6 +223,9 @@ int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
 /* Flash read operation, support all possible read commands */
 int spi_flash_cmd_read_ops(struct spi_flash *flash, u32 offset,
 		size_t len, void *data);
+
+int spi_flash_cmd_4B_addr_switch(struct spi_flash *flash,
+		int enable, u8 idcode0);
 
 #ifdef CONFIG_SPI_FLASH_MTD
 int spi_flash_mtd_register(struct spi_flash *flash);
