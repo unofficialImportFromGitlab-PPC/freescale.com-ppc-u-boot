@@ -438,4 +438,6 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_CMD_MII
 #define CONFIG_CMDLINE_TAG
 
+#include <asm/fsl_secure_boot.h>
+
 #endif /* __LS1043AQDS_H__ */
