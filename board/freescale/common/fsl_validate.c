@@ -287,8 +287,9 @@ static u32 read_validate_ie_tbl(struct fsl_secboot_img_priv *img)
 		debug("Verifying IE Table\n");
 
 		int ret;
+		uintptr_t ie_tbl_addr = 0;
 		ret = fsl_secboot_validate(IE_TABLE_HDR_ADR, NULL,
-			0);
+			&ie_tbl_addr);
 		if (ret) {
 			printf("IE Table Verification Failed\n");
 			return ret;
@@ -298,20 +299,7 @@ static u32 read_validate_ie_tbl(struct fsl_secboot_img_priv *img)
 			 * then install that IE Table for
 			 * future verification process.
 			 */
-			char *s = getenv("img_addr");
-			if (!s)
-				return ERROR_IE_TABLE_NOT_FOUND;
-
-			uintptr_t ie_tbl_addr =
-				(uintptr_t)simple_strtoull(s, NULL, 16);
-
 			install_ie_tbl(ie_tbl_addr, img);
-			/* Again overide the "img_addr" env variable to
-			 * point to addr of image being verified
-			 */
-			char buf[20];
-			sprintf(buf, "%lx", img->img_addr);
-			setenv("img_addr", buf);
 		}
 #else
 		if (get_ie_info_addr(&img->ie_addr))
@@ -626,7 +614,7 @@ static int calc_esbchdr_esbc_hash(struct fsl_secboot_img_priv *img)
 
 	/* Update hash for actual Image */
 	ret = algo->hash_update(algo, ctx,
-		(u8 *)img->img_addr, img->img_size, 1);
+		(u8 *)(*(img->img_addr_ptr)), img->img_size, 1);
 	if (ret)
 		return ret;
 
@@ -702,7 +690,6 @@ static void construct_img_encoded_hash_second(struct fsl_secboot_img_priv *img)
  */
 static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 {
-	char buf[20];
 	struct fsl_secboot_img_hdr *hdr = &img->hdr;
 	void *esbc = (u8 *)(uintptr_t)img->ehdrloc;
 	u8 *k, *s;
@@ -717,16 +704,13 @@ static int read_validate_esbc_client_header(struct fsl_secboot_img_priv *img)
 	/* If Image Address is not passed as argument to function,
 	 * then Address and Size must be read from the Header.
 	 */
-	if (img->img_addr == 0) {
+	if (*(img->img_addr_ptr) == 0) {
 	#ifdef CONFIG_ESBC_ADDR_64BIT
-		img->img_addr = hdr->pimg64;
+		*(img->img_addr_ptr) = hdr->pimg64;
 	#else
-		img->img_addr = hdr->pimg;
+		*(img->img_addr_ptr) = hdr->pimg;
 	#endif
 	}
-
-	sprintf(buf, "%lx", img->img_addr);
-	setenv("img_addr", buf);
 
 	if (!hdr->img_size)
 		return ERROR_ESBC_CLIENT_HEADER_IMG_SIZE;
@@ -899,9 +883,17 @@ static int secboot_init(struct fsl_secboot_img_priv **img_ptr)
 #endif
 	return 0;
 }
-
+/* haddr - Address of the header of image to be validated.
+ * arg_hash_str - Option hash string. If provided, this
+ * overides the key hash in the SFP fuses.
+ * img_addr_ptr - Optional pointer to address of image to be validated.
+ * If non zero addr, this overides the addr of image in header,
+ * otherwise updated to image addr in header.
+ * Acts as both input and output of function.
+ * This pointer shouldn't be NULL.
+ */
 int fsl_secboot_validate(uintptr_t haddr, char *arg_hash_str,
-			uintptr_t img_addr)
+			uintptr_t *img_addr_ptr)
 {
 	struct ccsr_sfp_regs *sfp_regs = (void *)(CONFIG_SYS_SFP_ADDR);
 	ulong hash[SHA256_BYTES/sizeof(ulong)];
@@ -951,7 +943,7 @@ int fsl_secboot_validate(uintptr_t haddr, char *arg_hash_str,
 	/* Update the information in Private Struct */
 	hdr = &img->hdr;
 	img->ehdrloc = haddr;
-	img->img_addr = img_addr;
+	img->img_addr_ptr = img_addr_ptr;
 	esbc = (u8 *)img->ehdrloc;
 
 	memcpy(hdr, esbc, sizeof(struct fsl_secboot_img_hdr));
