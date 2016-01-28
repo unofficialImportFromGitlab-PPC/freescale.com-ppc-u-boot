@@ -28,7 +28,7 @@
 				 ((key_len) == 2 * KEY_SIZE_BYTES / 2) || \
 				 ((key_len) == 2 * KEY_SIZE_BYTES))
 /* Global data structure */
-static struct fsl_secboot_glb *glb;
+static struct fsl_secboot_glb glb;
 
 /* This array contains DER value for SHA-256 */
 static const u8 hash_identifier[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60,
@@ -266,9 +266,9 @@ static void install_ie_tbl(uintptr_t ie_tbl_addr,
 		struct fsl_secboot_img_priv *img)
 {
 	/* Copy IE tbl to Global Data */
-	memcpy(&glb->ie_tbl, (u8 *)ie_tbl_addr, sizeof(struct ie_key_info));
-	img->ie_addr = (uintptr_t)&glb->ie_tbl;
-	glb->ie_addr = img->ie_addr;
+	memcpy(&glb.ie_tbl, (u8 *)ie_tbl_addr, sizeof(struct ie_key_info));
+	img->ie_addr = (uintptr_t)&glb.ie_tbl;
+	glb.ie_addr = img->ie_addr;
 }
 #endif
 
@@ -859,16 +859,6 @@ static int calculate_cmp_img_sig(struct fsl_secboot_img_priv *img)
  */
 static int secboot_init(struct fsl_secboot_img_priv **img_ptr)
 {
-	/* Init global data only once */
-	if (!glb) {
-		glb = malloc(sizeof(struct fsl_secboot_glb));
-
-		if (!glb)
-			return -ENOMEM;
-
-		memset(glb, 0, sizeof(struct fsl_secboot_glb));
-	}
-
 	*img_ptr = malloc(sizeof(struct fsl_secboot_img_priv));
 
 	struct fsl_secboot_img_priv *img = *img_ptr;
@@ -878,8 +868,8 @@ static int secboot_init(struct fsl_secboot_img_priv **img_ptr)
 	memset(img, 0, sizeof(struct fsl_secboot_img_priv));
 
 #if defined(CONFIG_FSL_ISBC_KEY_EXT)
-	if (glb->ie_addr)
-		img->ie_addr = glb->ie_addr;
+	if (glb.ie_addr)
+		img->ie_addr = glb.ie_addr;
 #endif
 	return 0;
 }
@@ -938,7 +928,7 @@ int fsl_secboot_validate(uintptr_t haddr, char *arg_hash_str,
 
 	ret = secboot_init(&img);
 	if (ret)
-		return ret;
+		goto exit;
 
 	/* Update the information in Private Struct */
 	hdr = &img->hdr;
@@ -993,5 +983,6 @@ int fsl_secboot_validate(uintptr_t haddr, char *arg_hash_str,
 	}
 
 exit:
+	free(img);
 	return ret;
 }
