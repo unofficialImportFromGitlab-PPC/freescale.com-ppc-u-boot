@@ -27,8 +27,10 @@
 #define CHECK_KEY_LEN(key_len)	(((key_len) == 2 * KEY_SIZE_BYTES / 4) || \
 				 ((key_len) == 2 * KEY_SIZE_BYTES / 2) || \
 				 ((key_len) == 2 * KEY_SIZE_BYTES))
+#if defined(CONFIG_FSL_ISBC_KEY_EXT)
 /* Global data structure */
 static struct fsl_secboot_glb glb;
+#endif
 
 /* This array contains DER value for SHA-256 */
 static const u8 hash_identifier[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60,
