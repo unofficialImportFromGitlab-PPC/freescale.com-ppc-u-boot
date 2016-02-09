@@ -123,7 +123,21 @@ int get_csf_base_addr(u32 *csf_addr, u32 *flash_base_addr)
 }
 #endif
 
-#if !defined(CONFIG_ESBC_HDR_LS)
+#if defined(CONFIG_ESBC_HDR_LS)
+static int get_ie_info_addr(uintptr_t *ie_addr)
+{
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+
+	/* For LS-CH3, the address of IE Table is
+	 * stated in Scratch13 and scratch14 of DCFG.
+	 * Bootrom validates this table while validating uboot.
+	 * DCFG is LE*/
+	*ie_addr = in_le32(&gur->scratchrw[SCRATCH_IE_HIGH_ADR - 1]);
+	*ie_addr = *ie_addr << 32;
+	*ie_addr |= in_le32(&gur->scratchrw[SCRATCH_IE_LOW_ADR - 1]);
+	return 0;
+}
+#else /* CONFIG_ESBC_HDR_LS */
 static int get_ie_info_addr(uintptr_t *ie_addr)
 {
 	struct fsl_secboot_img_hdr *hdr;
@@ -263,7 +277,6 @@ static u32 read_validate_single_key(struct fsl_secboot_img_priv *img)
 
 #if defined(CONFIG_FSL_ISBC_KEY_EXT)
 
-#if defined(CONFIG_ESBC_HDR_LS)
 static void install_ie_tbl(uintptr_t ie_tbl_addr,
 		struct fsl_secboot_img_priv *img)
 {
@@ -272,7 +285,6 @@ static void install_ie_tbl(uintptr_t ie_tbl_addr,
 	img->ie_addr = (uintptr_t)&glb.ie_tbl;
 	glb.ie_addr = img->ie_addr;
 }
-#endif
 
 static u32 read_validate_ie_tbl(struct fsl_secboot_img_priv *img)
 {
@@ -280,33 +292,13 @@ static u32 read_validate_ie_tbl(struct fsl_secboot_img_priv *img)
 	u32 ie_key_len, ie_revoc_flag, ie_num;
 	struct ie_key_info *ie_info;
 
-/* For LS, IE Table is installed as a separate image.
- * It is not verified by ISBC.
- */
-	if (!img->ie_addr)
-#if defined(CONFIG_ESBC_HDR_LS)
-		/* Verify and Install IE Table */
-		debug("Verifying IE Table\n");
-
-		int ret;
-		uintptr_t ie_tbl_addr = 0;
-		ret = fsl_secboot_validate(IE_TABLE_HDR_ADR, NULL,
-			&ie_tbl_addr);
-		if (ret) {
-			printf("IE Table Verification Failed\n");
-			return ret;
-		} else {
-			printf("IE Table Verified Successfully\n");
-			/* If the image is IE Table,
-			 * then install that IE Table for
-			 * future verification process.
-			 */
-			install_ie_tbl(ie_tbl_addr, img);
-		}
-#else
+	if (!img->ie_addr) {
 		if (get_ie_info_addr(&img->ie_addr))
 			return ERROR_IE_TABLE_NOT_FOUND;
-#endif
+		else
+			install_ie_tbl(img->ie_addr, img);
+	}
+
 	ie_info = (struct ie_key_info *)(uintptr_t)img->ie_addr;
 	if (ie_info->num_keys == 0 || ie_info->num_keys > 32)
 		return ERROR_ESBC_CLIENT_HEADER_INVALID_IE_NUM_ENTRY;

@@ -71,7 +71,8 @@ struct fsl_secboot_img_hdr {
 
 #if defined(CONFIG_FSL_ISBC_KEY_EXT)
 #define IE_FLAG_MASK 0x1
-#define IE_TABLE_HDR_ADR 0x5839c0000
+#define SCRATCH_IE_LOW_ADR 13
+#define SCRATCH_IE_HIGH_ADR 14
 #endif
 
 #else /* CONFIG_ESBC_HDR_LS */
