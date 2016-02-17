@@ -485,10 +485,6 @@ int board_init(void)
 				      ARRAY_SIZE(sec_liodn_tbl));
 	ls102xa_config_smmu_stream_id(dev_stream_id,
 				      ARRAY_SIZE(dev_stream_id));
-	/* Configure SMMU3 to make transactions with CAAM stream ID
-	 * as cacheable
-	 */
-	ls1021x_config_smmu3(0x10);
 
 #ifdef CONFIG_LAYERSCAPE_NS_ACCESS
 	enable_layerscape_ns_access();
