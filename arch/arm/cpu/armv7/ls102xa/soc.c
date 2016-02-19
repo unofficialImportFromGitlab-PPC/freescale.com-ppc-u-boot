@@ -21,6 +21,16 @@ unsigned int get_soc_major_rev(void)
 	return major;
 }
 
+static void erratum_a009008(void)
+{
+#ifdef CONFIG_SYS_FSL_ERRATUM_A009008
+	u32 __iomem *scfg = (u32 __iomem *)SCFG_BASE;
+	u32 val = in_be32(scfg + SCFG_USB3PRM1CR / 4);
+	val &= ~(0xF << 6);
+	out_be32(scfg + SCFG_USB3PRM1CR / 4, val|(USB_TXVREFTUNE << 6));
+#endif /* CONFIG_SYS_FSL_ERRATUM_A009008 */
+}
+
 int arch_soc_init(void)
 {
 	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
@@ -86,5 +96,7 @@ int arch_soc_init(void)
 	 */
 	out_be32(&scfg->eddrtqcfg, 0x63b20042);
 
+	/* Erratum */
+	erratum_a009008();
 	return 0;
 }
