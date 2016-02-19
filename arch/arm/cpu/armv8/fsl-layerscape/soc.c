@@ -60,6 +60,33 @@ static void erratum_a009798(void)
 #endif /* CONFIG_SYS_FSL_ERRATUM_A009798 */
 }
 
+static void erratum_a008997(void)
+{
+#ifdef CONFIG_SYS_FSL_ERRATUM_A008997
+#if defined(CONFIG_LS1043A)
+	u32 __iomem *scfg = (u32 __iomem *)SCFG_BASE;
+	u32 val = scfg_in32(scfg + SCFG_USB3PRM2CR_USB1 / 4);
+	val &= ~(0x7F << 9);
+	scfg_out32(scfg + SCFG_USB3PRM2CR_USB1 / 4,
+		   val | (USB_PCSTXSWINGFULL << 9));
+	val = scfg_in32(scfg + SCFG_USB3PRM2CR_USB2 / 4);
+	val &= ~(0x7F << 9);
+	scfg_out32(scfg + SCFG_USB3PRM2CR_USB2 / 4,
+		   val | (USB_PCSTXSWINGFULL << 9));
+	val = scfg_in32(scfg + SCFG_USB3PRM2CR_USB3 / 4);
+	val &= ~(0x7F << 9);
+	scfg_out32(scfg + SCFG_USB3PRM2CR_USB3 / 4,
+		   val | (USB_PCSTXSWINGFULL << 9));
+#elif defined(CONFIG_LS2080A) || defined(CONFIG_LS2085A)
+	u32 __iomem *scfg = (u32 __iomem *)SCFG_BASE;
+	u32 val = scfg_in32(scfg + SCFG_USB3PRM2CR / 4);
+	val &= ~(0x7F << 9);
+	scfg_out32(scfg + SCFG_USB3PRM2CR / 4,
+		   val | (USB_PCSTXSWINGFULL << 9));
+#endif
+#endif /* CONFIG_SYS_FSL_ERRATUM_A008997 */
+}
+
 #if defined(CONFIG_LS2080A) || defined(CONFIG_LS2085A)
 /*
  * This erratum requires setting a value to eddrtqcr1 to
@@ -206,6 +233,7 @@ void fsl_lsch3_early_init_f(void)
 	erratum_a008751();
 	erratum_a009008();
 	erratum_a009798();
+	erratum_a008997();
 	erratum_rcw_src();
 	init_early_memctl_regs();	/* tighten IFC timing */
 	erratum_a009203();
@@ -313,6 +341,7 @@ void fsl_lsch2_early_init_f(void)
 	erratum_a009660();
 	erratum_a009008();
 	erratum_a009798();
+	erratum_a008997();
 }
 #endif
 

@@ -127,9 +127,11 @@
 /* Supplemental Configuration */
 #define SCFG_BASE		0x01fc0000
 #define SCFG_USB3PRM1CR			0x000
+#define SCFG_USB3PRM2CR			0x004
 #define SCFG_USB3PRM1CR_INIT		0x27672b2a
 #define USB_TXVREFTUNE			0x9
 #define USB_SQRXTUNE			0xFC7FFFFF
+#define USB_PCSTXSWINGFULL		0x47
 
 #define TP_ITYP_AV		0x00000001	/* Initiator available */
 #define TP_ITYP_TYPE(x)	(((x) & 0x6) >> 1)	/* Initiator Type */
