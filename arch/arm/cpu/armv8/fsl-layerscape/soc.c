@@ -101,7 +101,7 @@ static void erratum_a008751(void)
 #ifdef CONFIG_SYS_FSL_ERRATUM_A008751
 	u32 __iomem *scfg = (u32 __iomem *)SCFG_BASE;
 
-	writel(0x27672b2a, scfg + SCFG_USB3PRM1CR / 4);
+	writel(SCFG_USB3PRM1CR_INIT, scfg + SCFG_USB3PRM1CR / 4);
 #endif
 }
 
