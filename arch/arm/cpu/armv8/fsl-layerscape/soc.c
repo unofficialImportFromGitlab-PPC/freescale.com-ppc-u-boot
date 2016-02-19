@@ -87,6 +87,47 @@ static void erratum_a008997(void)
 #endif /* CONFIG_SYS_FSL_ERRATUM_A008997 */
 }
 
+static void erratum_a009007(void)
+{
+/* TODO:implement the out_be16 instead of writew which is taking
+little endian style */
+#if defined(CONFIG_LS1043A)
+	u32 __iomem *usb_phy = (u32 __iomem *)USB_PHY1;
+	writew(USB_PHY_RX_EQ_VAL_1, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_2, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_3, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_4, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	usb_phy = (u32 __iomem *)USB_PHY2;
+	writew(USB_PHY_RX_EQ_VAL_1, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_2, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_3, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_4, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	usb_phy = (u32 __iomem *)USB_PHY3;
+	writew(USB_PHY_RX_EQ_VAL_1, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_2, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_3, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_4, (u8 *)(usb_phy) + USB_PHY_RX_OVRD_IN_HI);
+#elif defined(CONFIG_LS2080A) || defined(CONFIG_LS2085A)
+	u32 __iomem *dcsr = (u32 __iomem *)DCSR_BASE;
+	writew(USB_PHY_RX_EQ_VAL_1,
+	       (u8 *)(dcsr) + DCSR_USB_PHY1 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_2,
+	       (u8 *)(dcsr) + DCSR_USB_PHY1 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_3,
+	       (u8 *)(dcsr) + DCSR_USB_PHY1 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_4,
+	       (u8 *)(dcsr) + DCSR_USB_PHY1 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_1,
+	       (u8 *)(dcsr) + DCSR_USB_PHY2 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_2,
+	       (u8 *)(dcsr) + DCSR_USB_PHY2 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_3,
+	       (u8 *)(dcsr) + DCSR_USB_PHY2 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+	writew(USB_PHY_RX_EQ_VAL_4,
+	       (u8 *)(dcsr) + DCSR_USB_PHY2 + DCSR_USB_PHY_RX_OVRD_IN_HI);
+#endif /* CONFIG_SYS_FSL_ERRATUM_A009007 */
+}
+
 #if defined(CONFIG_LS2080A) || defined(CONFIG_LS2085A)
 /*
  * This erratum requires setting a value to eddrtqcr1 to
@@ -234,6 +275,7 @@ void fsl_lsch3_early_init_f(void)
 	erratum_a009008();
 	erratum_a009798();
 	erratum_a008997();
+	erratum_a009007();
 	erratum_rcw_src();
 	init_early_memctl_regs();	/* tighten IFC timing */
 	erratum_a009203();
@@ -342,6 +384,7 @@ void fsl_lsch2_early_init_f(void)
 	erratum_a009008();
 	erratum_a009798();
 	erratum_a008997();
+	erratum_a009007();
 }
 #endif
 
