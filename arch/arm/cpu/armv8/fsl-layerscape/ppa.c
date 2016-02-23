@@ -18,6 +18,9 @@
 #include <asm/arch/immap_lsch2.h>
 #endif
 #include <asm/arch/ppa.h>
+#ifdef CONFIG_CHAIN_OF_TRUST
+#include <fsl_validate.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -69,10 +72,38 @@ static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
 	int conf_node_off, fw_node_off;
 	char *conf_node_name = NULL;
 
+#ifdef CONFIG_CHAIN_OF_TRUST
+	int ret;
+	uintptr_t ppa_esbc_hdr = CONFIG_SYS_LS_PPA_ESBC_ADDR;
+	uintptr_t ppa_img_addr = 0;
+#endif
+
 #ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
 	fit_hdr = (void *)CONFIG_SYS_LS_PPA_FW_ADDR;
 #else
 #error "No CONFIG_SYS_LS_PPA_FW_IN_xxx defined"
+#endif
+
+#ifdef CONFIG_CHAIN_OF_TRUST
+	ppa_img_addr = (uintptr_t)fit_hdr;
+	if (fsl_check_boot_mode_secure() != 0) {
+		printf("PPA validation started");
+		/* fsl_secboot_validate() will return 0 in case of
+		 * successful validation.
+		 * If validation fails, reset would be issued for
+		 * Production Environment (ITS = 1).
+		 * For development environment (ITS = 0, SB_EN = 1),
+		 * execution will be allowed to continue, so function
+		 * will rturn a non-zero value
+		 */
+		ret = fsl_secboot_validate(ppa_esbc_hdr,
+					   CONFIG_PPA_KEY_HASH,
+					   &ppa_img_addr);
+		if (ret != 0)
+			printf("PPA validation failed\n");
+		else
+			printf("PPA validation Successful\n");
+	}
 #endif
 
 	conf_node_name = LS_PPA_FIT_CNF_NAME;
