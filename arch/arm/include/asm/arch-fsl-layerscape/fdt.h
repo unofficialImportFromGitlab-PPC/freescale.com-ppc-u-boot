@@ -12,4 +12,8 @@ void append_mmu_masters(void *blob, const char *smmu_path,
 			const char *master_name, u32 *stream_ids, int count);
 void fdt_fixup_smmu_pcie(void *blob);
 void fdt_fixup_board_enet(void *fdt);
+#if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
+void fdt_fixup_usb(void *blob);
+#endif
+
 #endif	/* _ASM_ARMV8_FSL_LAYERSCAPE_FDT_H_ */

@@ -21,6 +21,12 @@
 #include <asm/arch/mp.h>
 #endif
 
+#if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
+#include <asm/arch-fsl-layerscape/immap_lsch3.h>
+#include <asm/arch/speed.h>
+#define SYS_CLK_FREQ_533MHZ    533
+#endif
+
 int fdt_fixup_phy_connection(void *blob, int offset, phy_interface_t phyc)
 {
 	return fdt_setprop_string(blob, offset, "phy-connection-type",
@@ -211,4 +217,28 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 #ifdef CONFIG_SYS_DPAA_FMAN
 	fdt_fixup_fman_firmware(blob);
 #endif
+#if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
+	fdt_fixup_usb(blob);
+#endif
+
 }
+
+#if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
+void fdt_fixup_usb(void *blob)
+{
+	int off;
+	uint sys_clk;
+	struct sys_info sysinfo;
+
+	get_sys_info(&sysinfo);
+	sys_clk = sysinfo.freq_systembus / 1000000;
+	if (SYS_CLK_FREQ_533MHZ == sys_clk) {
+		off = fdt_node_offset_by_compatible(blob, -1, "snps,dwc3");
+		while (off != -FDT_ERR_NOTFOUND) {
+			fdt_status_disabled(blob, off);
+			off = fdt_node_offset_by_compatible(blob, off,
+							    "snps,dwc3");
+		}
+	}
+}
+#endif
