@@ -17,8 +17,16 @@ unsigned long get_board_ddr_clk(void);
 #endif
 
 #define CONFIG_SYS_FSL_CLK
+#ifdef CONFIG_QSPI_BOOT
+#define CONFIG_SYS_TEXT_BASE		0x20010000
+#define CONFIG_ENV_IS_IN_SPI_FLASH
+#define CONFIG_ENV_SIZE			0x2000          /* 8KB */
+#define CONFIG_ENV_OFFSET		0x100000        /* 1MB */
+#define CONFIG_ENV_SECT_SIZE		0x10000
+#endif
 
-#ifdef CONFIG_FSL_QSPI
+#if defined(CONFIG_QSPI_BOOT) || \
+	(defined(CONFIG_NAND) && defined(CONFIG_FSL_QSPI))
 #define CONFIG_SYS_NO_FLASH
 #undef CONFIG_CMD_IMLS
 #define CONFIG_SYS_CLK_FREQ		100000000
@@ -175,11 +183,13 @@ unsigned long get_board_ddr_clk(void);
 #define QIXIS_LBMAP_DFLTBANK		0x00
 #define QIXIS_LBMAP_ALTBANK		0x04
 #define QIXIS_LBMAP_NAND		0x09
+#define QIXIS_LBMAP_QSPI		0x0f
 #define QIXIS_RST_CTL_RESET		0x31
 #define QIXIS_RCFG_CTL_RECONFIG_IDLE	0x20
 #define QIXIS_RCFG_CTL_RECONFIG_START	0x21
 #define QIXIS_RCFG_CTL_WATCHDOG_ENBLE	0x08
 #define QIXIS_RCW_SRC_NAND		0x107
+#define QIXIS_RCW_SRC_QSPI		0x62
 #define	QIXIS_RST_FORCE_MEM		0x01
 
 #define CONFIG_SYS_CSPR3_EXT	(0x0)
@@ -270,10 +280,12 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_CS2_FTIM2		CONFIG_SYS_NAND_FTIM2
 #define CONFIG_SYS_CS2_FTIM3		CONFIG_SYS_NAND_FTIM3
 
+#ifndef CONFIG_QSPI_BOOT
 #define CONFIG_ENV_IS_IN_FLASH
 #define CONFIG_ENV_ADDR			(CONFIG_SYS_FLASH_BASE + 0x200000)
 #define CONFIG_ENV_SECT_SIZE		0x20000
 #define CONFIG_ENV_SIZE			0x2000
+#endif
 #endif
 
 /* Debug Server firmware */

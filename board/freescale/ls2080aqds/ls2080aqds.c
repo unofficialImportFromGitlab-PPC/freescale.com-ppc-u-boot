@@ -80,6 +80,8 @@ int checkboard(void)
 		puts("PromJet\n");
 	else if (sw == 0x9)
 		puts("NAND\n");
+	else if (sw == 0xf)
+		puts("QSPI\n");
 	else if (sw == 0x15)
 		printf("IFCCard\n");
 	else
