@@ -98,6 +98,7 @@
 /* BS_HDR_SIZE, BOOTSCRIPT_ADDR and BS_SIZE are not required */
 #endif
 
+#ifdef CONFIG_FSL_LS_PPA
 #ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
 #ifdef CONFIG_LS1043A
 #define CONFIG_SYS_LS_PPA_ESBC_ADDR	0x600c0000
@@ -105,6 +106,7 @@
 #else
 #error "No CONFIG_SYS_LS_PPA_FW_IN_xxx defined"
 #endif
+#endif /* CONFIG_FSL_LS_PPA */
 
 /* Define the key hash here if SRK used for signing PPA image is
  * different from SRK hash put in SFP used for U-Boot.
