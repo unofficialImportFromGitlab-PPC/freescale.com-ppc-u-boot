@@ -221,6 +221,12 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	fdt_fixup_usb(blob);
 #endif
 
+#ifdef CONFIG_LS1043A
+#ifdef CONFIG_FSL_QSPI
+	do_fixup_by_compat(blob, "fsl,ifc",
+			   "status", "disabled", 8 + 1, 1);
+#endif
+#endif
 }
 
 #if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
