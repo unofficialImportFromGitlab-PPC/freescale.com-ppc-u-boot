@@ -890,9 +890,6 @@ static init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_MPC5xxx)
 	prt_mpc5xxx_clks,
 #endif /* CONFIG_MPC5xxx */
-#if defined(CONFIG_DISPLAY_BOARDINFO)
-	show_board_info,
-#endif
 	INIT_FUNC_WATCHDOG_INIT
 #if defined(CONFIG_MISC_INIT_F)
 	misc_init_f,
@@ -900,6 +897,9 @@ static init_fnc_t init_sequence_f[] = {
 	INIT_FUNC_WATCHDOG_RESET
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SYS_I2C)
 	init_func_i2c,
+#endif
+#if defined(CONFIG_DISPLAY_BOARDINFO)
+	show_board_info,
 #endif
 #if defined(CONFIG_HARD_SPI)
 	init_func_spi,

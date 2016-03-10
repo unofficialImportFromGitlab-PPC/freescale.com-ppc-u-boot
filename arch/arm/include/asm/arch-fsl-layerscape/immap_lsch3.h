@@ -120,6 +120,8 @@
 #define DCFG_PORSR1_RCW_SRC_NOR		0x12f00000
 #define DCFG_RCWSR13			0x130
 #define DCFG_RCWSR13_DSPI		(0 << 8)
+#define DCFG_RCWSR15			0x138
+#define DCFG_RCWSR15_IFCGRPABASE_QSPI	0x3
 
 #define DCFG_DCSR_BASE		0X700100000ULL
 #define DCFG_DCSR_PORCR1		0x000
@@ -140,6 +142,7 @@
 #define USB_PHY_RX_EQ_VAL_2		0x0080
 #define USB_PHY_RX_EQ_VAL_3		0x0380
 #define USB_PHY_RX_EQ_VAL_4		0x0b80
+#define SCFG_QSPICLKCTLR		0x10
 
 #define TP_ITYP_AV		0x00000001	/* Initiator available */
 #define TP_ITYP_TYPE(x)	(((x) & 0x6) >> 1)	/* Initiator Type */
