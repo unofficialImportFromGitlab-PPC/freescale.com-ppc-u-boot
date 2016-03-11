@@ -178,6 +178,7 @@ unsigned long get_board_ddr_clk(void);
 
 #define CONFIG_FSL_QIXIS	/* use common QIXIS code */
 #define QIXIS_LBMAP_SWITCH		0x06
+#define CONFIG_SYS_I2C_FPGA_ADDR	0x66
 #define QIXIS_LBMAP_MASK		0x0f
 #define QIXIS_LBMAP_SHIFT		0
 #define QIXIS_LBMAP_DFLTBANK		0x00
