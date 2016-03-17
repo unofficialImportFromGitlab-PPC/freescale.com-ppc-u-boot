@@ -1146,7 +1146,7 @@ int fsl_mc_ldpaa_exit(bd_t *bd)
 {
 	int err = 0;
 
-	if (bd && get_mc_boot_status() == -1)
+	if (bd && get_mc_boot_status() != 0)
 		return 0;
 
 	if (bd && !get_mc_boot_status() && get_dpl_apply_status() == -1) {
