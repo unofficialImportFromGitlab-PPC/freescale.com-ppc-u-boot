@@ -667,7 +667,7 @@ err_alloc:
 	if (i)
 		goto release_bufs;
 
-	return 0;
+	return i;
 }
 
 static int ldpaa_dpbp_seed(uint16_t bpid)
