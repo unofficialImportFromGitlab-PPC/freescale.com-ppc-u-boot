@@ -43,6 +43,13 @@ static int fsl_xhci_core_init(struct fsl_xhci *fsl_xhci)
 	/* Set GFLADJ_30MHZ as 20h as per XHCI spec default value */
 	dwc3_set_fladj(fsl_xhci->dwc3_reg, GFLADJ_30MHZ_DEFAULT);
 
+	/*
+	 * A-010151: USB controller to configure USB in P2 mode
+	 * whenever the Receive Detect feature is required
+	 */
+	dwc3_set_rxdetect_power_mode(fsl_xhci->dwc3_reg,
+				     DWC3_GUSB3PIPECTL_DISRXDETP3);
+
 	return ret;
 }
 

@@ -184,6 +184,7 @@ struct dwc3 {					/* offset: 0xC100 */
 
 /* Global USB3 PIPE Control Register */
 #define DWC3_GUSB3PIPECTL_PHYSOFTRST		(1 << 31)
+#define DWC3_GUSB3PIPECTL_DISRXDETP3		(1 << 28)
 #define DWC3_GUSB3PIPECTL_SUSPHY		(1 << 17)
 
 /* Global TX Fifo Size Register */
@@ -205,5 +206,6 @@ void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode);
 void dwc3_core_soft_reset(struct dwc3 *dwc3_reg);
 int dwc3_core_init(struct dwc3 *dwc3_reg);
 void dwc3_set_fladj(struct dwc3 *dwc3_reg, u32 val);
+void dwc3_set_rxdetect_power_mode(struct dwc3 *dwc3_reg, u32 val);
 #endif
 #endif /* __DWC3_H_ */
