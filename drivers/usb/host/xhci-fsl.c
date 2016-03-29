@@ -27,6 +27,15 @@ __weak int __board_usb_init(int index, enum usb_init_type init)
 	return 0;
 }
 
+static void fsl_xhci_set_beat_burst_length(struct dwc3 *dwc3_reg)
+{
+	int val = readl(&dwc3_reg->g_sbuscfg0);
+	val &= ~USB3_ENABLE_BEAT_BURST_MASK;
+	writel(val | USB3_ENABLE_BEAT_BURST, &dwc3_reg->g_sbuscfg0);
+	val = readl(&dwc3_reg->g_sbuscfg1);
+	writel(val | USB3_SET_BEAT_BURST_LIMIT, &dwc3_reg->g_sbuscfg1);
+}
+
 static int fsl_xhci_core_init(struct fsl_xhci *fsl_xhci)
 {
 	int ret = 0;
@@ -42,6 +51,16 @@ static int fsl_xhci_core_init(struct fsl_xhci *fsl_xhci)
 
 	/* Set GFLADJ_30MHZ as 20h as per XHCI spec default value */
 	dwc3_set_fladj(fsl_xhci->dwc3_reg, GFLADJ_30MHZ_DEFAULT);
+
+	/*
+	 * A-010151: USB controller to configure USB in P2 mode
+	 * whenever the Receive Detect feature is required
+	 */
+	dwc3_set_rxdetect_power_mode(fsl_xhci->dwc3_reg,
+				     DWC3_GUSB3PIPECTL_DISRXDETP3);
+
+	/* Change beat burst and outstanding pipelined transfers requests */
+	fsl_xhci_set_beat_burst_length(fsl_xhci->dwc3_reg);
 
 	return ret;
 }
