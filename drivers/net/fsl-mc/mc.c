@@ -1146,6 +1146,7 @@ int fsl_mc_ldpaa_exit(bd_t *bd)
 {
 	int err = 0;
 
+	/* MC is not loaded intentionally, So return success. */
 	if (bd && get_mc_boot_status() != 0)
 		return 0;
 
