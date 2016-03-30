@@ -31,6 +31,11 @@
 #define SCSI_VEND_ID 0x10b9
 #define SCSI_DEV_ID  0x5288
 
+#elif defined CONFIG_SATA_88SE9170
+
+#define SCSI_VEND_ID 0x1b4b
+#define SCSI_DEV_ID  0x9170
+
 #elif !defined(CONFIG_SCSI_AHCI_PLAT)
 #error no scsi device defined
 #endif
