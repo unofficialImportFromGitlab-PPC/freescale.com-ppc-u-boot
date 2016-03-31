@@ -22,6 +22,8 @@
 #endif
 #include <asm/io.h>
 #include <asm/arch/speed.h>
+#include <fsl_sec.h>
+#include <asm/arch-fsl-layerscape/soc.h>
 
 #if defined(CONFIG_TARGET_LS2080ARDB) || defined(CONFIG_TARGET_LS2080AQDS)
 #include <asm/arch-fsl-layerscape/immap_lsch3.h>
@@ -269,6 +271,23 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	struct sys_info sysinfo;
 
 	get_sys_info(&sysinfo);
+#endif
+
+#ifdef CONFIG_FSL_LSCH2
+	struct ccsr_gur __iomem *gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	unsigned int svr = in_be32(&gur->svr);
+
+	/* delete crypto node if not on an E-processor */
+	if (!IS_E_PROCESSOR(svr))
+		fdt_fixup_crypto_node(blob, 0);
+#if CONFIG_SYS_FSL_SEC_COMPAT >= 4
+	else {
+		ccsr_sec_t __iomem *sec;
+
+		sec = (void __iomem *)CONFIG_SYS_FSL_SEC_ADDR;
+		fdt_fixup_crypto_node(blob, sec_in32(&sec->secvid_ms));
+	}
+#endif
 #endif
 
 #ifdef CONFIG_MP
