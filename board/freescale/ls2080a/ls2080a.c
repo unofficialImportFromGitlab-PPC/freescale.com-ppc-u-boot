@@ -94,7 +94,7 @@ void fdt_fixup_board_enet(void *fdt)
 	 * with old DT node (fsl,dprc@0) is no longer needed.
 	 */
 	if (offset < 0)
-		offset = fdt_path_offset(fdt, "/fsl,dprc@0");
+		offset = fdt_path_offset(fdt, "/soc/fsl-mc");
 
 	if (offset < 0) {
 		printf("%s: ERROR: fsl-mc node not found in device tree (error %d)\n",
