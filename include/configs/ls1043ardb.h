@@ -298,6 +298,22 @@
 #define CONFIG_CMD_EXT2
 #endif
 
+/* SATA */
+#define CONFIG_LIBATA
+#define CONFIG_SCSI_AHCI
+#define CONFIG_CMD_SCSI
+#define CONFIG_CMD_FAT
+#define CONFIG_CMD_EXT2
+#define CONFIG_DOS_PARTITION
+#define CONFIG_BOARD_LATE_INIT
+#define CONFIG_SATA_88SE9170
+#define CONFIG_SYS_SCSI_MAX_SCSI_ID		2
+#define CONFIG_SYS_SCSI_MAX_LUN			2
+#define CONFIG_SYS_SCSI_MAX_DEVICE		(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
+						CONFIG_SYS_SCSI_MAX_LUN)
+
+#define CONFIG_PCI
+
 #include <asm/fsl_secure_boot.h>
 
 #endif /* __LS1043ARDB_H__ */
