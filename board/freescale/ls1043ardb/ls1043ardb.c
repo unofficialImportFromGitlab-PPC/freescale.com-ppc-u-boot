@@ -83,16 +83,9 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
-	struct ccsr_cci400 *cci = (struct ccsr_cci400 *)CONFIG_SYS_CCI400_ADDR;
 #ifdef CONFIG_FSL_LS_PPA
 	u64 ppa_entry;
 #endif
-
-	/*
-	 * Set CCI-400 control override register to enable barrier
-	 * transaction
-	 */
-	out_le32(&cci->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
 
 #ifdef CONFIG_FSL_IFC
 	init_final_memctl_regs();
