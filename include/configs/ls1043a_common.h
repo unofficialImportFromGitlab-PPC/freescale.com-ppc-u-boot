@@ -250,6 +250,21 @@
 #define CONFIG_HWCONFIG
 #define HWCONFIG_BUFFER_SIZE		128
 
+#if defined(CONFIG_QSPI_BOOT) || defined(CONFIG_SD_BOOT_QSPI)
+#define MTDPARTS_DEFAULT "mtdparts=spi0.0:1m(uboot)," \
+			"5m(kernel),1m(dtb),9m(file_system)"
+#else
+#define MTDPARTS_DEFAULT "mtdparts=60000000.nor:1m(nor_bank0_rcw)," \
+			"1m(nor_bank0_uboot),1m(nor_bank0_uboot_env)," \
+			"1m(nor_bank0_fman_uconde),40m(nor_bank0_fit)," \
+			"1m(nor_bank4_rcw),1m(nor_bank4_uboot)," \
+			"1m(nor_bank4_uboot_env),1m(nor_bank4_fman_ucode)," \
+			"40m(nor_bank4_fit);7e800000.flash:" \
+			"1m(nand_uboot),1m(nand_uboot_env)," \
+			"20m(nand_fit);spi0.0:1m(uboot)," \
+			"5m(kernel),1m(dtb),9m(file_system)"
+#endif
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	"hwconfig=fsl_ddr:bank_intlv=auto\0"	\
@@ -262,10 +277,13 @@
 	"kernel_start=0x61100000\0"		\
 	"kernel_load=0xa0000000\0"		\
 	"kernel_size=0x2800000\0"		\
-	"console=ttyAMA0,38400n8\0"
+	"console=ttyAMA0,38400n8\0"		\
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
 
 #define CONFIG_BOOTARGS			"console=ttyS0,115200 root=/dev/ram0 " \
-					"earlycon=uart8250,mmio,0x21c0500"
+					"earlycon=uart8250,mmio,0x21c0500 " \
+					MTDPARTS_DEFAULT
+
 #define CONFIG_BOOTCOMMAND		"cp.b $kernel_start $kernel_load "     \
 					"$kernel_size && bootm $kernel_load"
 #define CONFIG_BOOTDELAY		10
