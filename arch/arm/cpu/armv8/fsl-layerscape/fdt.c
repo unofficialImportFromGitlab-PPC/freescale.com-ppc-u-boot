@@ -29,6 +29,9 @@
 #include <asm/arch-fsl-layerscape/immap_lsch3.h>
 #define SYS_CLK_FREQ_533MHZ    533
 #endif
+#ifdef CONFIG_FSL_LS_PPA
+#include <asm/armv8/sec_firmware.h>
+#endif
 
 int fdt_fixup_phy_connection(void *blob, int offset, phy_interface_t phyc)
 {
@@ -119,7 +122,36 @@ void ft_fixup_cpu(void *blob)
 	int addr_cells;
 	u64 val, core_id;
 	size_t *boot_code_size = &(__secondary_boot_code_size);
+#if defined(CONFIG_FSL_LS_PPA) && defined(CONFIG_ARMV8_PSCI)
+	int node;
+#endif
 
+#if defined(CONFIG_FSL_LS_PPA) && defined(CONFIG_ARMV8_PSCI)
+	if (sec_firmware_validate()) {
+		/* remove psci DT node */
+		node = fdt_path_offset(blob, "/psci");
+		if (node >= 0)
+			goto remove_psci_node;
+
+		node = fdt_node_offset_by_compatible(blob, -1, "arm,psci");
+		if (node >= 0)
+			goto remove_psci_node;
+
+		node = fdt_node_offset_by_compatible(blob, -1, "arm,psci-0.2");
+		if (node >= 0)
+			goto remove_psci_node;
+
+		node = fdt_node_offset_by_compatible(blob, -1, "arm,psci-1.0");
+		if (node >= 0)
+			goto remove_psci_node;
+
+remove_psci_node:
+		if (node >= 0)
+			fdt_del_node(blob, node);
+	} else {
+		return;
+	}
+#endif
 	off = fdt_path_offset(blob, "/cpus");
 	if (off < 0) {
 		puts("couldn't find /cpus node\n");

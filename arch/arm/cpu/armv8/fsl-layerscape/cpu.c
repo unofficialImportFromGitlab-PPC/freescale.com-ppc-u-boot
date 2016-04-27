@@ -23,6 +23,9 @@
 #ifdef CONFIG_FSL_ESDHC
 #include <fsl_esdhc.h>
 #endif
+#ifdef CONFIG_FSL_LS_PPA
+#include <asm/armv8/sec_firmware.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -590,9 +593,14 @@ int arch_early_init_r(void)
 #endif
 
 #ifdef CONFIG_MP
-	rv = fsl_layerscape_wake_seconday_cores();
-	if (rv)
-		printf("Did not wake secondary cores\n");
+#if defined(CONFIG_FSL_LS_PPA) && defined(CONFIG_ARMV8_PSCI)
+	rv = sec_firmware_validate();
+#endif
+	if (rv) {
+		rv = fsl_layerscape_wake_seconday_cores();
+		if (rv)
+			printf("Did not wake secondary cores\n");
+	}
 #endif
 
 #ifdef CONFIG_SYS_HAS_SERDES
