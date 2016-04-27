@@ -40,3 +40,14 @@ ENTRY(ppa_init)
         mov	x0, #0
         ret
 ENDPROC(ppa_init)
+
+#ifdef CONFIG_ARMV8_PSCI
+ENTRY(ppa_support_psci_version)
+	mov	x0, 0x84000000
+	mov	x1, 0x0
+	mov	x2, 0x0
+	mov	x3, 0x0
+	smc	#0
+	ret
+ENDPROC(ppa_support_psci_version)
+#endif

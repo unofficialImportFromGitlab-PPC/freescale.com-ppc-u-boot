@@ -17,7 +17,7 @@
 #elif defined(CONFIG_FSL_LSCH2)
 #include <asm/arch/immap_lsch2.h>
 #endif
-#include <asm/arch/ppa.h>
+#include <asm/armv8/sec_firmware.h>
 #ifdef CONFIG_CHAIN_OF_TRUST
 #include <fsl_validate.h>
 #endif
@@ -192,6 +192,31 @@ static int ppa_copy_image(const char *title,
 
 	return 0;
 }
+
+int sec_firmware_validate(void)
+{
+	void *ppa_addr;
+
+#ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
+	ppa_addr = (void *)CONFIG_SYS_LS_PPA_FW_ADDR;
+#else
+#error "No CONFIG_SYS_LS_PPA_FW_IN_xxx defined"
+#endif
+
+	return ppa_firmware_validate(ppa_addr);
+}
+
+#ifdef CONFIG_ARMV8_PSCI
+unsigned int sec_firmware_support_psci_version(void)
+{
+	unsigned int psci_ver = 0;
+
+	if (!sec_firmware_validate())
+		psci_ver = ppa_support_psci_version();
+
+	return psci_ver;
+}
+#endif
 
 int ppa_init_pre(u64 *entry)
 {
