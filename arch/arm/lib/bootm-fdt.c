@@ -42,7 +42,7 @@ int arch_fixup_fdt(void *blob)
 	}
 
 	ret = fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
-#ifdef CONFIG_ARMV7_NONSEC
+#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV8_PSCI)
 	if (ret)
 		return ret;
 

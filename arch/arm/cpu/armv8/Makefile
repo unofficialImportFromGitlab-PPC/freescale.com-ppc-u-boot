@@ -14,6 +14,7 @@ obj-y	+= exceptions.o
 obj-y	+= cache.o
 obj-y	+= tlb.o
 obj-y	+= transition.o
+obj-y	+= cpu-dt.o
 
 obj-$(CONFIG_FSL_LAYERSCAPE) += fsl-layerscape/
 obj-$(CONFIG_ARCH_ZYNQMP) += zynqmp/
