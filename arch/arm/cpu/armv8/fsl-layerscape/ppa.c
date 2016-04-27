@@ -56,21 +56,9 @@ unsigned long ppa_get_dram_block_size(void)
 	return dram_block_size;
 }
 
-/*
- * PPA firmware FIT image parser checks if the image is in FIT
- * format, verifies integrity of the image and calculates raw
- * image address and size values.
- *
- * Returns 0 on success and a negative errno on error task fail.
- */
-static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
-				size_t *raw_image_size)
+static int ppa_firmware_validate(void *ppa_addr)
 {
-	const void *ppa_data;
-	size_t ppa_size;
 	void *fit_hdr;
-	int conf_node_off, fw_node_off;
-	char *conf_node_name = NULL;
 
 #ifdef CONFIG_CHAIN_OF_TRUST
 	int ret;
@@ -78,11 +66,7 @@ static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
 	uintptr_t ppa_img_addr = 0;
 #endif
 
-#ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
-	fit_hdr = (void *)CONFIG_SYS_LS_PPA_FW_ADDR;
-#else
-#error "No CONFIG_SYS_LS_PPA_FW_IN_xxx defined"
-#endif
+	fit_hdr = ppa_addr;
 
 #ifdef CONFIG_CHAIN_OF_TRUST
 	ppa_img_addr = (uintptr_t)fit_hdr;
@@ -106,8 +90,6 @@ static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
 	}
 #endif
 
-	conf_node_name = LS_PPA_FIT_CNF_NAME;
-
 	if (fdt_check_header(fit_hdr)) {
 		printf("fsl-ppa: Bad firmware image (not a FIT image)\n");
 		return -EINVAL;
@@ -117,6 +99,21 @@ static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
 		printf("fsl-ppa: Bad firmware image (bad FIT header)\n");
 		return -EINVAL;
 	}
+
+	return 0;
+}
+
+static int ppa_firmware_get_data(void *ppa_addr,
+				 const void **data, size_t *size)
+{
+	void *fit_hdr;
+	int conf_node_off, fw_node_off;
+	char *conf_node_name = NULL;
+	char *desc;
+	int ret;
+
+	fit_hdr = ppa_addr;
+	conf_node_name = LS_PPA_FIT_CNF_NAME;
 
 	conf_node_off = fit_conf_get_node(fit_hdr, conf_node_name);
 	if (conf_node_off < 0) {
@@ -138,16 +135,50 @@ static int parse_ppa_firmware_fit_image(const void **raw_image_addr,
 		return -EINVAL;
 	}
 
-	if (fit_image_get_data(fit_hdr, fw_node_off, &ppa_data, &ppa_size)) {
+	if (fit_image_get_data(fit_hdr, fw_node_off, data, size)) {
 		printf("fsl-ppa: Can't get %s subimage data/size",
 				LS_PPA_FIT_FIRMWARE_IMAGE);
 		return -ENOENT;
 	}
 
+	ret = fit_get_desc(fit_hdr, fw_node_off, &desc);
+	if (ret)
+		printf("PPA Firmware unavailable\n");
+	else
+		printf("%s\n", desc);
+
+	return 0;
+}
+
+/*
+ * PPA firmware FIT image parser checks if the image is in FIT
+ * format, verifies integrity of the image and calculates raw
+ * image address and size values.
+ *
+ * Returns 0 on success and a negative errno on error task fail.
+ */
+static int ppa_parse_firmware_fit_image(const void **raw_image_addr,
+				size_t *raw_image_size)
+{
+	void *ppa_addr;
+	int ret;
+
+#ifdef CONFIG_SYS_LS_PPA_FW_IN_NOR
+	ppa_addr = (void *)CONFIG_SYS_LS_PPA_FW_ADDR;
+#else
+#error "No CONFIG_SYS_LS_PPA_FW_IN_xxx defined"
+#endif
+
+	ret = ppa_firmware_validate(ppa_addr);
+	if (ret)
+		return ret;
+
+	ret = ppa_firmware_get_data(ppa_addr, raw_image_addr, raw_image_size);
+	if (ret)
+		return ret;
+
 	debug("fsl-ppa: raw_image_addr = 0x%p, raw_image_size = 0x%lx\n",
-			ppa_data, ppa_size);
-	*raw_image_addr = ppa_data;
-	*raw_image_size = ppa_size;
+			*raw_image_addr, *raw_image_size);
 
 	return 0;
 }
@@ -183,7 +214,7 @@ int ppa_init_pre(u64 *entry)
 	ppa_ram_addr = (ppa_ram_addr + 0xfff) & ~0xfff;
 	debug("fsl-ppa: PPA load address (0x%llx)\n", ppa_ram_addr);
 
-	ret = parse_ppa_firmware_fit_image(&raw_image_addr, &raw_image_size);
+	ret = ppa_parse_firmware_fit_image(&raw_image_addr, &raw_image_size);
 	if (ret < 0)
 		goto out;
 
