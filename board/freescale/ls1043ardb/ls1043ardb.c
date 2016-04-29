@@ -83,6 +83,8 @@ int board_early_init_f(void)
 
 int board_init(void)
 {
+	u32 __iomem *scfg_intpcr = (u32 __iomem *)SCFG_BASE;
+
 #ifdef CONFIG_FSL_LS_PPA
 	u64 ppa_entry;
 #endif
@@ -126,6 +128,8 @@ int board_init(void)
 #ifdef CONFIG_U_QE
 	u_qe_init();
 #endif
+	/* invert AQR105 IRQ pins polarity */
+	out_be32(scfg_intpcr + SCFG_INTPCR / 4, AQR105_IRQ_MASK);
 
 	return 0;
 }
