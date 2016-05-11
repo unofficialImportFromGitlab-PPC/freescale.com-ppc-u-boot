@@ -1003,6 +1003,7 @@ void arch_preboot_os(void)
 
 #ifdef CONFIG_SYS_FSL_ERRATUM_A007273
 	fm_erratum_007273();
+	restore_liodns();
 #endif
 	/*
 	 * We are changing interrupt offsets and are about to boot the OS so

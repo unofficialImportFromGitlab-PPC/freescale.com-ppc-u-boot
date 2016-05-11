@@ -58,6 +58,7 @@ struct fman_liodn_id_table {
 
 extern u32 get_ppid_liodn(int ppid_tbl_idx, int ppid);
 extern void set_liodns(void);
+extern void restore_liodns(void);
 extern void fdt_fixup_liodn(void *blob);
 
 #define SET_LIODN_BASE_1(idA) \

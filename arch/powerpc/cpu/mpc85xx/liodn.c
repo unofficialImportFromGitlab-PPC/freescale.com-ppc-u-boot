@@ -125,6 +125,50 @@ static void setup_fman_liodn_base(enum fsl_dpaa_dev dev,
 	for (i = 0; i < size; i++)
 		tbl[i].id[0] += liodn_bases[dev].id[0];
 }
+
+static void restore_fm_liodn(enum fsl_dpaa_dev dev,
+		struct fman_liodn_id_table *tbl, int size)
+{
+	int i;
+	u32 tbl_id;
+	ccsr_fman_t *fm;
+	u32 base;
+
+	/* Restore FMBM_SPLIODN */
+	for (i = 0; i < size; i++) {
+		u32 liodn;
+		tbl_id = tbl[i].id[0] - liodn_bases[dev].id[0];
+		if (tbl[i].num_ids == 2)
+			liodn = (tbl_id << 16) | tbl[i].id[1];
+		else
+			liodn = tbl_id;
+
+		out_be32((volatile u32 *)(tbl[i].reg_offset), liodn);
+	}
+
+	/* Restore FMDM_PLRn */
+	switch(dev) {
+	case FSL_HW_PORTAL_FMAN1:
+		fm = (void *)CONFIG_SYS_FSL_FM1_ADDR;
+		break;
+
+#if (CONFIG_SYS_NUM_FMAN == 2)
+	case FSL_HW_PORTAL_FMAN2:
+		fm = (void *)CONFIG_SYS_FSL_FM2_ADDR;
+		break;
+#endif
+	default:
+		printf("Error: Invalid device type to %s\n", __FUNCTION__);
+		return ;
+	}
+
+	base = (liodn_bases[dev].id[0] << 16) | liodn_bases[dev].id[0];
+
+	/* setup all bases the same */
+	for (i = 0; i < 32; i++) {
+		out_be32(&fm->fm_dma.fmdmplr[i], base);
+	}
+}
 #endif
 
 static void setup_pme_liodn_base(void)
@@ -223,6 +267,19 @@ void set_liodns(void)
 	setup_rman_liodn_base(rman_liodn_tbl, rman_liodn_tbl_sz);
 #endif
 }
+
+#ifdef CONFIG_SYS_DPAA_FMAN
+void restore_liodns(void)
+{
+	restore_fm_liodn(FSL_HW_PORTAL_FMAN1, fman1_liodn_tbl,
+				fman1_liodn_tbl_sz);
+#if (CONFIG_SYS_NUM_FMAN == 2)
+	restore_fm_liodn(FSL_HW_PORTAL_FMAN2, fman2_liodn_tbl,
+				fman2_liodn_tbl_sz);
+#endif
+}
+#endif
+
 
 #ifdef CONFIG_SYS_SRIO
 static void fdt_fixup_srio_liodn(void *blob, struct srio_liodn_id_table *tbl)
