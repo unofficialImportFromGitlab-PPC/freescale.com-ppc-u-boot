@@ -32,7 +32,7 @@
 /* Number of SRKH registers */
 #define NUM_SRKH_REGS	8
 
-#if	defined(CONFIG_SYS_FSL_SFP_VER_3_2) ||	\
+#if defined(CONFIG_SYS_FSL_SFP_VER_3_2) ||	\
 	defined(CONFIG_SYS_FSL_SFP_VER_3_4)
 struct ccsr_sfp_regs {
 	u32 ospr;		/* 0x200 */
@@ -57,7 +57,7 @@ struct ccsr_sfp_regs {
 	u32 srk_hash[NUM_SRKH_REGS];	/* 0x23c Super Root Key Hash */
 	u32 oem_uid;		/* 0x9c OEM Unique ID */
 	u8 reserved2[0x04];
-	u32 ovpr;			/* 0xA4  Intent To Secure */
+	u32 ovpr;		/* 0xA4  Intent To Secure */
 	u8 reserved4[0x08];
 	u32 fsl_uid;		/* 0xB0  FSL Unique ID */
 	u8 reserved5[0x04];
@@ -68,19 +68,26 @@ struct ccsr_sfp_regs {
 #else
 struct ccsr_sfp_regs {
 	u8 reserved0[0x40];
-	u32 ospr;	/* 0x40  OEM Security Policy Register */
+	u32 ospr;		/* 0x40  OEM Security Policy Register */
 	u8 reserved2[0x38];
 	u32 srk_hash[8];	/* 0x7c  Super Root Key Hash */
-	u32 oem_uid;	/* 0x9c  OEM Unique ID */
+	u32 oem_uid;		/* 0x9c  OEM Unique ID */
 	u8 reserved4[0x4];
-	u32 ovpr;	/* 0xA4  OEM Validation Policy Register */
+	u32 ovpr;		/* 0xA4  OEM Validation Policy Register */
 	u8 reserved8[0x8];
-	u32 fsl_uid;	/* 0xB0  FSL Unique ID */
+	u32 fsl_uid;		/* 0xB0  FSL Unique ID */
 };
 #endif
+
 #define ITS_MASK	0x00000004
 #define ITS_BIT		2
-#define OSPR_KEY_REVOC_SHIFT	13
-#define OSPR_KEY_REVOC_MASK	0x0000e000
+
+#if defined(CONFIG_SYS_FSL_SFP_VER_3_4)
+#define OSPR_KEY_REVOC_SHIFT    9
+#define OSPR_KEY_REVOC_MASK     0x0000fe00
+#else
+#define OSPR_KEY_REVOC_SHIFT    13
+#define OSPR_KEY_REVOC_MASK     0x0000e000
+#endif /* CONFIG_SYS_FSL_SFP_VER_3_4 */
 
 #endif
