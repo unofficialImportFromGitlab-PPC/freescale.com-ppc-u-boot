@@ -56,20 +56,15 @@ unsigned long ppa_get_dram_block_size(void)
 	return dram_block_size;
 }
 
-static int ppa_firmware_validate(void *ppa_addr)
-{
-	void *fit_hdr;
-
 #ifdef CONFIG_CHAIN_OF_TRUST
+static void secboot_validate_ppa(void *ppa_addr)
+{
 	int ret;
 	uintptr_t ppa_esbc_hdr = CONFIG_SYS_LS_PPA_ESBC_ADDR;
 	uintptr_t ppa_img_addr = 0;
-#endif
 
-	fit_hdr = ppa_addr;
+	ppa_img_addr = (uintptr_t)ppa_addr;
 
-#ifdef CONFIG_CHAIN_OF_TRUST
-	ppa_img_addr = (uintptr_t)fit_hdr;
 	if (fsl_check_boot_mode_secure() != 0) {
 		printf("PPA validation started");
 		/* fsl_secboot_validate() will return 0 in case of
@@ -88,7 +83,14 @@ static int ppa_firmware_validate(void *ppa_addr)
 		else
 			printf("PPA validation Successful\n");
 	}
+}
 #endif
+
+static int ppa_firmware_validate(void *ppa_addr)
+{
+	void *fit_hdr;
+
+	fit_hdr = ppa_addr;
 
 	if (fdt_check_header(fit_hdr)) {
 		printf("fsl-ppa: Bad firmware image (not a FIT image)\n");
@@ -172,6 +174,10 @@ static int ppa_parse_firmware_fit_image(const void **raw_image_addr,
 	ret = ppa_firmware_validate(ppa_addr);
 	if (ret)
 		return ret;
+
+#ifdef CONFIG_CHAIN_OF_TRUST
+	secboot_validate_ppa(ppa_addr);
+#endif
 
 	ret = ppa_firmware_get_data(ppa_addr, raw_image_addr, raw_image_size);
 	if (ret)
