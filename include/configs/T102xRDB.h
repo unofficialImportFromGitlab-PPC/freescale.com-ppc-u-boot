@@ -46,11 +46,6 @@
 
 #ifdef CONFIG_RAMBOOT_PBL
 #define CONFIG_SYS_FSL_PBL_PBI board/freescale/t102xrdb/t1024_pbi.cfg
-#if defined(CONFIG_T1024RDB)
-#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1024_rcw.cfg
-#elif defined(CONFIG_T1023RDB)
-#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1023_rcw.cfg
-#endif
 #define CONFIG_SPL_MPC8XXX_INIT_DDR_SUPPORT
 #define CONFIG_SPL_ENV_SUPPORT
 #define CONFIG_SPL_SERIAL_SUPPORT
@@ -81,6 +76,11 @@
 #define CONFIG_SYS_NAND_U_BOOT_START	0x30000000
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	(256 << 10)
 #define CONFIG_SYS_LDSCRIPT	"arch/powerpc/cpu/mpc85xx/u-boot-nand.lds"
+#if defined(CONFIG_T1024RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1024_nand_rcw.cfg
+#elif defined(CONFIG_T1023RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1023_nand_rcw.cfg
+#endif
 #define CONFIG_SPL_NAND_BOOT
 #endif
 
@@ -97,6 +97,11 @@
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_SYS_MPC85XX_NO_RESETVEC
 #endif
+#if defined(CONFIG_T1024RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1024_spi_rcw.cfg
+#elif defined(CONFIG_T1023RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1023_spi_rcw.cfg
+#endif
 #define CONFIG_SPL_SPI_BOOT
 #endif
 
@@ -111,6 +116,11 @@
 #define CONFIG_SYS_LDSCRIPT		"arch/powerpc/cpu/mpc85xx/u-boot.lds"
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_SYS_MPC85XX_NO_RESETVEC
+#endif
+#if defined(CONFIG_T1024RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1024_sd_rcw.cfg
+#elif defined(CONFIG_T1023RDB)
+#define CONFIG_SYS_FSL_PBL_RCW board/freescale/t102xrdb/t1023_sd_rcw.cfg
 #endif
 #define CONFIG_SPL_MMC_BOOT
 #endif
