@@ -66,6 +66,10 @@ static void erratum_a009007(void)
 #endif /* CONFIG_SYS_FSL_ERRATUM_A009007 */
 }
 
+void s_init(void)
+{
+}
+
 int arch_soc_init(void)
 {
 	struct ccsr_scfg *scfg = (struct ccsr_scfg *)CONFIG_SYS_FSL_SCFG_ADDR;
