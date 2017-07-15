@@ -26,6 +26,10 @@
 #define CONFIG_MP		/* support multiple processors */
 #define CONFIG_ENABLE_36BIT_PHYS
 
+/* Video */
+#define CONFIG_VIDEO 
+#define VIDEO_IO_OFFSET	CONFIG_SYS_PCIE4_IO_VIRT
+
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_ADDR_MAP 1
 #define CONFIG_SYS_NUM_ADDR_MAP 64 /* number of TLB1 entries */
@@ -542,6 +546,7 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_SYS_PCIE4_MEM_BUS	0xe0000000
 #define CONFIG_SYS_PCIE4_MEM_PHYS	0xc40000000ull
 #define CONFIG_SYS_PCIE4_MEM_SIZE	0x10000000	/* 256M */
+#define CONFIG_SYS_PCIE4_IO_VIRT        0xf8030000
 #define CONFIG_SYS_PCIE4_IO_BUS		0x00000000
 #define CONFIG_SYS_PCIE4_IO_PHYS	0xff8030000ull
 #define CONFIG_SYS_PCIE4_IO_SIZE	0x00010000	/* 64k */
@@ -553,6 +558,17 @@ unsigned long get_board_ddr_clk(void);
 #define CONFIG_PCI_SCAN_SHOW	/* show pci devices on startup */
 #define CONFIG_DOS_PARTITION
 #endif
+
+/* Video */
+#if defined(CONFIG_VIDEO)
+#define CONFIG_BIOSEMU
+#define CONFIG_CFB_CONSOLE
+#define CONFIG_VIDEO_SW_CURSOR
+#define CONFIG_VGA_AS_SINGLE_DEVICE
+#define CONFIG_ATI_RADEON_FB
+#define CONFIG_VIDEO_LOGO
+#define CONFIG_SYS_ISA_IO_BASE_ADDRESS VIDEO_IO_OFFSET
+#endif 
 
 /* Qman/Bman */
 #ifndef CONFIG_NOBQFMAN
@@ -793,7 +809,8 @@ unsigned long get_board_ddr_clk(void);
 	"consoledev=ttyS0\0"					\
 	"ramdiskaddr=2000000\0"					\
 	"ramdiskfile=t2080rdb/ramdisk.uboot\0"			\
-	"fdtaddr=1e00000\0"					\
+	"fdtaddr=1e00000\0"                                     \
+	"fdtcontroladdr=1f00000\0"				\
 	"fdtfile=t2080rdb/t2080rdb.dtb\0"			\
 	"bdev=sda3\0"
 
