@@ -67,6 +67,7 @@
 #define PCI_CHIP_RV370_5B60		0x5B60
 #define PCI_CHIP_RV380_5657		0x5657
 #define PCI_CHIP_R420_554d		0x554d
+#define PCI_CHIP_RV710_954F        	0x954F
 
 static struct pci_device_id ati_radeon_pci_ids[] = {
 	{PCI_VENDOR_ID_ATI, PCI_CHIP_RV280_5960},
@@ -77,6 +78,7 @@ static struct pci_device_id ati_radeon_pci_ids[] = {
 	{PCI_VENDOR_ID_ATI, PCI_CHIP_RV370_5B60},
 	{PCI_VENDOR_ID_ATI, PCI_CHIP_RV380_5657},
 	{PCI_VENDOR_ID_ATI, PCI_CHIP_R420_554d},
+	{PCI_VENDOR_ID_ATI, PCI_CHIP_RV710_954F},
 	{0, 0}
 };
 
