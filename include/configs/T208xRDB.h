@@ -26,10 +26,6 @@
 #define CONFIG_MP		/* support multiple processors */
 #define CONFIG_ENABLE_36BIT_PHYS
 
-/* Video */
-#define CONFIG_VIDEO 
-#define VIDEO_IO_OFFSET	CONFIG_SYS_PCIE4_IO_VIRT
-
 #ifdef CONFIG_PHYS_64BIT
 #define CONFIG_ADDR_MAP 1
 #define CONFIG_SYS_NUM_ADDR_MAP 64 /* number of TLB1 entries */
@@ -104,6 +100,7 @@
 #define CONFIG_SYS_MMC_U_BOOT_DST      (0x00200000)
 #define CONFIG_SYS_MMC_U_BOOT_START    (0x00200000)
 #define CONFIG_SYS_MMC_U_BOOT_OFFS     (260 << 10)
+
 #define CONFIG_SYS_LDSCRIPT    "arch/powerpc/cpu/mpc85xx/u-boot.lds"
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_SYS_MPC85XX_NO_RESETVEC
@@ -560,14 +557,18 @@ unsigned long get_board_ddr_clk(void);
 #endif
 
 /* Video */
+#define CONFIG_VIDEO 
+
 #if defined(CONFIG_VIDEO)
 #define CONFIG_BIOSEMU
 #define CONFIG_CFB_CONSOLE
 #define CONFIG_VIDEO_SW_CURSOR
+#define VIDEO_IO_OFFSET	CONFIG_SYS_PCIE4_IO_VIRT
 #define CONFIG_VGA_AS_SINGLE_DEVICE
 #define CONFIG_ATI_RADEON_FB
 #define CONFIG_VIDEO_LOGO
 #define CONFIG_SYS_ISA_IO_BASE_ADDRESS VIDEO_IO_OFFSET
+#define DIU_ENVIRONMENT "video-mode=fslfb:1024x768-32@60,monitor=vga"
 #endif 
 
 /* Qman/Bman */
@@ -798,6 +799,7 @@ unsigned long get_board_ddr_clk(void);
 	"bank_intlv=auto;"					\
 	"usb1:dr_mode=host,phy_type=" __stringify(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
+	"video-mode=" __stringify(DIU_ENVIRONMENT) "\0"		\
 	"uboot=" __stringify(CONFIG_UBOOTPATH) "\0"		\
 	"ubootaddr=" __stringify(CONFIG_SYS_TEXT_BASE) "\0"	\
 	"tftpflash=tftpboot $loadaddr $uboot && "		\
@@ -810,7 +812,6 @@ unsigned long get_board_ddr_clk(void);
 	"ramdiskaddr=2000000\0"					\
 	"ramdiskfile=t2080rdb/ramdisk.uboot\0"			\
 	"fdtaddr=1e00000\0"                                     \
-	"fdtcontroladdr=1f00000\0"				\
 	"fdtfile=t2080rdb/t2080rdb.dtb\0"			\
 	"bdev=sda3\0"
 
@@ -850,7 +851,7 @@ unsigned long get_board_ddr_clk(void);
 	"setenv bootargs root=/dev/ram rw "		\
 	"console=$consoledev,$baudrate $othbootargs;"	\
 	"setenv ramdiskaddr 0x02000000;"		\
-	"setenv fdtaddr 0x00c00000;"			\
+	"setenv fdtaddr 0x00e00000;"			\
 	"setenv loadaddr 0x1000000;"			\
 	"bootm $loadaddr $ramdiskaddr $fdtaddr"
 
