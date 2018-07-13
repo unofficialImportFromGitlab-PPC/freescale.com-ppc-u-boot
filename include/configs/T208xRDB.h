@@ -455,10 +455,10 @@ unsigned long get_board_ddr_clk(void);
  */
 #define CONFIG_SYS_SRIO1_MEM_VIRT	0xa0000000
 #define CONFIG_SYS_SRIO1_MEM_PHYS	0xc20000000ull
-#define CONFIG_SYS_SRIO1_MEM_SIZE	0x20000000 /* 512M */
-#define CONFIG_SYS_SRIO2_MEM_VIRT	0xb0000000
-#define CONFIG_SYS_SRIO2_MEM_PHYS	0xc30000000ull
-#define CONFIG_SYS_SRIO2_MEM_SIZE	0x20000000 /* 512M */
+#define CONFIG_SYS_SRIO1_MEM_SIZE	0x10000000 /* 256M */
+#define CONFIG_SYS_SRIO2_MEM_VIRT	0xc0000000
+#define CONFIG_SYS_SRIO2_MEM_PHYS	0xc40000000ull
+#define CONFIG_SYS_SRIO2_MEM_SIZE	0x20000000 /* 256M */
 /*
  * for slave u-boot IMAGE instored in master memory space,
  * PHYS must be aligned based on the SIZE
